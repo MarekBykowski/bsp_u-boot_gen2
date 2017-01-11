@@ -394,8 +394,11 @@ sysmem_init(void)
 #else
 	unsigned sm_nodes[] = {0x22, 0xf, 0x23, 0x24};
 #endif
+
+#if 0
 #if defined(CONFIG_AXXIA_XLF_EMU) || defined(CONFIG_AXXIA_XLF)
 	ncp_l3lock_region_info_t *ncp_l3lock_region_info;
+#endif
 #endif
 	int i;
 	ncp_uint32_t version_save;
@@ -435,8 +438,10 @@ sysmem_init(void)
 		return -1;
 	}
 
+#ifndef SYSCACHE_ONLY_MODE
 	/* Disable System Cache */
 	__asm_disable_l3_cache();
+#endif
 
 	/* Initialize Memory */
 #ifdef CONFIG_AXXIA_ANY_56XX
@@ -499,6 +504,7 @@ sysmem_init(void)
 		}
 	}
 
+#if 0 /* don't do L3 locked */
 #if defined(CONFIG_AXXIA_XLF_EMU) || defined(CONFIG_AXXIA_XLF)
 	ncp_l3lock_region_info = (ncp_l3lock_region_info_t *)
 		&sysmem->total_l3_locked_size;
@@ -514,9 +520,12 @@ sysmem_init(void)
 	if (NCP_ST_SUCCESS != rc)
 		printf("Locking L3 Cache Failed!\n");
 #endif
+#endif
 
+#ifndef SYSCACHE_ONLY_MODE
 	/* Re-enable the L3 cache. */
 	__asm_enable_l3_cache();
+#endif
 
 	/*
 	  Restore the version of the parameter subsection.
@@ -525,6 +534,7 @@ sysmem_init(void)
 	sysmem->version = version_save;
 
 	NCP_RETURN_LABEL;
+	printf("mb: %s(): rc %d\n", __func__, rc);
 
 	return rc;
 }
