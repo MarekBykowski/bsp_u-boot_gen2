@@ -1,6 +1,8 @@
 #include <config.h>
 #include <asm/armv8/mmu.h>
 #include <asm/system.h>
+#include <asm/macro.h>
+#include <linux/linkage.h>
 
 	/*
 	 * Set up page tables for U-Boot in Memory (SYSCACHE).  Space
@@ -37,22 +39,19 @@ end_set_region:
 	ret
 
 do_sctrl:
-
 	adr	x0, __PGT__
 	msr	ttbr0_el3, x0
-	ldr	x0, =0x0000000080837516
+	ldr x0, =(TCR_EL3_RSVD | TCR_FLAGS | TCR_EL3_IPS_BITS)
 	msr	tcr_el3, x0
-	ldr	x0, =0x000000FF440C0400
+	ldr x0, =MEMORY_ATTRIBUTES
 	msr	mair_el3, x0
 	dsb	sy
 	tlbi	alle3
 	dsb	sy
 	isb
-
 	ret
 
-do_mmu:
-
+__asm_do_mmu:
 	/*
 	 * x1 - page table entry
 	 * x2 - iterate until x2
@@ -79,7 +78,6 @@ do_mmu:
 	bl	do_sctrl
 
 	mov	x30, x29	/* Restore LR */
-
 	ret
 
 #endif /* SYSCACHE_ONLY_MODE && !CONFIG_SPL_BUILD */
@@ -93,8 +91,10 @@ lowlevel_init:
      */
 
 #if defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_SPL_BUILD)
+	/*ldr x0, =(MMAP_SCB + 0x42800)
+	str XZR, [x0]*/
 	mov x28, x30 /* Save LR */
-	bl do_mmu
+	bl __asm_do_mmu
 #endif
 
 	/*

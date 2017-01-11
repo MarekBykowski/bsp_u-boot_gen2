@@ -30,8 +30,10 @@
 #include <spi.h>
 #include <asm/io.h>
 
-#ifndef SYSCACHE_ONLY_MODE
+#ifdef CONFIG_SPL_BUILD
+#ifndef SYSCACHE_ONLY_MODE 
 #define ENABLE_DMA
+#endif
 #endif
 
 /* SSP registers mapping */

@@ -260,7 +260,7 @@ static int initr_barrier(void)
 #endif
 	return 0;
 }
-
+unsigned long* marek;
 static int initr_malloc(void)
 {
 	ulong malloc_start;
@@ -273,6 +273,12 @@ static int initr_malloc(void)
 	malloc_start = gd->relocaddr - TOTAL_MALLOC_LEN;
 	mem_malloc_init(map_sysmem(malloc_start, TOTAL_MALLOC_LEN),
 			TOTAL_MALLOC_LEN);
+	
+	{
+		marek = (unsigned long*) malloc(sizeof(int));
+		printf("*addr %u at addr %lu\n", (unsigned)(*marek),(unsigned long) marek);
+	}
+	
 	return 0;
 }
 

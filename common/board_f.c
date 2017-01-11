@@ -343,7 +343,7 @@ static int setup_dest_addr(void)
 	gd->ram_top += get_effective_memsize();
 	gd->ram_top = board_get_usable_ram_top(gd->mon_len);
 	gd->relocaddr = gd->ram_top;
-	debug("Ram top: %08lX\n", (ulong)gd->ram_top);
+	printf("Ram top: %08lX\n", (ulong)gd->ram_top);
 #if defined(CONFIG_MP) && (defined(CONFIG_MPC86xx) || defined(CONFIG_E500))
 	/*
 	 * We need to make sure the location we intend to put secondary core
@@ -759,7 +759,68 @@ __weak int arch_cpu_init_dm(void)
 	return 0;
 }
 
+#ifdef SYSCACHE_ONLY_MODE
+#include "../board/axxia/common/ncp_sysmem_ext.h"
+extern int sysmem_init(void);
+/* Init intermediate heap. */
+static int initi_heap(void) 
+{
+	/* sysmem_init() below uses spi that needs a heap so serving it intermidiately here 
+ 	   before the proper heap intilization takes place in the code after U-Boot relocation. */
+	mem_malloc_init(map_sysmem(0x300000/*malloc_start*/, TOTAL_MALLOC_LEN), TOTAL_MALLOC_LEN);
+	return 0;
+}
+
+static int init_mem_axxia(void)
+{
+	int rc = 0;
+
+	/* Get parameters off flash. These inputs to memory initialization. 
+ 	   Malloc must be available before. */
+	(void) sysmem_size();
+	
+	ncr_tracer_enable();
+
+	if (0 != sysmem_init())
+		acp_failure(__FILE__, __FUNCTION__, __LINE__);
+
+	ncr_tracer_disable();
+	/*gd->bd->bi_dram[0].start = 0;
+	gd->bd->bi_dram[0].size = ((phys_size_t)1 << 30); */
+
+	return rc;
+}
+
+static int flush_all(void)
+{
+	flush_dcache_all();
+	invalidate_icache_all();
+	return 0;
+}
+
+static int switch_to_EL2_non_secure(void)
+{
+	/* Revert the override marking all the outgoing RNI transactions 
+ 	   as a SECURE put through in board/axxia/axc6700/secure.c. 
+	   Note: inability in having it transparent (secure or non-secure as needed)
+	   is a potential hazard for kernel switching across EL1 secure and 
+	   none-secure state. This only applies to XLF */
+#ifdef CONFIG_AXXIA_XLF
+	if (0 != readl(MMAP_SCB + 0x42800))
+    	writel(0, (MMAP_SCB + 0x42800));
+#endif
+	armv8_switch_to_el2();
+	return 0;
+}
+#endif
+
 static init_fnc_t init_sequence_f[] = {
+#ifdef SYSCACHE_ONLY_MODE
+	initi_heap, 
+	init_mem_axxia,
+	flush_all,
+	switch_to_EL2_non_secure,
+#endif
 #ifdef CONFIG_SANDBOX
 	setup_ram_buf,
 #endif
