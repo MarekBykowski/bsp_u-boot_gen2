@@ -4110,7 +4110,7 @@ void ncr_disable( void );
 
 #define WATCHDOG_TIMEOUT_SECS 16
 #ifndef CONFIG_TARGET_EMULATION
-#define CONFIG_HW_WATCHDOG
+/*#define CONFIG_HW_WATCHDOG*/
 #endif
 /*#define LEAVE_WATCHDOG_ON*/
 /*#define MAKE_WATCHDOG_PERMANENT*/
@@ -4236,6 +4236,10 @@ int gpdma_xfer(void *, void *, size_t, int);
 void __asm_disable_l3_cache(void);
 void __asm_enable_l3_cache(void);
 #endif	/* __ASSEMBLY__ */
+
+#ifndef __ASSEMBLY__
+void __asm_do_mmu(void);
+#endif
 
 #ifndef __ASSEMBLY__
 int handle_cmem_mpr(int, int);

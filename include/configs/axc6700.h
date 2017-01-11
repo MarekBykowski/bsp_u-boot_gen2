@@ -355,7 +355,8 @@
   ==============================================================================
 */
 
-/*#define SYSCACHE_ONLY_MODE*/
+#define BOOT_FROM_CACHE
+#define SYSCACHE_ONLY_MODE
 #define CONFIG_ANY_XLF
 
 /*
@@ -886,7 +887,6 @@ int cmem_init(void);
 #endif
 
 
-#ifdef CONFIG_SPL_BUILD
 #ifdef NCR_TRACER
 #define NCR_TRACE( format, args... ) do { \
 if( 0 != ncr_tracer_is_enabled( ) ) { \
@@ -901,7 +901,6 @@ printf( "# " format "\n", ##args ); \
 #else
 #define NCR_TRACE( format, args... )
 #define NCP_COMMENT( format, args... )
-#endif
 #endif
 
 #define LSM     0x8031000000
