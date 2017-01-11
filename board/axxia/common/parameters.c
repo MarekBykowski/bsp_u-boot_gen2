@@ -43,7 +43,7 @@
 
 static void *parameters __attribute__ ((section("data")));
 static int copy_in_use __attribute__ ((section("data")));
-static int do_read = 1;
+int do_read_parameters = 1;
 
 #if defined(CONFIG_AXXIA_PPC)
 /*
@@ -163,14 +163,14 @@ read_parameters(void)
 	int b_sequence = 0;
 #endif	/* CONFIG_REDUNDANT_PARAMETERS */
 
-	if (0 == do_read)
+	if (0 == do_read_parameters)
 		return 0;
 
-#ifdef CONFIG_SPL_BUILD
-	if (1 == do_read)
+#ifdef CONFIG_SPL_BUILD 
+	if (1 == do_read_parameters)
 		parameters = (void *)PARAMETERS_ADDRESS;
 #else
-	if (1 == do_read) {
+	if (1 == do_read_parameters) {
 		parameters = malloc(PARAMETERS_SIZE);
 		memset(parameters, 0, PARAMETERS_SIZE);
 	}
@@ -361,8 +361,6 @@ read_parameters(void)
 parameters_read:
 #endif
 
-	do_read = 0;
-
 #ifdef CONFIG_AXXIA_ARM
 	buffer = parameters;
 
@@ -452,7 +450,7 @@ write_parameters(void)
 	int i;
 	int rc = -1;
 
-	if (1 == do_read) {
+	if (1 == do_read_parameters) {
 		printf("Parameters haven't been read!\n");
 		return -1;
 	}

@@ -42,7 +42,9 @@
 
 #include <os.h>
 #include <post.h>
+#include <spl.h>
 #include <spi.h>
+#include <spi_flash.h>
 #include <status_led.h>
 #include <trace.h>
 #include <watchdog.h>
@@ -759,7 +761,125 @@ __weak int arch_cpu_init_dm(void)
 	return 0;
 }
 
+#ifdef SYSCACHE_ONLY_MODE
+#include "../board/axxia/common/ncp_sysmem_ext.h"
+extern int sysmem_init(void);
+int do_heap(void)
+{
+	/* sysmem_size() from init_mem_axxia() uses malloc so that servicing it here */
+	mem_malloc_init(map_sysmem(0x300000/*malloc_start*/, TOTAL_MALLOC_LEN), TOTAL_MALLOC_LEN);
+	return 0;
+}
+
+int init_mem_axxia(void)
+{
+	int rc = 0;
+
+	/* get parameters.bin off flash. Malloc must be before */
+	(void)sysmem_size();
+
+	if (0 != sysmem_init())
+		acp_failure(__FILE__, __FUNCTION__, __LINE__);
+
+	gd->bd->bi_dram[0].start = 0;
+	gd->bd->bi_dram[0].size = ((phys_size_t)1 << 30);
+
+	return rc;
+}
+
+int flush_all(void)
+{
+	flush_dcache_all();
+	invalidate_icache_all();
+	return 0;
+}
+
+typedef enum {
+	AXXIA_5600 = 0,
+	AXXIA_6700 = 1
+} axxia_target_t;
+
+typedef enum {
+	AXXIA_SIM = 0,
+	AXXIA_EMU = 1,
+	AXXIA_HW = 2
+} axxia_platform_t;
+
+typedef enum {
+	AXXIA_NONE = 0,
+	AXXIA_SYSCACHE_ONLY = 1
+} axxia_option_t;
+
+typedef struct axxia_configuration {
+	axxia_target_t target;
+	axxia_platform_t platform;
+	axxia_option_t option;
+	unsigned int per_clock_hz;
+	unsigned int baud_rate;
+} axxia_configuration_t;
+
+/* These are defined in the linker script */
+extern void *__monitor_parameters;
+extern unsigned long _bl31_start, _bl31_end;
+
+int switch_to_EL2_non_secure(void)
+{
+	void (*entry)(void *, void *);
+	axxia_configuration_t *axxia_configuration;
+
+	axxia_configuration = (axxia_configuration_t *)&__monitor_parameters;
+#if defined(CONFIG_AXXIA_56XX)
+	axxia_configuration->target = AXXIA_5600;
+	axxia_configuration->platform = AXXIA_HW;
+#elif defined(CONFIG_AXXIA_XLF)
+	axxia_configuration->target = AXXIA_6700;
+	axxia_configuration->platform = AXXIA_HW;
+#endif
+	axxia_configuration->option = AXXIA_NONE;
+
+	if (0 != acp_clock_get(clock_peripheral,
+			       &axxia_configuration->per_clock_hz))
+		acp_failure(__FILE__, __func__, __LINE__);
+
+	axxia_configuration->per_clock_hz *= 1000;
+	axxia_configuration->baud_rate = gd->baudrate;
+
+	/*
+	   Move monitor to LSM+0x1000, '0x1000' is a so called page boundery
+       though this is not true for Axxia's Uboot (2015) where pages are 512M.
+	   It is true for Nokia's Uboot (2017) though.
+	 */
+	memmove((void*) LSM+0x1000, (void*)&_bl31_start,
+			(size_t)(&_bl31_end) - (size_t)(&_bl31_start));
+	entry = (void (*)(void *, void *))(LSM+0x1000);
+	cleanup_before_linux();
+	asm volatile (
+		"str x18, [sp, #-8]!\n" /* Store global data to the stack */
+		"mov x22, sp\n"  /* Migrate SP */
+		"msr sp_el2, x22\n"
+		"mrs x22, vbar_el3\n" /* Migrate VBAR */
+		"msr vbar_el2, x22\n"
+	);
+	entry(NULL, axxia_configuration);
+	asm volatile("ldr x18, [sp], #8\n"); /*Restore global data from the stack */
+
+	/*
+	   We are now at EL2, non-secure state.
+	   Override the RNI to output non-secure transations.
+     */
+    writel(0, (MMAP_SCB + 0x42800));
+
+	return 0;
+}
+#endif
+
 static init_fnc_t init_sequence_f[] = {
+#ifdef SYSCACHE_ONLY_MODE
+	do_heap,
+	init_mem_axxia,
+	flush_all,
+	switch_to_EL2_non_secure,
+#endif
 #ifdef CONFIG_SANDBOX
 	setup_ram_buf,
 #endif

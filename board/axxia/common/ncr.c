@@ -59,7 +59,7 @@ ncr_fail(const char *file, const char *function, const int line)
 {
 	if (1 == ncr_sysmem_mode_disabled)
 		return -1;
-	
+
 	printf("Config Ring Access Failed: 0x%08lx 0x%08lx\n",
 	       (unsigned long)ncr_register_read(POINTER(NCA + NCP_NCA_CFG_RING_ERROR_STAT_R0)),
 	       (unsigned long)ncr_register_read(POINTER(NCA + NCP_NCA_CFG_RING_ERROR_STAT_R1)));
@@ -627,7 +627,7 @@ ncr_apb2ser_indirect_setup(ncp_uint32_t regionId,
 
 	*indirectOffset = ((baseId + tgtId) * 0x10000);
 	udelay(10);
-	
+
 	return 0;
 }
 
@@ -673,7 +673,7 @@ ncr_apb2ser_indirect_access(ncp_uint32_t offset,
     if (loop_count == 0)
         return -1;
 
-    if (!isWrite) 
+    if (!isWrite)
 	    *buffer = readl(POINTER(APB2_SER0_BASE + indirectOffset +
 				    NCP_APB2SER_INDIRECT_READ_DATA_0));
 
@@ -1647,28 +1647,78 @@ ncr_modify32( ncp_uint32_t region, ncp_uint32_t offset,
 */
 
 void
-ncr_l3tags(void)
+ncr_l3tags(ncp_uint32_t address)
 {
 	int i;
-	ncp_uint32_t address;
+	unsigned int el, val;
+	asm volatile("mrs %0, CurrentEL" : "=r" (el) : : "cc");
+	el >>= 2;
+
+	printf("l3_init() through %s() at EL%u: addr %lx to %lx\n",
+			__func__, el, (unsigned long)address, (unsigned long)(address+SYSCACHE_SIZE));
 
 	/*
 	  Set up cdar_memory
 	*/
-
-	for (i = 0; i < 64; ++i)
-		writel(i, POINTER(NCA + NCP_NCA_CDAR_MEMORY_BASE + (i * 4)));
+	for (i = 0; i < 64; ++i) {
+#if !defined(CONFIG_AXXIA_XLF)
+			writel(i, POINTER(NCA + NCP_NCA_CDAR_MEMORY_BASE + (i * 4)));
+#else
+			out_be32(POINTER(NCA + NCP_NCA_CDAR_MEMORY_BASE + (i * 4)), i);
+#endif
+	}
 
 	/*
 	  Write it
 	*/
+	for (i = 0; i < (SYSCACHE_SIZE) / 256; ++i, address += 256)
+			ncr_write(NCP_REGION_ID(0x200, 1), 0, address, 256, NULL);
 
-	address = 0;
+	for (i = 0; i < 32; i++) {
+		ncr_read32(NCP_REGION_ID(0x200, 1), i*4, &val);
+		printf("mb: val %u\t", val);
+		if (i % 4) printf("\n");
+	}
 
-	for (i = 0; i < (8 * 1024 * 1024) / 256; ++i, address += 256)
-		ncr_write(NCP_REGION_ID(0x200, 1), 0, address, 256, NULL);
 
 	return;
 }
+
+void
+l3_init_dma(ncp_uint32_t addr)
+{
+	unsigned int buffer[64] __attribute__ ((aligned(16)));
+	unsigned long output = (unsigned long) addr;
+	int ret = 0;
+
+	unsigned int el;
+	asm volatile("mrs %0, CurrentEL" : "=r" (el) : : "cc");
+	el >>= 2;
+
+	printf("Validate l3 through %s() at EL%u (secure %u): 0x%lx-0x%lx\n",
+			__func__, el, (unsigned)el==3?1:0, (unsigned long)addr,
+			(unsigned long)(addr+SYSCACHE_SIZE));
+
+	memset(buffer, 0x0, sizeof(buffer));
+
+	while (SYSCACHE_SIZE > output) {
+		ret = gpdma_xfer((void *)output, (void *)buffer, 256, el==3?1:0);
+
+		if (ret != 0) {
+				printf("gpdma_xfer failed %d\n", ret);
+				break;
+		}
+
+		if (output % SZ_2M == 0)
+			putc('.');
+
+		output += 256;
+	}
+
+	printf("OK\n");
+
+	return;
+}
+
 
 #endif

@@ -21,6 +21,18 @@ SECTIONS
 		*(.__image_copy_start)
 		CPUDIR/start.o (.text*)
 		*(.text*)
+
+		. = ALIGN(8);
+		__monitor_parameters = .;
+		. += 256;
+
+		/* Include Secure Monitor.
+		   Align it to a page boundery.
+		 */
+		. = ALIGN(4096);
+		_bl31_start = .;
+		KEEP(bl31.o (.monitor));
+		_bl31_end = .;
 	}
 
 	. = ALIGN(8);

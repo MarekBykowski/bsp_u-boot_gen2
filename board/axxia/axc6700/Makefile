@@ -34,7 +34,7 @@ else
 ################################################################################
 ## SPL Build
 
-obj-y += secure.o ncp_l3lock_region_init.o
+obj-y += secure.o ncp_l3lock_region_init.o secure.o
 
 ifdef CONFIG_AXXIA_EMU
 obj-y += sysmem_emulation.o
@@ -45,4 +45,4 @@ endif
 ################################################################################
 ## All Builds
 
-obj-y += failure.o version.o spi.o
+obj-y += ncp_l3lock_region_init.o failure.o version.o spi.o l3_coherency.o

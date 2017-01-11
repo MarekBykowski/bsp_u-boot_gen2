@@ -4136,7 +4136,7 @@ void ncr_disable( void );
 
 #define WATCHDOG_TIMEOUT_SECS 16
 #ifndef CONFIG_TARGET_EMULATION
-#define CONFIG_HW_WATCHDOG
+/*#define CONFIG_HW_WATCHDOG*/
 #endif
 /*#define LEAVE_WATCHDOG_ON*/
 /*#define MAKE_WATCHDOG_PERMANENT*/
@@ -4281,11 +4281,7 @@ unsigned int set_watchdog_timeout(unsigned int);
   of system memory.
 */
 
-#ifdef SYSCACHE_ONLY_MODE
-#define CONFIG_UBOOT_MAX_MEM ((phys_size_t) SYSCACHE_SIZE)
-#else
 #define CONFIG_UBOOT_MAX_MEM ((phys_size_t)1 << 30)
-#endif
 
 /*
   Define the following to add a hook to the SPL that allows diagnostic
@@ -4317,7 +4313,6 @@ int pei_init(unsigned int);
 /*#define NCR_TRACER*/
 /*#define NCR_TRACER_RV*/
 
-#ifdef CONFIG_SPL_BUILD
 #ifdef NCR_TRACER
 #define NCR_TRACE( format, args... ) do { \
 if( 0 != ncr_tracer_is_enabled( ) ) { \
@@ -4332,7 +4327,6 @@ printf( "# " format "\n", ##args ); \
 #else
 #define NCR_TRACE( format, args... )
 #define NCP_COMMENT( format, args... )
-#endif
 #endif
 
 #ifndef __ASSEMBLY__
@@ -4356,6 +4350,10 @@ int gpdma_xfer(void *, void *, size_t, int);
 void __asm_disable_l3_cache(void);
 void __asm_enable_l3_cache(void);
 #endif	/* __ASSEMBLY__ */
+
+#ifndef __ASSEMBLY__
+void __asm_do_mmu(void);
+#endif
 
 #ifndef __ASSEMBLY__
 int handle_cmem_mpr(int, int);

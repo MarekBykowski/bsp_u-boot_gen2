@@ -35,12 +35,11 @@ else
 ################################################################################
 ## SPL Build
 
-obj-y += sysmem_reset.o spl.o axxia_initialize.o sysmem_bist.o cmem_bist.o
+obj-y += sysmem_reset.o spl.o 
 
 ifndef CONFIG_AXXIA_EMU
-obj-y += ncp_sm_denali_2041_init_56xx.o ncp_sysmem_init_synopphy.o
-obj-y += ncp_cm_ctrl_init_56xx.o ncp_treemem_init_synopphy.o ncp_elm.o
-obj-y += sysmem_asic.o voltage.o
+obj-y += ncp_cm_ctrl_init_56xx.o ncp_treemem_init_synopphy.o 
+obj-y += voltage.o
 endif
 
 ifdef CONFIG_AXXIA_SPL_DIAGNOSTICS
@@ -52,8 +51,10 @@ endif
 ################################################################################
 ## All Builds
 
+obj-y += sysmem_bist.o cmem_bist.o axxia_initialize.o
 obj-y += lsi.o ncr.o sysmem_size.o parameters.o sbb.o axxia_clocks.o
 obj-y += cache.o outer_cache.o gpdma.o lowlevel.o
+obj-y += ncp_elm.o ncp_sm_denali_2041_init_56xx.o ncp_sysmem_init_synopphy.o sysmem_asic.o 
 
 ifdef CONFIG_HW_WATCHDOG
 obj-y += watchdog.o

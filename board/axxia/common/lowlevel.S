@@ -1,6 +1,8 @@
 #include <config.h>
 #include <asm/armv8/mmu.h>
 #include <asm/system.h>
+#include <asm/macro.h>
+#include <linux/linkage.h>
 
 	/*
 	 * Set up page tables for U-Boot in Memory (SYSCACHE).  Space
@@ -37,22 +39,19 @@ end_set_region:
 	ret
 
 do_sctrl:
-
-	adr	x0, __PGT__
+	adrp	x0, __PGT__
 	msr	ttbr0_el3, x0
-	ldr	x0, =0x0000000080837516
+	ldr x0, =(TCR_EL3_RSVD | TCR_FLAGS | TCR_EL3_IPS_BITS)
 	msr	tcr_el3, x0
-	ldr	x0, =0x000000FF440C0400
+	ldr x0, =MEMORY_ATTRIBUTES
 	msr	mair_el3, x0
 	dsb	sy
 	tlbi	alle3
 	dsb	sy
 	isb
-
 	ret
 
-do_mmu:
-
+__asm_do_mmu:
 	/*
 	 * x1 - page table entry
 	 * x2 - iterate until x2
@@ -60,7 +59,7 @@ do_mmu:
 	 * x4 - mem ranges from 0 to x4
 	 */
 
-	adr	x0, __PGT__
+	adrp	x0, __PGT__
 	mov	x1, #0
 	ldr	x2, =PGTABLE_SIZE
 	lsr	x2, x2, #3
@@ -79,7 +78,6 @@ do_mmu:
 	bl	do_sctrl
 
 	mov	x30, x29	/* Restore LR */
-
 	ret
 
 #endif /* SYSCACHE_ONLY_MODE && !CONFIG_SPL_BUILD */
@@ -89,12 +87,23 @@ do_mmu:
 lowlevel_init:
 
     /*
-     * Do MMU for U-Boot
+     * Do MMU for U-Boot running in Cache
      */
 
-#if defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_SPL_BUILD)
+
+	/* 
+	   Don't do the MMU now. Use what SPL did before branching over.
+	   We observed that if the SPL atributes LSM to Device then
+       we do not have to re-configure the page tables for Uboot in cache.
+	   If we have LSM attributed to non-cacheable memory then
+       re-configuration turns necessary. Probably the page granule (512M)
+	   is an issue.
+     */
+#define DO_MMU_IN_CACHE 0
+
+#if DO_MMU_IN_CACHE && defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_SPL_BUILD)
 	mov x28, x30 /* Save LR */
-	bl do_mmu
+	bl __asm_do_mmu
 #endif
 
 	/*
@@ -113,7 +122,7 @@ lowlevel_init:
 	mov	x0, #0
 	msr	OSLAR_EL1, x0
 
-#if defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_SPL_BUILD)
+#if DO_MMU_IN_CACHE && defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_SPL_BUILD)
 	mov x30, x28 /*Restore LR */
 #endif
 

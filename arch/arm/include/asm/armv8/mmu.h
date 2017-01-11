@@ -114,6 +114,9 @@
 #define TCR_EL2_RSVD		(1 << 31 | 1 << 23)
 #define TCR_EL3_RSVD		(1 << 31 | 1 << 23)
 
+/* Flags to override the default values */
+#define DISABLE_DCACHE      (1 << 0)
+
 #ifndef __ASSEMBLY__
 
 void set_pgtable_section(u64 *page_table, u64 index,

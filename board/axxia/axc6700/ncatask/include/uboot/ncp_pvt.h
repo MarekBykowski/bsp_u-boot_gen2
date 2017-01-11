@@ -383,6 +383,7 @@ NCP_API ncp_bool_t ncp_dev_initialized;
         ncp_comment( log_msg );                 \
     } while( 0 );
 #else
+#undef NCP_COMMENT
 #define NCP_COMMENT( format, args... )          \
     do {                                        \
         char log_msg[128];                      \

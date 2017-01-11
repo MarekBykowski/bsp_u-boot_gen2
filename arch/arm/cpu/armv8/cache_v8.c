@@ -79,6 +79,78 @@ static void mmu_setup(void)
 	set_sctlr(get_sctlr() | CR_M);
 }
 
+
+
+void mmu_configure(u64 *addr, int flags)
+{
+	u64 *page_table = addr, i, j;
+	int el, tcr_flags;
+	uint32_t sctlr = get_sctlr();;
+
+	/* Setup an identity-mapping for all spaces */
+	for (i = 0; i < (PGTABLE_SIZE >> 3); i++) {
+		set_pgtable_section(page_table, i, i << SECTION_SHIFT,
+				    MT_DEVICE_NGNRNE, PMD_SECT_NON_SHARE);
+	}
+
+	ulong start = 0;
+	ulong end = 0x40000000;
+	for (j = start >> SECTION_SHIFT;
+		 j < end >> SECTION_SHIFT; j++) {
+         set_pgtable_section(page_table, j, j << SECTION_SHIFT,
+					MT_NORMAL, PMD_SECT_NON_SHARE);
+	}
+
+
+	/*
+	   Atrribute memory in LSM to non-cacheble.
+  	   Minumum page granule supported by this Uboot is 512MB.
+	   Far too far overlapping Devices. Should get fixed but
+       isn't worth the time as this is for Nokia that runs
+       Uboot 2017 with page granule 4K.
+
+	   LSM sits in between the start end of below.
+     */
+#if 0
+	start = 0x8020000000;
+	end = 0x8040000000;
+	for (j = start >> SECTION_SHIFT;
+		 j < end >> SECTION_SHIFT; j++) {
+		set_pgtable_section(page_table, j, j << SECTION_SHIFT,
+					MT_NORMAL_NC, PMD_SECT_NON_SHARE);
+	}
+#endif
+
+	/* load TTBR0 */
+	el = current_el();
+	if (el == 1) {
+		set_ttbr_tcr_mair(el, (u64)addr,
+				  TCR_EL1_RSVD | TCR_FLAGS | TCR_EL1_IPS_BITS,
+				  MEMORY_ATTRIBUTES);
+	} else if (el == 2) {
+		set_ttbr_tcr_mair(el, (u64)addr,
+				  TCR_EL2_RSVD | TCR_FLAGS | TCR_EL2_IPS_BITS,
+				  MEMORY_ATTRIBUTES);
+	} else {
+		tcr_flags = TCR_FLAGS & ~(0x3<<12); /*clear bits 12 and 13 (non-sharable)*/
+#if 0
+		tcr_flags &= ~(0x3<<8); /*clear bits 8 and 9 (inner non-cacheable)*/
+		/*TCR_FLAGS has already outer WB-WA. All together should lead to location request
+ 		  ending up in L3 right away.*/
+#endif
+		set_ttbr_tcr_mair(el, (u64)addr,
+				  TCR_EL3_RSVD | tcr_flags | TCR_EL3_IPS_BITS,
+				  MEMORY_ATTRIBUTES);
+	}
+
+	if (flags == DISABLE_DCACHE)
+		sctlr &= ~CR_C;
+	else
+		sctlr |= CR_C;
+
+	/* enable the mmu */
+	set_sctlr(get_sctlr() | CR_M);
+}
 /*
  * Performs a invalidation of the entire data cache at all levels
  */

@@ -27,18 +27,34 @@ set_outer_cache_state:
 	mov	x10, 0x20
 1:	mov	x11, 0x10000
 	mul	x11, x10, x11
-	ldr	x12, =(DICKENS + 0x10)
+	mov x12, #0x10
+#if defined(CONFIG_AXXIA_XLF)
+	movk x12, #0x40, lsl #32 /*40_0000_0000*/
+#elif defined(CONFIG_AXXIA_56XX)
+	movk x12, #0x80, lsl #32 /*80_0000_0000*/
+#else
+#error "CCN doesn't support this architecture"
+#endif
 	add	x11, x11, x12
 	str	w0, [x11]
 	add	w10, w10, 1
 	cmp	w10, 0x27
 	ble	1b
+	dsb sy
+	isb
 
 	/* Wait for completion. */
 	mov	x10, 0x20
 1:	mov	x11, 0x10000
 	mul	x11, x10, x11
-	ldr	x12, =(DICKENS + 0x18)
+	mov x12, #0x18
+#if defined(CONFIG_AXXIA_XLF)
+	movk x12, #0x40, lsl #32 /*40_0000_0000*/
+#elif defined(CONFIG_AXXIA_56XX)
+	movk x12, #0x80, lsl #32 /*80_0000_0000*/
+#else
+#error "CCN doesn't support this architecture"
+#endif
 	add	x11, x11, x12
 2:	ldr	w13, [x11]
 	and 	w13, w13, 0xf
@@ -48,6 +64,8 @@ set_outer_cache_state:
 	add	x10, x10, 1
 	cmp	x10, 0x27
 	ble	1b
+	dsb sy
+	isb
 	b	set_outer_cache_state_succeeded
 
 set_outer_cache_state_failed:

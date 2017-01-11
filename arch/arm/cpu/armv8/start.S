@@ -42,7 +42,32 @@ _bss_start_ofs:
 _bss_end_ofs:
 	.quad	__bss_end - _start
 
+
+/*
+	JTAG workround for XLF A0:
+	writel(0xab, (SYSCON + 0x2000));
+	writel(0x4700000, (SYSCON + 0x2008));
+	writel(0, (SYSCON + 0x2000));
+
+	rewritten to armasm:
+	really I should use mov/movk... laziness...
+*/
+jtag:
+	ldr x0, =(SYSCON + 0x2000)
+	mov w1, #0xab
+	str w1, [x0]
+	ldr x0, =(SYSCON + 0x2008)
+	ldr w1, =0x4700000
+	str w1, [x0]
+	ldr x0, =(SYSCON + 0x2000)
+	ldr w1, =0x0
+	str w1, [x0]
+	ret
+
 reset:
+#ifdef CONFIG_SPL_BUILD
+	/* bl jtag */
+#endif
 	/*
 	 * Could be EL3/EL2/EL1, Initial State:
 	 * Little Endian, MMU Disabled, i/dCache Disabled

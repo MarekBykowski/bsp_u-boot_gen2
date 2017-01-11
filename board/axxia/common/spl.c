@@ -28,8 +28,10 @@
 #include <spi_flash.h>
 #include <watchdog.h>
 #include <asm/io.h>
+#include <asm/armv8/mmu.h> /* For DISABLE_DCACHE */
 
 DECLARE_GLOBAL_DATA_PTR;
+
 
 /*
   ==============================================================================
@@ -859,6 +861,48 @@ jtag_jump_to_monitor(void)
 */
 
 #ifdef SYSCACHE_ONLY_MODE
+static __attribute__((noclone)) void display_mapping(unsigned long address);
+void static
+display_mapping(unsigned long address)
+{
+    unsigned long par_el1;
+
+    printf("----- Translating VA 0x%lx\n", address);
+    __asm__ __volatile__ ("at s1e3r, %0" : : "r" (address));
+    __asm__ __volatile__ ("mrs %0, PAR_EL1\n" : "=r" (par_el1));
+
+    if (0 != (par_el1 & 1)) {
+        printf("Address Translation Failed: 0x%lx\n"
+              "    FSC: 0x%lx\n"
+              "    PTW: 0x%lx\n"
+              "      S: 0x%lx\n",
+              address,
+              (par_el1 & 0x7e) >> 1,
+              (par_el1 & 0x100) >> 8,
+              (par_el1 & 0x200) >> 9);
+    } else {
+        printf("Address Translation Succeeded: 0x%lx\n"
+              "  SH: 0x%lx\n"
+              "  NS: 0x%lx\n"
+              "  PA: 0x%lx\n"
+              "ATTR: 0x%lx\n",
+              address,
+              (par_el1 & 0x180) >> 7,
+              (par_el1 & 0x200) >> 9,
+              par_el1 & 0xfffffffff000,
+              (par_el1 & 0xff00000000000000) >> 56);
+    }
+
+    return;
+}
+
+extern void mmu_configure(u64 *, unsigned int flags);
+extern int set_cluster_coherency(unsigned cluster, unsigned state);
+
+
+extern void ncr_l3tags(ncp_uint32_t address);
+extern void l3_init_dma(ncp_uint32_t addr);
+void (*l3_validate)(ncp_uint32_t address);
 
 static void
 load_image(void)
@@ -866,7 +910,7 @@ load_image(void)
 	struct spi_flash *flash;
 	struct image_header header;
 	unsigned int bytes_written = 0;
-	/* 
+	/*
  	  GPDMA requires 16 byte alignment for a source address.
  	*/
 	unsigned int buffer[64] __attribute__ ((aligned(16)));
@@ -922,6 +966,57 @@ load_image(void)
 		bytes_written += 256;
 		output += 256;
 		offset += 256;
+	}
+	return;
+}
+
+void
+load_image_using_cpu(unsigned int offset)
+{
+	struct spi_flash *flash;
+	struct image_header header;
+	unsigned int size;
+
+	flash = spi_flash_probe(CONFIG_SPL_SPI_BUS, CONFIG_SPL_SPI_CS,
+				CONFIG_SF_DEFAULT_SPEED,
+				CONFIG_SF_DEFAULT_MODE);
+
+	if (!flash) {
+		puts("SPI probe failed.\n");
+		hang();
+	}
+
+	spi_flash_read(flash, offset, sizeof(struct image_header), &header);
+	spl_parse_image_header(&header);
+
+	if (!image_check_magic(&header)) {
+		puts("\tBad Magic!\n");
+		hang();
+	}
+
+	if (!image_check_target_arch(&header)) {
+		puts("\tWrong Architecture!\n");
+		hang();
+	}
+
+	offset += sizeof(struct image_header);
+	size = spl_image.size - sizeof(struct image_header);
+
+	/* A read to address 0 is implemeted as a read to /dev/null
+	   So we need to split up and move first part */
+	spi_flash_read(flash, offset, 4, (void*)0x100);
+	*(uint32_t *)0 = *(uint32_t *)0x100;
+	spi_flash_read(flash, offset+4, size-4, (void*)4);
+
+	if (IH_COMP_GZIP == image_get_comp(&header)) {
+		printf("Unpacking the image with gzip... ");
+
+		memmove((void*)0x400000, (void*)0, 0x200000);
+		if (gunzip((void *)0x0, 0x200000, (void *)0x400000, (unsigned long*)(volatile unsigned long)size)) {
+			printf("ERROR!\n");
+		}
+
+		printf("OK\n");
 	}
 
 	return;
@@ -1193,6 +1288,20 @@ display_l3_lock(void)
 
   Replaces the weakly defined board_init_f in arch/arm/lib/spl.c.
 */
+void
+pt_walk(uint64_t address, uint64_t size)
+{
+        unsigned long i;
+
+        address &= ~(SZ_4K - 1);
+        for (i=0; i<size; i+=SZ_4K) {
+                __asm__ __volatile__ ("at s1e3r, %0" : : "r" (address));
+                address += SZ_4K;
+        }
+        return;
+}
+
+
 
 void
 board_init_f(ulong dummy)
@@ -1244,7 +1353,7 @@ board_init_f(ulong dummy)
 
 	/*
 	 * if this is a power-up/pin reset then initialize
-	 * persistent registers 
+	 * persistent registers
 	 */
 
 	if ((value & 0x00000001))
@@ -1599,11 +1708,63 @@ board_init_f(ulong dummy)
 	writel(value, (PERIPH_SCB + 0x44108));
 
 #ifdef SYSCACHE_ONLY_MODE
-	if (0 != setup_security())
+	{
+		void (*entry)(void *, void *);
+		extern unsigned long *_pgt_start;
+		unsigned long *pgt = (unsigned long*) &_pgt_start;
+
+		if (0 != setup_security())
+			acp_failure(__FILE__, __func__, __LINE__);
+
+		l3_validate = l3_init_dma;
+		(*l3_validate)(0);
+
+		asm volatile("adr x24, l3_validate\n"
+			"ldr x25, [x24]\n");
+
+		/*
+		   Do not enformce HW coherency.
+		   Rely soley on SW CMO.
+		 */
+#if 0
+		if (0 != set_cluster_coherency(1, 1))
+	        acp_failure(__FILE__, __func__, __LINE__);
+#endif
+
+		printf("TTBR0_EL3 %p\n", (void*) pgt);
+
+		mmu_configure((u64*)pgt, DISABLE_DCACHE);
+		display_mapping(0);
+		/* Now cache selected page entries to tlb:
+ 		   - a53 is up to 512 entries
+		   - a57 is 1024
+		   Cache with 4K step granule */
+		pt_walk(0ULL, (uint64_t)16 * SZ_1G);
+		pt_walk(DICKENS, 8);
+		pt_walk(0x8001000000ULL, 8);
+		pt_walk(UART0_ADDRESS, 8);
+		pt_walk(AXXIA_USB0_BASE, 8);
+		pt_walk(LSM, SZ_256K);
+
+		/* Enabling D-caching */
+		set_sctlr(get_sctlr() | CR_C);
+		display_mapping(0);
+
+		/* load primary Uboot from CONFIG_UBOOT_OFFSET in flash */
+		load_image_using_cpu(CONFIG_UBOOT_OFFSET);
+
+		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
+		entry = (void (*)(void *, void *))0x0;
+
+		/* For self-modyfying code in which code gets loaded by cpu
+		   (eg. in contrast to being put to L3 through GP DMA):
+ 	       - Clean&Invalidate L1 data cache by set/way to PoU
+		   - Invalidate instruction L1 cache */
+		__asm_flush_dcache_level(0/*L1-Data*/,0/*clean&inval*/);
+		__asm_invalidate_icache_all();
+		(*entry)(NULL, NULL);
 		acp_failure(__FILE__, __func__, __LINE__);
-	load_image();
-	printf("U-Boot Loaded in System Cache, Jumping to Monitor\n");
-	jump_to_monitor((void *)0x8031001000);
+	}
 #endif	/* SYSCACHE_ONLY_MODE */
 
 	if (0 != (global->flags & PARAMETERS_GLOBAL_RUN_SMEM_BIST)) {

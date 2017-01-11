@@ -260,7 +260,7 @@ static int initr_barrier(void)
 #endif
 	return 0;
 }
-
+unsigned long* final_malloc;
 static int initr_malloc(void)
 {
 	ulong malloc_start;
@@ -273,6 +273,14 @@ static int initr_malloc(void)
 	malloc_start = gd->relocaddr - TOTAL_MALLOC_LEN;
 	mem_malloc_init(map_sysmem(malloc_start, TOTAL_MALLOC_LEN),
 			TOTAL_MALLOC_LEN);
+	
+	{
+		final_malloc = (unsigned long*) malloc(sizeof(int));
+		*final_malloc = 0x12344321U;
+		debug("mb: operational malloc is working: malloced 4 bytes %08x at %p\n",
+				(unsigned)(*final_malloc), (void*) final_malloc);
+	}
+	
 	return 0;
 }
 
@@ -678,6 +686,18 @@ static int run_main_loop(void)
 	return 0;
 }
 
+#if 0
+static
+int switch_to_EL2_non_secure(void)
+{
+	asm volatile(" kot: b kot\n");
+	flush_dcache_all();
+	invalidate_icache_all();
+    writel(0, (MMAP_SCB + 0x42800));
+	armv8_switch_to_el2();
+	return 0;
+}
+#endif
 /*
  * Over time we hope to remove these functions with code fragments and
  * stub funtcions, and instead call the relevant function directly.

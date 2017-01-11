@@ -355,7 +355,7 @@
   ==============================================================================
 */
 
-/*#define SYSCACHE_ONLY_MODE*/
+#define SYSCACHE_ONLY_MODE
 #define CONFIG_ANY_XLF
 
 /*
