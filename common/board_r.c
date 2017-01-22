@@ -671,6 +671,24 @@ int set_up_mmu(void)
 	printf("MMU done for EL2, non-secure state\n");
 	return 0;
 }
+
+extern int axxia_sysmem_bist(unsigned long long address, unsigned long long length, 
+          enum bist_type type);                                           
+int bist(void) 
+{
+	printf("Running bists\n");
+	if (1)
+		axxia_sysmem_bist(0ULL, sysmem_size(), data);
+	else 
+		asm("NOP");
+		/*check_memory_ranges();*/
+
+	if (0)
+		axxia_cmem_bist(0ULL, cmem_size(), data);
+
+	printf("BIST ran\n");
+	return 0;
+}
 #endif
 
 #if defined(CONFIG_PRAM) || defined(CONFIG_LOGBUFFER)
@@ -814,6 +832,7 @@ init_fnc_t init_sequence_r[] = {
 	arch_early_init_r,
 #ifdef SYSCACHE_ONLY_MODE
 	init_mem_axxia,
+	bist,
 	flush_all,
 	switch_to_EL2_non_secure,
 	set_up_mmu,
