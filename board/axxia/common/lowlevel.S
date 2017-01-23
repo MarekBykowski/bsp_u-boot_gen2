@@ -49,6 +49,8 @@ do_sctrl:
 	msr	mair_el3, x0
 	dsb	sy
 	tlbi	alle3
+	dsb	sy
+	isb
 	b 0f
 2: 	msr	ttbr0_el2, x0
 	ldr	x0, =(TCR_EL2_RSVD | TCR_FLAGS | TCR_EL2_IPS_BITS)
@@ -57,6 +59,8 @@ do_sctrl:
 	msr	mair_el2, x0
 	dsb	sy
 	tlbi	alle2
+	dsb	sy
+	isb
 	b 0f
 1:	msr	ttbr0_el1, x0
 	ldr	x0, =(TCR_EL1_RSVD | TCR_FLAGS | TCR_EL1_IPS_BITS)
@@ -65,10 +69,10 @@ do_sctrl:
 	msr	mair_el1, x0
 	dsb	sy
 	tlbi	alle1
-	b 0f
-0:
 	dsb	sy
 	isb
+	b 0f
+0:
 	ret
 
 do_mmu:

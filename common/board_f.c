@@ -759,6 +759,7 @@ __weak int arch_cpu_init_dm(void)
 	return 0;
 }
 
+#if 0
 #ifdef SYSCACHE_ONLY_MODE
 extern int sysmem_init(void);
 static int init_mem_axxia(void)
@@ -786,6 +787,7 @@ static int switch_to_EL2_non_secure(void)
 	return 0;
 }
 #endif /*SYSCACHE_ONLY_MODE*/
+#endif
 
 static init_fnc_t init_sequence_f[] = {
 #ifdef CONFIG_SANDBOX
@@ -982,10 +984,12 @@ static init_fnc_t init_sequence_f[] = {
 #if !defined(CONFIG_ARM) && !defined(CONFIG_SANDBOX)
 	jump_to_copy,
 #endif
+#if 0
 #ifdef SYSCACHE_ONLY_MODE
 	init_mem_axxia,
 	flush_all,
 	switch_to_EL2_non_secure,
+#endif
 #endif
 	NULL,
 };
