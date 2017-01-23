@@ -260,7 +260,7 @@ static int initr_barrier(void)
 #endif
 	return 0;
 }
-
+unsigned long* marek;
 static int initr_malloc(void)
 {
 	ulong malloc_start;
@@ -273,6 +273,12 @@ static int initr_malloc(void)
 	malloc_start = gd->relocaddr - TOTAL_MALLOC_LEN;
 	mem_malloc_init(map_sysmem(malloc_start, TOTAL_MALLOC_LEN),
 			TOTAL_MALLOC_LEN);
+	
+	{
+		marek = (unsigned long*) malloc(sizeof(int));
+		printf("*addr %u at addr %lu\n", (unsigned)(*marek),(unsigned long) marek);
+	}
+	
 	return 0;
 }
 
@@ -625,72 +631,6 @@ static int initr_ide(void)
 }
 #endif
 
-#ifdef SYSCACHE_ONLY_MODE
-#include "../board/axxia/common/ncp_sysmem_ext.h"
-extern ncp_st_t ncp_elm_init(ncp_dev_hdl_t, ncp_sm_parms_t *);
-extern int sysmem_init(void);
-int init_mem_axxia(void)
-{
-	int rc = 0;
-
-	ncr_tracer_enable();
-
-	printf("Sysmem init\n");
-	if (0 != sysmem_init())
-		acp_failure(__FILE__, __FUNCTION__, __LINE__);
-	gd->bd->bi_dram[0].start = 0;
-	gd->bd->bi_dram[0].size = ((phys_size_t)1 << 30); 
-
-	ncr_tracer_disable();
-
-	return rc;
-}
-
-int flush_all(void)
-{
-	printf("Flush dcache all\n");
-	flush_dcache_all();
-	invalidate_icache_all();
-	return 0;
-}
-
-int switch_to_EL2_non_secure(void)
-{
-    /*writel(0, (MMAP_SCB + 0x42800));*/
-	printf("mb: %s() MMAP_SCB + 0x42800 0x%u\n", __func__, readl(MMAP_SCB + 0x42800));
-	armv8_switch_to_el2();
-	printf("Switched to EL2, non-secure state\n");
-	return 0;
-}
-
-extern void mmu_setup(void);
-int set_up_mmu(void)
-{
-	/*__asm_do_mmu(); 	mmu_setup();*/
-	enable_caches();
-	printf("MMU done for EL2, non-secure state\n");
-	return 0;
-}
-
-extern int axxia_sysmem_bist(unsigned long long address, unsigned long long length, 
-          enum bist_type type);                                           
-int bist(void) 
-{
-	printf("Running bists\n");
-	if (1)
-		axxia_sysmem_bist(0ULL, sysmem_size(), data);
-	else 
-		asm("NOP");
-		/*check_memory_ranges();*/
-
-	if (0)
-		axxia_cmem_bist(0ULL, cmem_size(), data);
-
-	printf("BIST ran\n");
-	return 0;
-}
-#endif
-
 #if defined(CONFIG_PRAM) || defined(CONFIG_LOGBUFFER)
 /*
  * Export available size of memory for Linux, taking into account the
@@ -830,13 +770,6 @@ init_fnc_t init_sequence_r[] = {
 #endif
 #ifdef CONFIG_ARCH_EARLY_INIT_R
 	arch_early_init_r,
-#ifdef SYSCACHE_ONLY_MODE
-	init_mem_axxia,
-	bist,
-	flush_all,
-	switch_to_EL2_non_secure,
-	set_up_mmu,
-#endif
 #endif
 	power_init_board,
 #ifndef CONFIG_SYS_NO_FLASH

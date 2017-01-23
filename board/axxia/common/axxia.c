@@ -180,11 +180,7 @@ board_get_usable_ram_top(ulong total_size)
 		osmemory_value = simple_strtoul(osmemory_string, NULL, 0);
 		osmemory_value *= (1024 * 1024);
 	} else {
-#ifdef SYSCACHE_ONLY_MODE
-		osmemory_value = (phys_size_t)SYSCACHE_SIZE;
-#else
 		osmemory_value = OSMEMORY_DEFAULT;
-#endif
 	}
 
 	return osmemory_value;
@@ -200,6 +196,7 @@ board_early_init_f(void)
 {
 	unsigned int el;
 
+	/*mb:d*/
 	gd->ram_size = CONFIG_UBOOT_MAX_MEM;
 
 	serial_init();
@@ -241,6 +238,7 @@ arch_early_init_r
 Called just after the heap has been initialized.
 */
 
+extern int do_read;
 int
 arch_early_init_r(void)
 {
@@ -251,6 +249,7 @@ arch_early_init_r(void)
 	printf("Sysmem Size: %llu MB\n",
 	       (sysmem_size() / (1024ULL * 1024ULL)));
 	printf("Relocation Address: 0x%lx\n", gd->relocaddr);
+	do_read = 0;
 
 	return 0;
 }
@@ -277,6 +276,7 @@ ft_update_pei(void *blob)
 	/* Add the pei_control node and set control based on the parameters. */
 
 	node = fdt_path_offset(blob, "/soc");
+	printf("name %s: offset: %x\n", fdt_get_name(blob, node, 0), node); 
 
 	if (0 <= node) {
 		rc = fdt_add_subnode(blob, node, "pei_control");
@@ -287,6 +287,7 @@ ft_update_pei(void *blob)
 		return -1;
 
 	node = fdt_path_offset(blob, "/soc/pei_control");
+	printf("name %s: offset: %x\n", fdt_get_name(blob, node, 0), node); 
 
 	if (0 <= node) {
 		/* version */
