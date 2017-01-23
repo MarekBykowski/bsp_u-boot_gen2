@@ -759,6 +759,34 @@ __weak int arch_cpu_init_dm(void)
 	return 0;
 }
 
+#ifdef SYSCACHE_ONLY_MODE
+extern int sysmem_init(void);
+static int init_mem_axxia(void)
+{
+	int rc = 0;
+
+	if (0 != sysmem_init())
+		acp_failure(__FILE__, __FUNCTION__, __LINE__);
+
+	return rc;
+}
+
+static int flush_all(void)
+{
+	flush_dcache_all();
+	invalidate_icache_all();
+	asm volatile("kot: b kot\n");
+	return 0;
+}
+
+static int switch_to_EL2_non_secure(void)
+{
+    /*writel(0, (MMAP_SCB + 0x42800));*/
+	armv8_switch_to_el2();
+	return 0;
+}
+#endif /*SYSCACHE_ONLY_MODE*/
+
 static init_fnc_t init_sequence_f[] = {
 #ifdef CONFIG_SANDBOX
 	setup_ram_buf,
@@ -953,6 +981,11 @@ static init_fnc_t init_sequence_f[] = {
 #endif
 #if !defined(CONFIG_ARM) && !defined(CONFIG_SANDBOX)
 	jump_to_copy,
+#endif
+#ifdef SYSCACHE_ONLY_MODE
+	init_mem_axxia,
+	flush_all,
+	switch_to_EL2_non_secure,
 #endif
 	NULL,
 };

@@ -625,6 +625,7 @@ static int initr_ide(void)
 }
 #endif
 
+#if 0
 #ifdef SYSCACHE_ONLY_MODE
 #include "../board/axxia/common/ncp_sysmem_ext.h"
 extern ncp_st_t ncp_elm_init(ncp_dev_hdl_t, ncp_sm_parms_t *);
@@ -689,6 +690,7 @@ int bist(void)
 	printf("BIST ran\n");
 	return 0;
 }
+#endif
 #endif
 
 #if defined(CONFIG_PRAM) || defined(CONFIG_LOGBUFFER)
@@ -830,11 +832,13 @@ init_fnc_t init_sequence_r[] = {
 #endif
 #ifdef CONFIG_ARCH_EARLY_INIT_R
 	arch_early_init_r,
+#if 0
 #ifdef SYSCACHE_ONLY_MODE
 	init_mem_axxia,
 	flush_all,
 	switch_to_EL2_non_secure,
 	set_up_mmu,
+#endif
 #endif
 #endif
 	power_init_board,

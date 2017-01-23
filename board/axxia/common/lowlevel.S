@@ -71,7 +71,7 @@ do_sctrl:
 	isb
 	ret
 
-ENTRY(__asm_do_mmu)
+do_mmu:
 	/*
 	 * x1 - page table entry
 	 * x2 - iterate until x2
@@ -99,7 +99,6 @@ ENTRY(__asm_do_mmu)
 
 	mov	x30, x29	/* Restore LR */
 	ret
-ENDPROC(__asm_do_mmu)
 
 #endif /* SYSCACHE_ONLY_MODE && !CONFIG_SPL_BUILD */
 
@@ -113,7 +112,7 @@ lowlevel_init:
 
 #if defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_SPL_BUILD)
 	mov x28, x30 /* Save LR */
-	bl __asm_do_mmu
+	bl do_mmu
 #endif
 
 	/*
