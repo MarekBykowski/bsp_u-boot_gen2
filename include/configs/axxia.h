@@ -4201,11 +4201,8 @@ unsigned int set_watchdog_timeout(unsigned int);
   of system memory.
 */
 
-#ifdef SYSCACHE_ONLY_MODE
-#define CONFIG_UBOOT_MAX_MEM ((phys_size_t) SYSCACHE_SIZE)
-#else
+/*mb:d*/
 #define CONFIG_UBOOT_MAX_MEM ((phys_size_t)1 << 30)
-#endif
 
 /*
   Define the following to add a hook to the SPL that allows diagnostic

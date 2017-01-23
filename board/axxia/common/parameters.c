@@ -44,7 +44,7 @@
 
 static void *parameters __attribute__ ((section("data")));
 static int copy_in_use __attribute__ ((section("data")));
-static int do_read = 1;
+int do_read = 1;
 
 #if defined(CONFIG_AXXIA_PPC)
 /*
@@ -167,7 +167,7 @@ read_parameters(void)
 	if (0 == do_read)
 		return 0;
 
-#ifdef CONFIG_SPL_BUILD
+#ifdef CONFIG_SPL_BUILD 
 	if (1 == do_read)
 		parameters = (void *)PARAMETERS_ADDRESS;
 #else
@@ -361,8 +361,6 @@ read_parameters(void)
 #ifdef CONFIG_SPL_BUILD
 parameters_read:
 #endif
-
-	do_read = 0;
 
 #ifdef CONFIG_AXXIA_ARM
 	buffer = parameters;

@@ -343,7 +343,7 @@ static int setup_dest_addr(void)
 	gd->ram_top += get_effective_memsize();
 	gd->ram_top = board_get_usable_ram_top(gd->mon_len);
 	gd->relocaddr = gd->ram_top;
-	debug("Ram top: %08lX\n", (ulong)gd->ram_top);
+	printf("Ram top: %08lX\n", (ulong)gd->ram_top);
 #if defined(CONFIG_MP) && (defined(CONFIG_MPC86xx) || defined(CONFIG_E500))
 	/*
 	 * We need to make sure the location we intend to put secondary core
@@ -759,7 +759,52 @@ __weak int arch_cpu_init_dm(void)
 	return 0;
 }
 
+#ifdef SYSCACHE_ONLY_MODE
+#include "../board/axxia/common/ncp_sysmem_ext.h"
+extern int sysmem_init(void);
+int do_heap(void) 
+{
+	/* sysmem_size below needs malloc so servicing it here */
+	mem_malloc_init(map_sysmem(0x300000/*malloc_start*/, TOTAL_MALLOC_LEN), TOTAL_MALLOC_LEN);
+	return 0;
+}
+
+int init_mem_axxia(void)
+{
+	int rc = 0;
+
+	/* get parameters.bin off flash. Malloc must be before */
+	(void)sysmem_size();
+	
+	if (0 != sysmem_init())
+	gd->bd->bi_dram[0].start = 0;
+	gd->bd->bi_dram[0].size = ((phys_size_t)1 << 30); 
+
+	return rc;
+}
+
+int flush_all(void)
+{
+	flush_dcache_all();
+	invalidate_icache_all();
+	return 0;
+}
+
+int switch_to_EL2_non_secure(void)
+{
+    writel(0, (MMAP_SCB + 0x42800));
+	armv8_switch_to_el2();
+	return 0;
+}
+#endif
+
 static init_fnc_t init_sequence_f[] = {
+#ifdef SYSCACHE_ONLY_MODE
+	do_heap, 
+	init_mem_axxia,
+	flush_all,
+	switch_to_EL2_non_secure,
+#endif
 #ifdef CONFIG_SANDBOX
 	setup_ram_buf,
 #endif
