@@ -832,7 +832,6 @@ init_fnc_t init_sequence_r[] = {
 	arch_early_init_r,
 #ifdef SYSCACHE_ONLY_MODE
 	init_mem_axxia,
-	bist,
 	flush_all,
 	switch_to_EL2_non_secure,
 	set_up_mmu,
