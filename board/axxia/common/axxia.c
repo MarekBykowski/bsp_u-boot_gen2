@@ -196,7 +196,6 @@ board_early_init_f(void)
 {
 	unsigned int el;
 
-	/*mb:d*/
 	gd->ram_size = CONFIG_UBOOT_MAX_MEM;
 
 	serial_init();

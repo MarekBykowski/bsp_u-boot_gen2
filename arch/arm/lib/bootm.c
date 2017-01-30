@@ -269,7 +269,7 @@ static void boot_jump_linux(bootm_headers_t *images, int flag)
 	kernel_entry = (void (*)(void *fdt_addr, void *res0, void *res1,
 				void *res2))images->ep;
 
-	printf("## Transferring control to Linux (at address %lx)...\n",
+	debug("## Transferring control to Linux (at address %lx)...\n",
 		(ulong) kernel_entry);
 	bootstage_mark(BOOTSTAGE_ID_RUN_OS);
 
