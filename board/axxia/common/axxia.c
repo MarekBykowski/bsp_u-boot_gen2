@@ -69,8 +69,14 @@ board_init(void)
 		setup_page_tables(page_table_address);
 	}
 #endif
-#endif
+	flush_dcache_all();
+	invalidate_icache_all();
+    writel(0, (MMAP_SCB + 0x42800));
+	armv8_switch_to_el2();
 
+	enable_caches();
+
+#endif
 	return 0;
 }
 

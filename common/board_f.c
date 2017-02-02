@@ -793,6 +793,9 @@ int flush_all(void)
 int switch_to_EL2_non_secure(void)
 {
     writel(0, (MMAP_SCB + 0x42800));
+	//memcpy((void *)0x7ffc1000, (void *)0x8031001000, 0x10000);
+	//asm volatile ("ldr x10, =0x7ffc1000\nret x10");
+	//asm volatile ("mov x0, x30\nldr x10, =0x8031007834\nret x10");
 	armv8_switch_to_el2();
 	return 0;
 }

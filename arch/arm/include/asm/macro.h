@@ -137,7 +137,8 @@ lr	.req	x30
 
 .macro armv8_switch_to_el2_m, xreg1
 	/* 64bit EL2 | HCE | SMD | RES1 (Bits[5:4]) | Non-secure EL0/EL1 */
-	mov	\xreg1, #0x5b1
+	mov	\xreg1, #0x5b1 /*original*/
+	//mov	\xreg1, #0x531
 	msr	scr_el3, \xreg1
 	msr	cptr_el3, xzr		/* Disable coprocessor traps to EL3 */
 	mov	\xreg1, #0x33ff
@@ -164,6 +165,12 @@ lr	.req	x30
 	mov	\xreg1, #0x3c9
 	msr	spsr_el3, \xreg1	/* EL2_SP2 | D | A | I | F */
 	msr	elr_el3, lr
+	// restore Secure Monitor
+	/*ldr x0, =0x803101B190
+	mov sp, x0
+	msr spsel, #1
+	ldr x0, =0x8031009800
+	msr	vbar_el3, x0	*/
 	eret
 .endm
 

@@ -684,6 +684,18 @@ static int run_main_loop(void)
 	return 0;
 }
 
+#if 0
+static
+int switch_to_EL2_non_secure(void)
+{
+	asm volatile(" kot: b kot\n");
+	flush_dcache_all();
+	invalidate_icache_all();
+    writel(0, (MMAP_SCB + 0x42800));
+	armv8_switch_to_el2();
+	return 0;
+}
+#endif
 /*
  * Over time we hope to remove these functions with code fragments and
  * stub funtcions, and instead call the relevant function directly.
