@@ -34,6 +34,7 @@
 #include <common.h>
 #include <malloc.h>
 #include <asm/io.h>
+#include <net.h>
 
 /*#define TRACE_ALLOCATION*/
 
@@ -211,7 +212,7 @@ typedef enum {
 typedef struct {
 	ncr_command_code_t command;
 	unsigned region;
-	unsigned offset;
+	unsigned long offset;
 	unsigned value;
 	unsigned mask;
 } ncr_command_t;
@@ -241,6 +242,14 @@ ncp_task_uboot_unconfig(void);
 #include "EIOA55xx/eioa.c"
 #include "EIOA55xx/hss_gmac.c"
 #include "EIOA55xx/hss_xgmac.c"
+#elif defined(CONFIG_AXXIA_56XX)
+#include "EIOA56xx/mme.c"
+#include "EIOA56xx/pbm.c"
+#include "EIOA56xx/vp.c"
+#include "EIOA56xx/nca.c"
+#include "EIOA56xx/eioa.c"
+#include "EIOA56xx/hss_gmac.c"
+#include "EIOA56xx/hss_xgmac.c"
 #else
 #error "EIOA is not defined for this architecture!"
 #endif
@@ -800,11 +809,11 @@ static int
 ncp_dev_do_read(ncr_command_t *command, unsigned *value)
 {
 	if (NCP_REGION_ID(0x200, 1) == command->region) {
-		*value = *((volatile unsigned *)command->offset);
+		*value = *((volatile unsigned long *)command->offset);
 
 		return 0;
 	} else if (0 != ncr_read32(command->region, command->offset, value)) {
-		printf("READ ERROR: n=0x%x t=0x%x o=0x%x\n",
+		printf("READ ERROR: n=0x%x t=0x%x o=0x%lx\n",
 			    NCP_NODE_ID(command->region),
 			    NCP_TARGET_ID(command->region), command->offset);
 		return -1;
@@ -831,13 +840,13 @@ ncp_dev_do_write(ncr_command_t *command)
 		    command->region, command->offset, command->value);
 #endif
 	if (NCP_REGION_ID(0x200, 1) == command->region) {
-		*((volatile unsigned *)command->offset) = command->value;
+		*((volatile unsigned long *)command->offset) = command->value;
 #ifdef USE_CACHE_SYNC
 		flush_cache(command->offset, 4);
 #endif
 #if 0 /* TODO: find the equivalent for 55xx */
 	} else if (NCP_REGION_ID(0x148, 0) == command->region) {
-		out_le32((volatile unsigned *)(APB2RC + command->offset),
+		out_le32((volatile unsigned long *)(APB2RC + command->offset),
 			 command->value);
 		flush_cache((APB2RC + command->offset), 4);
 #endif
@@ -851,7 +860,7 @@ ncp_dev_do_write(ncr_command_t *command)
 #endif
 		if (0 != ncr_write32(command->region, command->offset,
 				     command->value)) {
-			printf("WRITE ERROR: n=0x%x t=0x%x o=0x%x "
+			printf("WRITE ERROR: n=0x%x t=0x%x o=0x%lx "
 				    "v=0x%x\n",
 				    NCP_NODE_ID(command->region),
 				    NCP_TARGET_ID(command->region),
@@ -883,7 +892,7 @@ ncp_dev_do_modify(ncr_command_t *command)
 		return 0;
 	} else if (0 != ncr_modify32(command->region, command->offset,
 			      command->mask, command->value)) {
-		printf("MODIFY ERROR: n=0x%x t=0x%x o=0x%x m=0x%x "
+		printf("MODIFY ERROR: n=0x%x t=0x%x o=0x%lx m=0x%x "
 			    "v=0x%x\n",
 			    NCP_NODE_ID(command->region),
 			    NCP_TARGET_ID(command->region), command->offset,
@@ -970,12 +979,10 @@ ncp_dev_configure(ncr_command_t *commands) {
             }
             break;
 		default:
-			printf("Unknown Command: 0x%x, startCmd=0x%x, curCmd=0x%x, entry#=%d\n",
+			printf("Unknown Command: 0x%x, startCmd=%p, curCmd=%p\n",
 			       (unsigned int)commands->command,
-			       (unsigned int)startCmd,
-			       (unsigned int)commands,
-			       ((unsigned int)commands -
-				(unsigned int)startCmd)/sizeof(ncr_command_t));
+			       startCmd,
+			       commands);
 			rc = -1;
 			break;
 		}
@@ -1009,7 +1016,7 @@ task_send(ncp_task_ncaV2_send_meta_t *taskMetaData)
 
         if(dumptx) {
 	  axxia_dump_packet("LSI_EIOA TX",
-			    (void *)((unsigned)taskMetaData->pduSegAddr0), 
+			    (void *)(taskMetaData->pduSegAddr0), 
 			    taskMetaData->pduSegSize0);
         }
         
@@ -1041,6 +1048,9 @@ line_setup(int index)
 	int retries = 100000;
 #endif
 #if defined(CONFIG_AXXIA_55XX) || defined(CONFIG_AXXIA_55XX_EMU)
+	unsigned short ad_value;
+	unsigned short ge_ad_value;
+#elif defined(CONFIG_AXXIA_56XX)
 	unsigned short ad_value;
 	unsigned short ge_ad_value;
 #endif
@@ -1866,7 +1876,7 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
         taskMetaData.priority       = 0;
         taskMetaData.pduSegSize0    = length;
         taskMetaData.ptrCnt         = 1;
-        taskMetaData.pduSegAddr0    = (ncp_uint64_t)((ncp_uint32_t)taskAddr);
+        taskMetaData.pduSegAddr0    = (ncp_uint64_t)((unsigned long)taskAddr);
         taskMetaData.params[0]   = port_by_index[i]; /* output port */
 /* HACK: Temporary invalidate until cache coherency is figured in uboot */
 #ifdef USE_CACHE_SYNC
@@ -1912,7 +1922,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
                 &task, NULL, FALSE));
 
     if(dumprx) {
-      axxia_dump_packet("LSI_EIOA RX", (void *)((unsigned)task->pduSegAddr0), 
+      axxia_dump_packet("LSI_EIOA RX", (void *)(task->pduSegAddr0), 
                 task->pduSegSize0);
     }
 
@@ -1942,13 +1952,11 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 
     	bytes_received = task->pduSegSize0;
 
+		unsigned char *pkt = (unsigned char *)task->pduSegAddr0;
         /* copy the received packet to the up layer buffer */
-    	memcpy((void *)NetRxPackets[0], (void *)((unsigned)task->pduSegAddr0),
-	       bytes_received);
-
-        /* give the packet to the up layer */
     	if (0 == loopback && 0 == rxtest)
-    		NetReceive(NetRxPackets[0], bytes_received);
+			net_process_received_packet(pkt, bytes_received);
+			//memcpy((void *)NetRxPackets[0], (void *)((unsigned)task->pduSegAddr0), bytes_received);
     }
 
     /* free the buffer */
@@ -1974,12 +1982,11 @@ void
 lsi_eioa_receive_test(struct eth_device *dev)
 {
 	int packets_received = 0;
-	bd_t *bd = gd->bd;
 
     rxtest = 1;
 	eth_halt();
 
-	if (0 != eth_init(bd)) {
+	if (0 != eth_init()) {
         rxtest = 0;
 		eth_halt();
 		return;
@@ -2011,14 +2018,13 @@ lsi_eioa_receive_test(struct eth_device *dev)
 void
 lsi_eioa_loopback_test(struct eth_device *dev)
 {
-	bd_t *bd = gd->bd;
 	int bytes_received;
 	int packets_looped = 0;
 
 	loopback = 1;
 	eth_halt();
 
-	if (0 != eth_init(bd)) {
+	if (0 != eth_init()) {
         loopback = 0;
 		eth_halt();
 		return;
@@ -2026,8 +2032,8 @@ lsi_eioa_loopback_test(struct eth_device *dev)
 
 	for (;;) {
 		if (0 != (bytes_received = eth_rx())) {
-			if (bytes_received !=
-			    eth_send((void *)NetRxPackets[0], bytes_received)) {
+			unsigned char *pkt = NULL;
+			if (bytes_received != eth_send((void *)pkt, bytes_received)) {
 				printf("lsi_eioa_eth_send() failed.\n");
 			} else {
 				++packets_looped;

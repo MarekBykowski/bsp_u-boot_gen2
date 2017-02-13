@@ -128,7 +128,6 @@ board_eth_init(bd_t *bd)
 		puts("Failed to add NEMAC device.\n");
 	}
 #endif
-
 #if defined(CONFIG_AXXIA_FEMAC)
 
 	debug("Adding LSI_FEMAC device\n");
@@ -236,7 +235,7 @@ void lsi_net_receive_test(struct eth_device *dev)
 #endif
 		} else if(strcmp(act, "LSI_EIOA") == 0) {
 #ifdef CONFIG_AXXIA_EIOA
-			lsi_eioa_receive_test(dev);
+			//lsi_eioa_receive_test(dev);
 #endif
 		}
 	}
