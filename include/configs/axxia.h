@@ -3942,10 +3942,10 @@ int write_parameters(void);
 #define CONFIG_PHY_VITESSE
 #endif
 
-#define MDIO_CONTROL_RD_DATA (0x0)
-#define MDIO_STATUS_RD_DATA  (0x4)
-#define MDIO_CLK_OFFSET      (0x8)
-#define MDIO_CLK_PERIOD      (0xc)
+#define MDIO_CONTROL_RD_DATA (IO+0x200000)
+#define MDIO_STATUS_RD_DATA  (IO+0x200004)
+#define MDIO_CLK_OFFSET      (IO+0x200008)
+#define MDIO_CLK_PERIOD      (IO+0x20000c)
 
 #ifndef MDIO_CLK_OFFSET_DEFAULT
 #ifdef CONFIG_AXXIA_EMU

@@ -30,6 +30,8 @@
 #include <asm/io.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+#define DEBUG
+#include <config.h>
 
 /*
   ==============================================================================
@@ -599,6 +601,9 @@ u32 spl_boot_device(void)
 
 #ifndef SYSCACHE_ONLY_MODE
 
+static int increment=0;
+static void *membase __attribute__ ((section(".data")));
+
 static int
 verify_image(struct spi_flash *flash,
 	     unsigned long flash_offset,
@@ -608,7 +613,7 @@ verify_image(struct spi_flash *flash,
 	char *sbb_magic;
 	unsigned char sbb_encrypted;
 	unsigned int sbb_size;
-	void *membase = (void *)0x1000;
+	membase = (void *)0x1000;
 
 	/*
 	  The U-Boot SPI flash interface uses NULL in the in or out
@@ -622,27 +627,34 @@ verify_image(struct spi_flash *flash,
 	  Must begin with a U-Boot mkimage header of some sort.
 	*/
 
+	printf("mb: %s() %d\n", __func__, increment++);
 	WATCHDOG_RESET();
 	spi_flash_read(flash, flash_offset,
 		       sizeof(struct image_header), &header);
+	printf("mb: %s() %d\n", __func__, increment++);
 	spl_parse_image_header(&header);
+	printf("mb: %s() %d spl_image.size %d\n", __func__, increment++, spl_image.size);
 	spi_flash_read(flash, flash_offset,
 		       spl_image.size + sizeof(struct image_header),
 		       membase);
 	spl_image.load_addr += (unsigned long)membase;
+	printf("mb: %s() %d\n", __func__, increment++);
 	WATCHDOG_RESET();
 
+	printf("mb: %s() %d\n", __func__, increment++);
 	if (!image_check_magic(&header)) {
 		puts("\tBad Magic!\n");
 
 		return -1;
 	}
 
+	printf("mb: %s() %d\n", __func__, increment++);
 	if (!image_check_target_arch(&header)) {
 		puts("\tWrong Architecture!\n");
 
 		return -1;
 	}
+	printf("mb: %s() %d\n", __func__, increment++);
 
 	if (ntohl(header.ih_dcrc) !=
 	    crc32(0, (unsigned char *)
@@ -653,6 +665,7 @@ verify_image(struct spi_flash *flash,
 		return -1;
 	}
 
+	printf("mb: %s() %d\n", __func__, increment++);
 	/*
 	  Now that the image has been verified from the U-Boot
 	  perspective, remove the mkimage header.
@@ -664,6 +677,7 @@ verify_image(struct spi_flash *flash,
 	  If secure boot is enabled, verify.
 	*/
 
+	printf("mb: %s() %d\n", __func__, increment++);
 	WATCHDOG_RESET();
 
 	if (0 != secure_boot) {
@@ -688,6 +702,7 @@ verify_image(struct spi_flash *flash,
 	  case).
 	*/
 
+	printf("mb: %s() %d\n", __func__, increment++);
 	WATCHDOG_RESET();
 	sbb_magic = membase;
 	sbb_encrypted = *((unsigned char *)(membase + 9));
@@ -707,10 +722,12 @@ verify_image(struct spi_flash *flash,
 	  Remove membase.
 	*/
 
+	printf("mb: %s() %d\n", __func__, increment++);
 	WATCHDOG_RESET();
 	memmove((void *)0, (void *)membase,
 		(spl_image.size - sizeof(struct image_header)));
 
+	printf("mb: %s() %d\n", __func__, increment++);
 	return 0;
 }
 

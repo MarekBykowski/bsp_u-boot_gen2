@@ -52,7 +52,7 @@
 
 
 /* HACK: Define it until cache coherency is figured out */
-/* #define USE_CACHE_SYNC */
+/*#define USE_CACHE_SYNC*/
 
 /*
   ==============================================================================
@@ -107,8 +107,8 @@
 #define GICR_BASE (0x8010200000)
 
 #define CONFIG_AXXIA_MDIO
-#define CONFIG_AXXIA_NEMAC
-/*#define CONFIG_AXXIA_EIOA*/
+/*#define CONFIG_AXXIA_NEMAC*/
+#define CONFIG_AXXIA_EIOA
 
 #define CONFIG_EXTRA_ENV_SETTINGS		\
 	"loadaddr=0x80100000\0"			\
@@ -174,7 +174,7 @@
 
 
 /* HACK: Define it until cache coherency is figured out */
-/* #define USE_CACHE_SYNC */
+/*#define USE_CACHE_SYNC*/
 
 /*
   ==============================================================================
@@ -230,8 +230,16 @@
   ------------------------------------------------------------------------------
 */
 
+#define CONFIG_CMD_CACHE
 #define CONFIG_AXXIA_56XX
 #define ARM64
+#define NCP_64
+
+#ifdef ARM64
+#define POINTER(address) ((unsigned int *)((unsigned long)(address)))
+#else
+#define POINTER(address) ((unsigned long *)((unsigned long)(address)))
+#endif
 
 #define CONFIG_AXXIA_AXM_I2C
 
@@ -259,6 +267,9 @@
 
 /********** FEMAC PHY ADDRESS *************/
 #define CONFIG_AXXIA_PHY_ADDRESS 0x7
+
+/* HACK: Define it until cache coherency is figured out */
+/*#define USE_CACHE_SYNC*/
 
 #define CONFIG_AXXIA_MDIO
 #define CONFIG_AXXIA_NEMAC
@@ -299,7 +310,7 @@
 /*#define CONFIG_SPL_PCI_SUPPORT*/
 
 /*#define CONFIG_AXXIA_FEMAC*/
-/*#define CONFIG_AXXIA_EIOA*/
+#define CONFIG_AXXIA_EIOA
 /*#define CONFIG_SPL*/
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
@@ -410,7 +421,7 @@ int axxia_sysmem_check_ecc(void);
 #define CONFIG_ENV_RANGE_REDUND           CONFIG_ENV_RANGE
 
 #define CONFIG_UBOOT_OFFSET              (1 * 1024 * 1024)
-#define CONFIG_UBOOT_SIZE                (2 * 1024 * 1024)
+#define CONFIG_UBOOT_SIZE                (4 * 1024 * 1024)
 #define CONFIG_UBOOT_OFFSET_REDUND       (3 * 1024 * 1024)
 #define CONFIG_UBOOT_SIZE_REDUND         CONFIG_UBOOT_SIZE
 
@@ -1115,10 +1126,10 @@ int serial_early_init(void);
 #define CONFIG_SYS_SDRAM_BASE		0x00000000
 
 /*#define CONFIG_SYS_INIT_SP_ADDR         (NON_SECURE_SRAM_END - GENERATED_GBL_DATA_SIZE) */
-#define CONFIG_SYS_INIT_SP_ADDR         0x280000
+#define CONFIG_SYS_INIT_SP_ADDR         0x400000
 #define CONFIG_SYS_MALLOC_BASE		CONFIG_SYS_INIT_SP_ADDR
 #define CONFIG_SYS_MALLOC_SIZE \
-	(0x400000 - CONFIG_SYS_MALLOC_BASE - CONFIG_ENV_SIZE)
+	(0x500000 - CONFIG_SYS_MALLOC_BASE - CONFIG_ENV_SIZE)
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_SYS_MALLOC_SIZE)
 
 #define CONFIG_SYS_EMIF_PRECALCULATED_TIMING_REGS

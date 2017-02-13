@@ -121,14 +121,13 @@ axxia_dump_packet_tx(const char *header, void *packet, int length)
 int
 board_eth_init(bd_t *bd)
 {
-	axxia_mdio_init();
 
 #if defined(CONFIG_AXXIA_NEMAC)
+	axxia_mdio_init();
 	if (nemac_initialize(bd) != 0) {
 		puts("Failed to add NEMAC device.\n");
 	}
 #endif
-
 #if defined(CONFIG_AXXIA_FEMAC)
 
 	debug("Adding LSI_FEMAC device\n");

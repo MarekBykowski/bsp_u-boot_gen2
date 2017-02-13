@@ -5,6 +5,8 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
+#obj-y += cmd_lsi_net.o
+
 # core
 ifndef CONFIG_SPL_BUILD
 obj-y += main.o
@@ -293,5 +295,6 @@ obj-y += command.o
 obj-y += s_record.o
 obj-y += xyzModem.o
 obj-y += cmd_disk.o
+obj-y += cmd_lsi_net.o
 
 CFLAGS_env_embedded.o := -Wa,--no-warn -DENV_CRC=$(shell tools/envcrc 2>/dev/null)
