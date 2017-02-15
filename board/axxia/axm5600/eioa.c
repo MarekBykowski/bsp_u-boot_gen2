@@ -27,8 +27,8 @@
     rte/api/nca/include/ncp_dev_config_regs.h.
 */
 
-/* #define DEBUG */
-/* #define NCR_DEBUG */
+#define DEBUG
+#define NCR_DEBUG
 /*#define LSI_LOGIO*/
 #include <config.h>
 #include <common.h>
@@ -47,7 +47,7 @@
 #include "ncp_task_basetypes.h"
 #include "ncp_task.h"
 #include "ncp_nca_regs.h"
-#include "ncp_nca_reg_defines.h"
+#include "../common/ncp_nca_reg_defines.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -104,13 +104,13 @@ static int index_by_port[] =
 
 static int index_by_port_gmac[] = 
     {  0,  1,  2,  3,  4, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa0 */
-       5,  6,  7,  8,  9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa1 */
-      10, 11, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa2 */
-      12, 13, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa3 */
-      14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa4 */
-      16, 17, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa5 */
-      18, 19, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa6 */
-      20, 21, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }; /* eioa7 */
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa1 */
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa2 */
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa3 */
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa4 */
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa5 */
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa6 */
+      -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 }; /* eioa7 */
 
 static int index_by_port_xgmac[] = 
     {  0,  1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,   /* eioa0 */
@@ -249,13 +249,13 @@ ncp_task_uboot_unconfig(void);
 #include "EIOA56xx/nca.c"
 #include "EIOA56xx/eioa.c"
 #include "EIOA56xx/hss_gmac.c"
-#include "EIOA56xx/hss_xgmac.c"
+//#include "EIOA56xx/hss_xgmac.c"
 #else
 #error "EIOA is not defined for this architecture!"
 #endif
 
 ncp_uint32_t
-ncp_caal_regions_acp55xx[] =
+ncp_caal_regions_acp56xx[] =
 {
     NCP_REGION_ID(0x0b, 0x05),      /* SPPV2   */
     NCP_REGION_ID(0x0c, 0x05),      /* SED     */
@@ -278,7 +278,7 @@ ncp_caal_regions_acp55xx[] =
 };
 
 ncp_uint32_t
-ncp_cnal_regions_acp55xx[] =
+ncp_cnal_regions_acp56xx[] =
 {
     NCP_REGION_ID(0x28, 0x05),      /* EIOASM0 */
     NCP_REGION_ID(0x29, 0x05),      /* EIOASM1 */
@@ -299,8 +299,8 @@ static ncp_st_t
 ncp_dev_quiesce(void)
 {
     ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
-    ncp_uint32_t    *pCnalRegions = ncp_cnal_regions_acp55xx;
-    ncp_uint32_t    *pCaalRegions = ncp_caal_regions_acp55xx;
+    ncp_uint32_t    *pCnalRegions = ncp_cnal_regions_acp56xx;
+    ncp_uint32_t    *pCaalRegions = ncp_caal_regions_acp56xx;
     ncp_uint32_t    *pRegion;
     ncp_uint32_t     ort, owt;
     ncp_uint32_t     buf = 0;
@@ -616,7 +616,7 @@ typedef struct
 #define NCP_REGION_TIMER_TMGR_SYSTEM_COUNT  NCP_REGION_ID(NCP_NODE_TIMER, 0x0012) /* 25.18 */
 #define NCP_REGION_AXIS_APB2SER3_SYSCON     NCP_REGION_ID(NCP_NODE_AXIS_APB2SER3, 0x0000) /* 342.0 */
 
-#define NCP_TMGR_SYSTEM_COUNT_CFG_SYSTEM_COUNTER_CONTROL_5500  (0x00000114)
+#define NCP_TMGR_SYSTEM_COUNT_CFG_SYSTEM_COUNTER_CONTROL_5600  (0x00000114)
 #define NCP_SYSCON_KEY                                         (0x00001000)
 #define NCP_SYSCON_RESET_MOD                                   (0x00001038)
 #define NCP_SYSCON_RESET_AXIS                                  (0x00001040)
@@ -639,7 +639,7 @@ ncp_dev_reset_hw(void)
 
     /* Make sure the boot counter is decoupled from the Nuevo timestamp */
     NCP_CALL(ncr_write32(NCP_REGION_TIMER_TMGR_SYSTEM_COUNT,
-         NCP_TMGR_SYSTEM_COUNT_CFG_SYSTEM_COUNTER_CONTROL_5500, 0));
+         NCP_TMGR_SYSTEM_COUNT_CFG_SYSTEM_COUNTER_CONTROL_5600, 0));
     
     /* wait for the PIO to complete */
     udelay(10000);
@@ -819,7 +819,7 @@ ncp_dev_do_read(ncr_command_t *command, unsigned *value)
 		return -1;
 	}
 #ifdef NCR_DEBUG
-	debug("Read 0x%08x from n=0x%x t=0x%x o=0x%x\n",
+	debug("Read 0x%08x from n=0x%x t=0x%x o=0x%lx\n",
 		    *value, NCP_NODE_ID(command->region),
 		    NCP_TARGET_ID(command->region),
 		    command->offset);
@@ -835,9 +835,11 @@ ncp_dev_do_read(ncr_command_t *command, unsigned *value)
 static int
 ncp_dev_do_write(ncr_command_t *command)
 {
+#if 0
 #ifdef NCR_DEBUG
-	debug(" WRITE: r=0x%x o=0x%x v=0x%x\n",
+	debug(" WRITE: r=0x%x o=0x%lx v=0x%x\n",
 		    command->region, command->offset, command->value);
+#endif
 #endif
 	if (NCP_REGION_ID(0x200, 1) == command->region) {
 		*((volatile unsigned long *)command->offset) = command->value;
@@ -901,7 +903,7 @@ ncp_dev_do_modify(ncr_command_t *command)
 		return -1;
 	} else {
 #ifdef NCR_DEBUG
-		debug("MODIFY: r=0x%x o=0x%x m=0x%x v=0x%x\n",
+		debug("MODIFY: r=0x%x o=0x%lx m=0x%x v=0x%x\n",
 			    command->region, command->offset,
 			    command->mask, command->value);
 #endif
@@ -1524,10 +1526,12 @@ initialize_task_io(struct eth_device *dev)
     } else if((NCP_USE_ALL_PORTS == eioaPort && port_type_by_index[0] == EIOA_PORT_TYPE_XGMAC) ||
        (NCP_USE_ALL_PORTS != eioaPort && port_type_by_index[index_by_port[eioaPort]] == EIOA_PORT_TYPE_XGMAC)) {
         debug("Configuring all HSS for XGMAC...");
+		/* No xgmacs yet
     	if (0 != ncp_dev_configure(hss_xgmac)) {
     		printf("HSS Configuration failed for XGMACs.\n");
     		return -1;
     	}
+		*/
     }
     debug("done\n");
 
@@ -1555,9 +1559,9 @@ initialize_task_io(struct eth_device *dev)
 	if (NCP_ST_SUCCESS != ncpStatus) {
         printf("ERROR: status=%d\n", ncpStatus);
 		lsi_eioa_eth_halt(dev);
-
 		return -1;
-	}
+	} else 
+		printf("mb: %s() taskHdl %p recvQueueId %d\n", __func__, taskHdl, (int) recvQueueId);
 
 	/*
 	  Make sure the network is connected.

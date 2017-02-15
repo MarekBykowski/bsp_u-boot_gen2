@@ -50,7 +50,7 @@
 
 /* NCA V1 registers */
 #include "ncp_nca_regs.h"
-#include "ncp_nca_reg_defines.h"
+#include "../common/ncp_nca_reg_defines.h"
 
 #if 0 /* UBOOT */
 #include "ncp_task_pvt_acp34xx.h"
@@ -83,7 +83,7 @@
 #endif 
 
 #include "ncp_nca_regs.h"
-#include "ncp_nca_reg_defines.h"
+#include "../common/ncp_nca_reg_defines.h"
 
 #include "ncp_task_pvt_axm56xx.h"
 #include "ncp_task_pvt_funcs_axm56xx.h"
