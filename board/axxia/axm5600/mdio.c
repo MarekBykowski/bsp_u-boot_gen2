@@ -29,27 +29,24 @@
 #include <config.h>
 #include <common.h>
 #include <asm/io.h>
-
-/*
-  ======================================================================
-  ======================================================================
-  Local
-  ======================================================================
-  ======================================================================
-*/
+#include <miiphy.h>
+#include <malloc.h>
 
 #undef BZ33327_WA
-#define BZ33327_WA
+/*#define BZ33327_WA*/
 
-/*
-  ======================================================================
-  ======================================================================
-  Global
-  ======================================================================
-  ======================================================================
-*/
+#define MDIO_REG_CTRL		0x00
+#define MDIO_REG_STATUS		0x04
+#define MDIO_REG_CLK_OFFSET	0x08
+#define MDIO_REG_CLK_PERIOD	0x0c
 
-static int initialize = 1;
+static int initialize = 0;
+
+extern int axxia_mdio_reset(struct mii_dev *bus);
+extern int axxia_mdio_write(struct mii_dev *bus, int addr, int devad, int reg, u16 val);
+extern int axxia_mdio_read(struct mii_dev *bus, int addr, int devad, int reg);
+extern int phy_by_index[];
+
 
 /*
   ----------------------------------------------------------------------
@@ -57,150 +54,43 @@ static int initialize = 1;
 */
 
 int
-mdio_initialize(void)
+mdio_initialize(const char *mdio_dev)
 {
+	unsigned long offset, period;
+	struct mii_dev *dev0;
+
     if(initialize)
-    {
-	    char *mdio_clk_offset_value = NULL;
-	    unsigned long offset = MDIO_CLK_OFFSET_DEFAULT;
-	    char *mdio_clk_period_value = NULL;
-	    unsigned long period = MDIO_CLK_PERIOD_DEFAULT;
+		return 0;
 
-	    mdio_clk_offset_value = getenv("mdio_clk_offset");
+	offset = getenv_ulong("mdio_clk_offset", 0, MDIO_CLK_OFFSET_DEFAULT);
+	period = getenv_ulong("mdio_clk_period", 0, MDIO_CLK_PERIOD_DEFAULT);
+	printf("MDIO: offset is 0x%lx, period is 0x%lx\n", offset, period);
 
-	    if (NULL != mdio_clk_offset_value)
-		    offset = simple_strtoul(mdio_clk_offset_value, NULL, 0);
+	dev0 = mdio_alloc();                                    
+	snprintf(dev0->name, MDIO_NAME_LEN, mdio_dev);     
+	dev0->priv = (void *)(unsigned long)phy_by_index[1];  /*MDIO addr of port gmac1*/
+	dev0->read = axxia_mdio_read;                           
+	dev0->write = axxia_mdio_write;                         
+	dev0->reset = axxia_mdio_reset;                         
+															
+	if (mdio_register(dev0) < 0) {                          
+		debug("Failed to register MDIO %s\n", dev0->name);  
+		free(dev0);                                         
+															
+		return -1;                                          
+	}                                                       
+															
+	writel(offset, dev0->priv + MDIO_REG_CLK_OFFSET);       
+	writel(period, dev0->priv + MDIO_REG_CLK_PERIOD);       
 
-	    mdio_clk_period_value = getenv("mdio_clk_period");
+	/* Enable the MDIO Clock. */
+#ifndef CONFIG_TARGET_EMULATION
+#ifdef CONFIG_AXXIA_ANY_56XX
+	writel(0x10, PERIPH_GPREG + 0x18);
+#endif
+#endif
 
-	    if (NULL != mdio_clk_period_value)
-		    period = simple_strtoul(mdio_clk_period_value, NULL, 0);
-
-	    printf("MDIO: offset is 0x%lx, period is 0x%lx\n", offset, period);
-
-	    writel(offset, MDIO_CLK_OFFSET);
-	    writel(period, MDIO_CLK_PERIOD);
-
-        initialize = 0;
-    }
+	initialize = 1;
 
 	return 0;
-}
-
-/*
-  ----------------------------------------------------------------------
-  mdio_read
-*/
-
-unsigned short
-mdio_read(int phy, int reg)
-{
-	unsigned long command = 0;
-	unsigned long status;
-
-#if defined(BZ33327_WA)
-	/*
-	  Set the mdio_busy (status) bit.
-	*/
-
-	status = readl(MDIO_STATUS_RD_DATA);
-	status |= 0x40000000;
-	writel(status, MDIO_STATUS_RD_DATA);
-#endif /* BZ33327_WA */
-
-	/*
-	  Write the command.
-	*/
-
-	command = 0x10000000;	/* op_code: read */
-	command |= (phy & 0x1f) << 16; /* port_addr (target device) */
-	command |= (reg & 0x1f) << 21; /* device_addr (target register) */
-	writel(command, MDIO_CONTROL_RD_DATA);
-
-#if defined(BZ33327_WA)
-	/*
-	  Wait for the mdio_busy (status) bit to clear.
-	*/
-
-	do {
-		status = readl(MDIO_STATUS_RD_DATA);
-	} while(0 != (status & 0x40000000));
-#endif /* BZ33327_WA */
-
-	/*
-	  Wait for the mdio_busy (control) bit to clear.
-	*/
-
-	do {
-		command = readl(MDIO_CONTROL_RD_DATA);
-	} while(0 != (command & 0x80000000));
-
-	debug("%s - Read 0x%x from 0x%x register 0x%x.\n",
-	      __FUNCTION__, (unsigned short)(command & 0xffff),
-	      phy, reg);
-
-	return (unsigned short)(command & 0xffff);
-}
-
-/*
-  ----------------------------------------------------------------------
-  mdio_write
-*/
-
-void
-mdio_write(int phy, int reg, unsigned short value)
-{
-	unsigned long command = 0;
-	unsigned long status;
-
-	/*
-	  Wait for mdio_busy (control) to be clear.
-	*/
-
-	do {
-		command = readl(MDIO_CONTROL_RD_DATA);
-	} while (0 != (command & 0x80000000));
-
-#if defined(BZ33327_WA)
-	/*
-	  Set the mdio_busy (status) bit.
-	*/
-
-	status = readl(MDIO_STATUS_RD_DATA);
-	status |= 0x40000000;
-	writel(status, MDIO_STATUS_RD_DATA);
-#endif /* BZ33327_WA */
-
-	/*
-	  Write the command.
-	*/
-
-	command = 0x08000000;	/* op_code: write */
-	command |= (phy & 0x1f) << 16; /* port_addr (target device) */
-	command |= (reg & 0x1f) << 21; /* device_addr (target register) */
-	command |= (value & 0xffff); /* value */
-	writel(command, MDIO_CONTROL_RD_DATA);
-
-#if defined(BZ33327_WA)
-	/*
-	  Wait for the mdio_busy (status) bit to clear.
-	*/
-
-	do {
-		status = readl(MDIO_STATUS_RD_DATA);
-	} while (0 != (status & 0x40000000));
-#endif /* BZ33327_WA */
-
-	/*
-	  Wait for the mdio_busy (control) bit to clear.
-	*/
-
-	do {
-		command = readl(MDIO_CONTROL_RD_DATA);
-	} while (0 != (command & 0x80000000));
-
-	debug("%s - Wrote 0x%x to 0x%x register 0x%x\n",
-	      __FUNCTION__, value, phy, reg);
-
-	return;
 }

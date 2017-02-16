@@ -20,11 +20,10 @@
 #define __ncp_task_inline_funcs_axm55xx__
 
 #include <config.h>
-/*
+
 #define DEBUG
 #include <common.h>
 #define NCP_TASK_DEBUG_MME
-*/
 /*
  * =============================
  * old ncp_task_inline_funcs.c
@@ -461,7 +460,7 @@ ncp_task_v2_MMEpool_alloc(
     ncp_uint64_t x64;
     ncp_raw_addr_t va;
 
-    debug("ncp_task_v2_MMEpool_alloc(): size=%d, queueValid=%d\n", size,
+    debug_cond(1, "ncp_task_v2_MMEpool_alloc(): size=%d, queueValid=%d\n", size,
         myTaskHdl->mmeAllocator->allocIF[0].queueValid);
     
 #ifdef NCP_TASK_DEBUG_MME    

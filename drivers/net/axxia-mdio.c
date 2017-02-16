@@ -18,7 +18,7 @@
 #define MDIO_REG_CLK_OFFSET	0x08
 #define MDIO_REG_CLK_PERIOD	0x0c
 
-static int
+int
 axxia_mdio_read(struct mii_dev *bus, int addr, int devad, int reg)
 {
 	void __iomem *base = bus->priv;
@@ -56,7 +56,7 @@ axxia_mdio_read(struct mii_dev *bus, int addr, int devad, int reg)
 	return (command & 0xffff);
 }
 
-static int
+int
 axxia_mdio_write(struct mii_dev *bus, int addr, int devad, int reg, u16 val)
 {
 	void __iomem *base = bus->priv;
@@ -100,7 +100,7 @@ axxia_mdio_write(struct mii_dev *bus, int addr, int devad, int reg, u16 val)
 	return 0;
 }
 
-static int
+int
 axxia_mdio_reset(struct mii_dev *bus)
 {
 	return 0;

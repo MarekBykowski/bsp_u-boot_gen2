@@ -4956,7 +4956,7 @@ ncp_task_attach_mme_allocator(ncp_pvt_task_hdl_t *myTaskHdl)
                 { /* DEBUG */      
                     int _xx;
 
-                    NCP_LOG(NCP_MSG_INFO, "using allocator %d @ %p\r\n",
+                    NCP_LOG(NCP_MSG_INFO, "using allocator %ld @ %p\r\n",
                         pAllocator->id,
                         myTaskHdl->mmeAllocator);
                     NCP_LOG(NCP_MSG_INFO,"baseVA=%p\r\n",  

@@ -3576,7 +3576,7 @@ ncp_task_v2_config_mme_for_tqs(ncp_int32_t tqsID)
     int i;
 
 #ifdef NCP_TASK_DEBUG_MME    
-    NCP_LOG(NCP_MSG_INFO,"config_mme_for_tqs (%d)\r\n",tqsID);
+    NCP_LOG(NCP_MSG_INFO,"config_mme_for_tqs (%ld)\r\n",tqsID);
 #endif
         
     if (NCP_TASK_IS_SHARED_POOL(pTQS->poolID))

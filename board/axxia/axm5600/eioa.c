@@ -35,6 +35,7 @@
 #include <malloc.h>
 #include <asm/io.h>
 #include <net.h>
+#include <miiphy.h>
 
 /*#define TRACE_ALLOCATION*/
 
@@ -146,10 +147,12 @@ static int port_type_by_index[] =
 };
 
 
-/* TODO: fix the phy addresses for asic */
-static int phy_by_index[] = 
+/* TODO: fix the phy addresses upon ASE */
+int phy_by_index[] = 
 { 
-    0x1c, 0x17, 0x16, 0x15, 0x14, 0x18, 0x13, 0x12, 0x11, 0x10, 0x20, 0x21, 
+    0x12, 0x13, 0x18, 0x19, 0x1b,
+	/* below are invalid */
+	0x18, 0x13, 0x12, 0x11, 0x10, 0x20, 0x21, 
     0x30, 0x31, 0x40, 0x41, 0x50, 0x51, 0x60, 0x61, 0x70, 0x71 
 };
 
@@ -818,11 +821,13 @@ ncp_dev_do_read(ncr_command_t *command, unsigned *value)
 			    NCP_TARGET_ID(command->region), command->offset);
 		return -1;
 	}
+#if 0
 #ifdef NCR_DEBUG
 	debug("Read 0x%08x from n=0x%x t=0x%x o=0x%lx\n",
 		    *value, NCP_NODE_ID(command->region),
 		    NCP_TARGET_ID(command->region),
 		    command->offset);
+#endif
 #endif
 	return 0;
 }
@@ -902,10 +907,12 @@ ncp_dev_do_modify(ncr_command_t *command)
 
 		return -1;
 	} else {
+#if 0
 #ifdef NCR_DEBUG
 		debug("MODIFY: r=0x%x o=0x%lx m=0x%x v=0x%x\n",
 			    command->region, command->offset,
 			    command->mask, command->value);
+#endif
 #endif
 	}
 
@@ -965,8 +972,10 @@ ncp_dev_configure(ncr_command_t *commands) {
 			rc = ncp_dev_do_modify(commands);
 			break;
 		case NCR_COMMAND_USLEEP:
+#if 0
 #ifdef NCR_DEBUG
 			debug("USLEEP: v=0x%x\n", commands->value);
+#endif
 #endif
 			udelay(commands->value);
 			break;
@@ -1043,7 +1052,7 @@ task_send(ncp_task_ncaV2_send_meta_t *taskMetaData)
 */
 
 static int
-line_setup(int index)
+line_setup(int index, struct eth_device *dev)
 {
 	int rc;
 #if defined(CONFIG_AXXIA_55XX)
@@ -1066,6 +1075,8 @@ line_setup(int index)
 	unsigned top;
 	unsigned bottom;
 	unsigned short control;
+	struct mii_dev *bus;
+	struct phy_device *phy_dev;
 
     if(index >= 128 || (index < 128 && index_by_port[port_by_index[index]] == -1))
     {
@@ -1075,6 +1086,7 @@ line_setup(int index)
     }
 
     debug("line_setup for port=%d\n", port_by_index[index]);
+
 
 	/* Set the region and offset. */
     if (5 > index) {
@@ -1147,8 +1159,11 @@ line_setup(int index)
 			phy_by_index[index] = simple_strtoul(envstring, NULL, 0);
 		}
         
-        mdio_initialize();
+        mdio_initialize("axxia-gmac1");
     }
+
+	bus = miiphy_get_dev_by_name("axxia-gmac1");
+	phy_dev = phy_connect(bus, phy_by_index[index], dev, PHY_INTERFACE_MODE_RGMII);
 
 	/* Check for "macspeed".  If set, ignore the PHYs... */
 	envstring = getenv("macspeed");
@@ -1189,9 +1204,11 @@ line_setup(int index)
 
         /* do phy configuration for copper PHY */
         if(phy_media_by_index[index] == EIOA_PHY_MEDIA_COPPER) {
-            control = mdio_read(phy_by_index[index], 0);
-		    ad_value = mdio_read(phy_by_index[index], 4);
-		    ge_ad_value = mdio_read(phy_by_index[index], 9);
+            /*control = mdio_read(phy_by_index[index], 0);*/
+			/* Below is how it should be converted for all accesses to PHY */
+			control = phy_read(phy_dev, MDIO_DEVAD_NONE, 0);
+		    ad_value = phy_read(phy_dev, MDIO_DEVAD_NONE, 4);
+		    ge_ad_value = phy_read(phy_dev, MDIO_DEVAD_NONE, 9);
 
             control &= 0xdebf; /* clear bit 6, 8 and 13 */
             ad_value &= 0xfe1f; /* clear bits 5, 6, 7, 8 */
@@ -1218,9 +1235,9 @@ line_setup(int index)
     			return -1;
     		}
             
-            mdio_write(phy_by_index[index], 4, ad_value);
-		    mdio_write(phy_by_index[index], 9, ge_ad_value);
-            mdio_write(phy_by_index[index], 0, control);
+            phy_write(phy_dev, MDIO_DEVAD_NONE, 4, ad_value);
+		    phy_write(phy_dev, MDIO_DEVAD_NONE, 9, ge_ad_value);
+            phy_write(phy_dev, MDIO_DEVAD_NONE, 0, control);
         }
 	} else {
 	    /* do phy configuration for copper PHY */
@@ -1244,19 +1261,19 @@ line_setup(int index)
     		}
 
     		/* Set the AN advertise values. */
-    		mdio_write(phy_by_index[index], 4, ad_value);
-    		mdio_write(phy_by_index[index], 9, ge_ad_value);
+    		phy_write(phy_dev, MDIO_DEVAD_NONE, 4, ad_value);
+    		phy_write(phy_dev, MDIO_DEVAD_NONE, 9, ge_ad_value);
 
     		/* Force re-negotiation. */
-    		control = mdio_read(phy_by_index[index], 0);
+    		control = phy_read(phy_dev, MDIO_DEVAD_NONE, 0);
     		control |= 0x1200;
-    		mdio_write(phy_by_index[index], 0, control);
+    		phy_write(phy_dev, MDIO_DEVAD_NONE, 0, control);
 
     		DELAY();
 
     		/* Wait for AN complete. */
     		for (;;) {
-    			status = mdio_read(phy_by_index[index], 1);
+    			status = phy_read(phy_dev, MDIO_DEVAD_NONE, 1);
 
     			if (0 != (status & 0x20))
     				break;
@@ -1277,7 +1294,7 @@ line_setup(int index)
     			if (NCP_USE_ALL_PORTS != eioaPort)
     				return -1; /* Don't Error Out in AUTO Mode. */
     		} else {
-    			status = mdio_read(phy_by_index[index], 0x1c);
+    			status = phy_read(phy_dev, MDIO_DEVAD_NONE, 0x1c);
             }
 #else
     		status = 0x28; /* For FPGA, its 100MF */
@@ -1571,7 +1588,7 @@ initialize_task_io(struct eth_device *dev)
 		/* Use all ports. */
 		for (i = 0; i < EIOA_NUM_PORTS; ++i) {
             if(port_type_by_index[i] == EIOA_PORT_TYPE_GMAC) {
-    			if (0 != line_setup(i)) {
+    			if (0 != line_setup(i, dev)) {
                     printf("line_setup failed for gmac%d (all)\n", 
                             port_by_index[i]);
     				return -1;
@@ -1581,7 +1598,7 @@ initialize_task_io(struct eth_device *dev)
 	} else {
         if(port_type_by_index[index_by_port[eioaPort]] == EIOA_PORT_TYPE_GMAC) {
             printf("Using EIOA Port GMAC%d\n", eioaPort);
-    		if (0 != line_setup(index_by_port[eioaPort])) {
+    		if (0 != line_setup(index_by_port[eioaPort], dev)) {
                 printf("line_setup failed for gmac%d\n", 
                             eioaPort);
     			return -1;
@@ -2199,19 +2216,19 @@ line_setup_xgmac(int index)
 		}
 
 		/* Set the AN advertise values. */
-		mdio_write(phy_by_index[index], 4, ad_value);
-		mdio_write(phy_by_index[index], 9, ge_ad_value);
+		phy_write(phy_dev, MDIO_DEVAD_NONE, 4, ad_value);
+		phy_write(phy_dev, MDIO_DEVAD_NONE, 9, ge_ad_value);
 
 		/* Force re-negotiation. */
-		control = mdio_read(phy_by_index[index], 0);
+		control = phy_read(phy_dev, MDIO_DEVAD_NONE, 0);
 		control |= 0x200;
-		mdio_write(phy_by_index[index], 0, control);
+		phy_write(phy_dev, MDIO_DEVAD_NONE, 0, control);
 
 		DELAY();
 
 		/* Wait for AN complete. */
 		for (;;) {
-			status = mdio_read(phy_by_index[index], 1);
+			status = phy_read(phy_dev, MDIO_DEVAD_NONE, 1);
 
 			if (0 != (status & 0x20))
 				break;
@@ -2232,7 +2249,7 @@ line_setup_xgmac(int index)
 			if (NCP_USE_ALL_PORTS != eioaPort)
 				return -1; /* Don't Error Out in AUTO Mode. */
 		} else {
-			status = mdio_read(phy_by_index[index], 0x1c);
+			status = phy_read(phy_dev, MDIO_DEVAD_NONE, 0x1c);
 			printf("GMAC%02d: ", port_by_index[index]);
 
 			switch ((status & 0x18) >> 3) {
@@ -2315,7 +2332,9 @@ line_setup_xgmac(int index)
 
 	return -1;
 }
+#endif /* #if 0 */
 
+#if 0
 /*
   ------------------------------------------------------------------------------
   line_renegotiate
@@ -2332,6 +2351,11 @@ line_renegotiate(int index)
 	unsigned short ad_value;
 	unsigned short ge_ad_value;
 	unsigned short control;
+	struct mii_dev *bus;
+	struct phy_device *phy_dev;
+
+	bus = miiphy_get_dev_by_name("axxia-gmac1");
+	phy_dev = phy_connect(bus, phy_by_index[index], dev, PHY_INTERFACE_MODE_RGMII);
 
 	/* Set the region and offset. */
 	if (4 > index) {
@@ -2372,13 +2396,13 @@ line_renegotiate(int index)
 		}
 
 		/* Set the AN advertise values. */
-		mdio_write(phy_by_index[index], 4, ad_value);
-		mdio_write(phy_by_index[index], 9, ge_ad_value);
+		phy_write(phy_dev, MDIO_DEVAD_NONE, 4, ad_value);
+		phy_write(phy_dev, MDIO_DEVAD_NONE, 9, ge_ad_value);
 
 		/* Force re-negotiation. */
-		control = mdio_read(phy_by_index[index], 0);
+		control = phy_read(phy_dev, MDIO_DEVAD_NONE, 0);
 		control |= 0x200;
-		mdio_write(phy_by_index[index], 0, control);
+		phy_write(phy_dev, MDIO_DEVAD_NONE, 0, control);
 	}
 
 	return 0;
@@ -2434,5 +2458,4 @@ va2pa(void *virtual_address)
 }
 
 
-#endif
-
+#endif /*#if 0*/
