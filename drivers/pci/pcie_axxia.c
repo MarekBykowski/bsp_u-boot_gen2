@@ -27,6 +27,12 @@
 #include <pci.h>
 #include <config.h>
 
+/*
+  The "LOS Work Around"
+*/
+
+#define ENABLE_LOS_WA
+
 #define PEI_GENERAL_CORE_CTL_REG 0x38
 #define PEI_SII_PWR_MGMT_REG 0xD4
 #define PEI_SII_DBG_0_MON_REG 0xEC
