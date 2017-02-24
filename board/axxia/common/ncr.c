@@ -29,6 +29,10 @@
 
 #define LOCK_DOMAIN 0
 
+#define DEBUG
+#include <common.h>
+
+
 #ifdef ARM64
 #define POINTER(address) ((unsigned int *)((unsigned long)(address)))
 #else
@@ -1216,6 +1220,9 @@ ncr_write(ncp_uint32_t region,
 	}
 
 	ncr_register_write( cdr2.raw, POINTER( NCA + NCP_NCA_CFG_PIO_CDR2 ) );
+	if( NCP_REGION_ID( 512, 1 ) == region )
+		printf("mb: %s() ncr_register_write (cdr2.raw 0x%x, NCA 0x%lx + NCP_NCA_CFG_PIO_CDR2 0x%lx\n",
+				__func__, cdr2.raw, (unsigned long)NCA, (unsigned long)NCP_NCA_CFG_PIO_CDR2 );
 
 	cdr1.raw = 0;
 
@@ -1226,12 +1233,17 @@ ncr_write(ncp_uint32_t region,
 	}
 
 	ncr_register_write( cdr1.raw, POINTER(NCA + NCP_NCA_CFG_PIO_CDR1));
+	if( NCP_REGION_ID( 512, 1 ) == region )
+		printf("mb: %s() ncr_register_write (cdr1.raw 0x%x, NCA 0x%lx + NCP_NCA_CFG_PIO_CDR1 0x%lx\n",
+				__func__, cdr1.raw, (unsigned long)NCA, (unsigned long)NCP_NCA_CFG_PIO_CDR1 );
 
 	/*
 	  Copy data from the buffer.
 	*/
 
 	if (NULL != buffer) {
+		if( NCP_REGION_ID( 512, 1 ) == region )
+			printf("mb: %s() buffer %p v 0x%x\n", __func__, (void*)buffer, *((ncp_uint32_t *)buffer));
 		void *offset;
 
 		offset = (void *)(NCA + NCP_NCA_CDAR_MEMORY_BASE);
@@ -1368,7 +1380,12 @@ ncr_write32(ncp_uint32_t region, ncp_uint32_t offset, ncp_uint32_t value)
 {
 	int rc;
 
-	NCR_TRACE_WRITE32(region, offset, value);
+	if (NCP_REGION_ID(0x200, 1) == region) {
+#define NCR_TRACER
+		NCR_TRACE_WRITE32(region, offset, value);
+#undef NCR_TRACER
+	}
+		
 	rc = ncr_write(region, 0, offset, 4, &value);
 
 	if (0 != rc)

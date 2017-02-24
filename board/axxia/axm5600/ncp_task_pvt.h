@@ -96,7 +96,7 @@
 #include "ncp_task_pvt_funcs_hw_axm56xx.h"
 #endif
 
-/* ================== END 5500 ============================= */
+/* ================== END 5600 ============================= */
 
 #endif /* NCP_TASK_USE_56XX_HEADERS */
 

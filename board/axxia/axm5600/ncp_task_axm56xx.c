@@ -17,14 +17,13 @@
  */
 
 #define NCP_TASK_USE_56XX_HEADERS
+#define NCP_TASK_PRINT_BASE_ADDRESSES_AND_MAPPINGS
 
 #define NCP_TASK_NCA_GLOBALS
-/*
 #define DEBUG
 #include <common.h>
 
 #define NCP_TASK_DEBUG_MME
-*/
 /* #include "ncp_dev_pvt.h" */
 #if 0 /* UBOOT */
 #include "ncp_dev.h"
@@ -4850,7 +4849,7 @@ ncp_task_v2_init_cpu_pools(
 
 #ifdef NCP_TASK_PRINT_BASE_ADDRESSES_AND_MAPPINGS
 
-            NCP_MSG(NCP_MSG_INFO, "CPU Pool %d PA 0x%llx sz 0x%llx, mapped to VA %p\r\n",
+            NCP_MSG(NCP_MSG_INFO, "CPU Pool %ld PA 0x%llx sz 0x%llx, mapped to VA %p\r\n",
                     poolID,
                     pPoolEntry->pool_PA, 
                     pPoolEntry->pool_Size,

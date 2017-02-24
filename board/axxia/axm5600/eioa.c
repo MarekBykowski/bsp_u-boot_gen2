@@ -212,15 +212,18 @@ typedef enum {
 	NCR_COMMAND_FUNC
 } ncr_command_code_t;
 
+typedef int (*func_config_port)(int index);
+
 typedef struct {
 	ncr_command_code_t command;
 	unsigned region;
-	unsigned long offset;
+	union {
+		unsigned offset;
+		func_config_port func;
+	};
 	unsigned value;
 	unsigned mask;
 } ncr_command_t;
-
-typedef int (*func_config_port)(int index);
 
 static int
 ncp_dev_configure(ncr_command_t *commands);
@@ -389,50 +392,30 @@ typedef struct
 {
 #ifdef NCP_BIG_ENDIAN
           /* word 0 */
+     unsigned      rcaltest_rst                              :  1;
+     unsigned      sm0_sm1_pll_rst                           :  1;
+     unsigned      smc1_rst                                  :  1;
+     unsigned      smc0_rst                                  :  1;
      unsigned      ioctl_rst                                 :  1;
-     unsigned      ram_margin_rst                            :  1;
-     unsigned      pci_srio_phy_rst                          :  1;
-     unsigned      timestamp_rst                             :  1;
-     unsigned      mref2_rst                                 :  1;
-     unsigned      mref1_rst                                 :  1;
-     unsigned      mref0_rst                                 :  1;
-     unsigned      cmem1_phy_io_rst                          :  1;
-     unsigned      cmem0_phy_io_rst                          :  1;
-     unsigned      smem1_phy_io_rst                          :  1;
-     unsigned      smem0_phy_io_rst                          :  1;
+     unsigned      gic500_rst                                :  1;
+     unsigned      reserved0                                 :  1;
      unsigned      pbm_rst                                   :  1;
-     unsigned      ccms_rst                                  :  1;
      unsigned      nic_rst                                   :  1;
      unsigned      pkt_buffer_rst                            :  1;
+     unsigned      ccms_rst                                  :  1;
      unsigned      isbs_rst                                  :  1;
-     unsigned      eioa_phy4_rst                             :  1;
-     unsigned      eioa_phy3_rst                             :  1;
-     unsigned      eioa_phy2_rst                             :  1;
-     unsigned      eioa7_rst                                 :  1;
-     unsigned      eioa6_rst                                 :  1;
-     unsigned      eioa5_rst                                 :  1;
-     unsigned      eioa4_rst                                 :  1;
-     unsigned      eioa3_rst                                 :  1;
-     unsigned      eioa2_rst                                 :  1;
-     unsigned      reserved0                                 :  5;
-     unsigned      ring_bp_rst                               :  1;
-     unsigned      fab_pllctl_rst                            :  1;
-          /* word 1 */
-     unsigned      sys_pllctl_rst                            :  1;
-     unsigned      cpu_pllctl_rst                            :  1;
-     unsigned      smem1_phy_rst                             :  1;
-     unsigned      smem1_pllctl_rst                          :  1;
-     unsigned      smem1_rst                                 :  1;
-     unsigned      smem0_phy_rst                             :  1;
-     unsigned      smem0_pllctl_rst                          :  1;
-     unsigned      smem0_rst                                 :  1;
+     unsigned      eioasm5_rst                               :  1;
+     unsigned      eioasm4_rst                               :  1;
+     unsigned      eioasm3_rst                               :  1;
+     unsigned      eioasm2_rst                               :  1;
+     unsigned      eioasm1_rst                               :  1;
+     unsigned      eioasm0_rst                               :  1;
+     unsigned      eioam1_rst                                :  1;
+     unsigned      eioam0_rst                                :  1;
      unsigned      ccm_rst                                   :  1;
      unsigned      pcx_rst                                   :  1;
      unsigned      isb_rst                                   :  1;
-     unsigned      eioa_phy1_rst                             :  1;
-     unsigned      eioa_phy0_rst                             :  1;
-     unsigned      eioa1_rst                                 :  1;
-     unsigned      eioa0_rst                                 :  1;
+     unsigned      ring_bp_rst                               :  1;
      unsigned      scnt_dist_rst                             :  1;
      unsigned      tmgr_rst                                  :  1;
      unsigned      mtm_rst                                   :  1;
@@ -441,55 +424,34 @@ typedef struct
      unsigned      pic_rst                                   :  1;
      unsigned      dpi_rst                                   :  1;
      unsigned      spp_rst                                   :  1;
+          /* word 1 */
      unsigned      mme_rst                                   :  1;
      unsigned      nca_rst                                   :  1;
-     unsigned      cmem_pllctl_rst                           :  1;
-     unsigned      reserved1                                 :  1;
-     unsigned      cmem1_rst                                 :  1;
-     unsigned      cmem_phy_rst                              :  1;
-     unsigned      cmem0_rst                                 :  1;
-     unsigned      treemem_rst                               :  1;
      unsigned      mppy_rst                                  :  1;
+     unsigned      elm1_rst                                  :  1;
+     unsigned      elm0_rst                                  :  1;
+     unsigned      cmem1_rst                                 :  1;
+     unsigned      cmem0_rst                                 :  1;
+     unsigned      smem1_phy_io_rst                          :  1;
+     unsigned      smem0_phy_io_rst                          :  1;
+     unsigned      cmem1_phy_io_rst                          :  1;
+     unsigned      cmem0_phy_io_rst                          :  1;
+     unsigned      reserved1                                 :  3;
+     unsigned      treemem_rst                               :  1;
+     unsigned      eioa_phy9_rst                             :  1;
+     unsigned      eioa_phy8_rst                             :  1;
+     unsigned      eioa_phy7_rst                             :  1;
+     unsigned      eioa_phy6_rst                             :  1;
+     unsigned      eioa_phy5_rst                             :  1;
+     unsigned      eioa_phy4_rst                             :  1;
+     unsigned      eioa_phy3_rst                             :  1;
+     unsigned      eioa_phy2_rst                             :  1;
+     unsigned      eioa_phy1_rst                             :  1;
+     unsigned      eioa_phy0_rst                             :  1;
+     unsigned      pci_srio_phy_rst                          :  1;
+     unsigned      reserved2                                 :  6;
 #else    /* Little Endian */
           /* word 0 */
-     unsigned      fab_pllctl_rst                            :  1;
-     unsigned      ring_bp_rst                               :  1;
-     unsigned      reserved0                                 :  5;
-     unsigned      eioa2_rst                                 :  1;
-     unsigned      eioa3_rst                                 :  1;
-     unsigned      eioa4_rst                                 :  1;
-     unsigned      eioa5_rst                                 :  1;
-     unsigned      eioa6_rst                                 :  1;
-     unsigned      eioa7_rst                                 :  1;
-     unsigned      eioa_phy2_rst                             :  1;
-     unsigned      eioa_phy3_rst                             :  1;
-     unsigned      eioa_phy4_rst                             :  1;
-     unsigned      isbs_rst                                  :  1;
-     unsigned      pkt_buffer_rst                            :  1;
-     unsigned      nic_rst                                   :  1;
-     unsigned      ccms_rst                                  :  1;
-     unsigned      pbm_rst                                   :  1;
-     unsigned      smem0_phy_io_rst                          :  1;
-     unsigned      smem1_phy_io_rst                          :  1;
-     unsigned      cmem0_phy_io_rst                          :  1;
-     unsigned      cmem1_phy_io_rst                          :  1;
-     unsigned      mref0_rst                                 :  1;
-     unsigned      mref1_rst                                 :  1;
-     unsigned      mref2_rst                                 :  1;
-     unsigned      timestamp_rst                             :  1;
-     unsigned      pci_srio_phy_rst                          :  1;
-     unsigned      ram_margin_rst                            :  1;
-     unsigned      ioctl_rst                                 :  1;
-          /* word 1 */
-     unsigned      mppy_rst                                  :  1;
-     unsigned      treemem_rst                               :  1;
-     unsigned      cmem0_rst                                 :  1;
-     unsigned      cmem_phy_rst                              :  1;
-     unsigned      cmem1_rst                                 :  1;
-     unsigned      reserved1                                 :  1;
-     unsigned      cmem_pllctl_rst                           :  1;
-     unsigned      nca_rst                                   :  1;
-     unsigned      mme_rst                                   :  1;
      unsigned      spp_rst                                   :  1;
      unsigned      dpi_rst                                   :  1;
      unsigned      pic_rst                                   :  1;
@@ -498,21 +460,56 @@ typedef struct
      unsigned      mtm_rst                                   :  1;
      unsigned      tmgr_rst                                  :  1;
      unsigned      scnt_dist_rst                             :  1;
-     unsigned      eioa0_rst                                 :  1;
-     unsigned      eioa1_rst                                 :  1;
-     unsigned      eioa_phy0_rst                             :  1;
-     unsigned      eioa_phy1_rst                             :  1;
+     unsigned      ring_bp_rst                               :  1;
      unsigned      isb_rst                                   :  1;
      unsigned      pcx_rst                                   :  1;
      unsigned      ccm_rst                                   :  1;
-     unsigned      smem0_rst                                 :  1;
-     unsigned      smem0_pllctl_rst                          :  1;
-     unsigned      smem0_phy_rst                             :  1;
-     unsigned      smem1_rst                                 :  1;
-     unsigned      smem1_pllctl_rst                          :  1;
-     unsigned      smem1_phy_rst                             :  1;
-     unsigned      cpu_pllctl_rst                            :  1;
-     unsigned      sys_pllctl_rst                            :  1;
+     unsigned      eioam0_rst                                :  1;
+     unsigned      eioam1_rst                                :  1;
+     unsigned      eioasm0_rst                               :  1;
+     unsigned      eioasm1_rst                               :  1;
+     unsigned      eioasm2_rst                               :  1;
+     unsigned      eioasm3_rst                               :  1;
+     unsigned      eioasm4_rst                               :  1;
+     unsigned      eioasm5_rst                               :  1;
+     unsigned      isbs_rst                                  :  1;
+     unsigned      ccms_rst                                  :  1;
+     unsigned      pkt_buffer_rst                            :  1;
+     unsigned      nic_rst                                   :  1;
+     unsigned      pbm_rst                                   :  1;
+     unsigned      reserved0                                 :  1;
+     unsigned      gic500_rst                                :  1;
+     unsigned      ioctl_rst                                 :  1;
+     unsigned      smc0_rst                                  :  1;
+     unsigned      smc1_rst                                  :  1;
+     unsigned      sm0_sm1_pll_rst                           :  1;
+     unsigned      rcaltest_rst                              :  1;
+          /* word 1 */
+     unsigned      reserved2                                 :  6;
+     unsigned      pci_srio_phy_rst                          :  1;
+     unsigned      eioa_phy0_rst                             :  1;
+     unsigned      eioa_phy1_rst                             :  1;
+     unsigned      eioa_phy2_rst                             :  1;
+     unsigned      eioa_phy3_rst                             :  1;
+     unsigned      eioa_phy4_rst                             :  1;
+     unsigned      eioa_phy5_rst                             :  1;
+     unsigned      eioa_phy6_rst                             :  1;
+     unsigned      eioa_phy7_rst                             :  1;
+     unsigned      eioa_phy8_rst                             :  1;
+     unsigned      eioa_phy9_rst                             :  1;
+     unsigned      treemem_rst                               :  1;
+     unsigned      reserved1                                 :  3;
+     unsigned      cmem0_phy_io_rst                          :  1;
+     unsigned      cmem1_phy_io_rst                          :  1;
+     unsigned      smem0_phy_io_rst                          :  1;
+     unsigned      smem1_phy_io_rst                          :  1;
+     unsigned      cmem0_rst                                 :  1;
+     unsigned      cmem1_rst                                 :  1;
+     unsigned      elm0_rst                                  :  1;
+     unsigned      elm1_rst                                  :  1;
+     unsigned      mppy_rst                                  :  1;
+     unsigned      nca_rst                                   :  1;
+     unsigned      mme_rst                                   :  1;
 #endif
 } __attribute__ ( ( packed ) ) ncp_syscon_reset_mod_r_t;
 
@@ -520,36 +517,40 @@ typedef struct
 {
 #ifdef NCP_BIG_ENDIAN
           /* word 0 */
-     unsigned      reserved0                                 : 12;
-     unsigned      hold_po3                                  :  1;
-     unsigned      hold_po2                                  :  1;
-     unsigned      hold_po1                                  :  1;
-     unsigned      hold_po0                                  :  1;
-     unsigned      reserved1                                 :  5;
-     unsigned      ser2smart_rst                             :  1;
-     unsigned      cpu2tap_rst                               :  1;
-     unsigned      ipi_rst                                   :  1;
-     unsigned      cpm_logic_rst                             :  1;
-     unsigned      tvsense_rst                               :  1;
-     unsigned      nrcp_pllctl_rst                           :  1;
+     unsigned      cpm_rst                                   :  1;
+     unsigned      reserved0                                 : 13;
+     unsigned      sata1_rst                                 :  1;
+     unsigned      sata0_rst                                 :  1;
+     unsigned      reserved1                                 :  4;
      unsigned      nrcp_rst                                  :  1;
-     unsigned      apb2ser3_rst                              :  1;
-     unsigned      apb2ser2_rst                              :  1;
-     unsigned      apb2ser1_rst                              :  1;
-     unsigned      apb2ser0_rst                              :  1;
-          /* word 1 */
-     unsigned      sbb_rst                                   :  1;
      unsigned      reserved2                                 :  1;
-     unsigned      spf_rst                                   :  1;
-     unsigned      usb2_rst                                  :  1;
-     unsigned      reserved3                                 :  7;
-     unsigned      cm3_rst                                   :  1;
+     unsigned      srio_gpreg_rst                            :  1;
+     unsigned      reserved3                                 :  3;
+     unsigned      pei2_rst                                  :  1;
+     unsigned      pei1_rst                                  :  1;
+     unsigned      pei0_rst                                  :  1;
+     unsigned      ipi_rst                                   :  1;
+     unsigned      jtag2axi_rst                              :  1;
+     unsigned      timer_rst                                 :  1;
+          /* word 1 */
+     unsigned      lsm_rst                                   :  1;
+     unsigned      sbb_rst                                   :  1;
+     unsigned      gic490_rst                                :  1;
+     unsigned      gpio_rst                                  :  1;
+     unsigned      usb_rst                                   :  1;
+     unsigned      axi2ser7_rst                              :  1;
+     unsigned      axi2ser6_rst                              :  1;
+     unsigned      axi2ser5_rst                              :  1;
+     unsigned      axi2ser4_rst                              :  1;
+     unsigned      axi2ser3_rst                              :  1;
+     unsigned      axi2ser2_rst                              :  1;
+     unsigned      axi2ser1_rst                              :  1;
+     unsigned      axi2ser0_rst                              :  1;
      unsigned      mtc_rst                                   :  1;
-     unsigned      xvrc_rst                                  :  1;
+     unsigned      usb_phy_rst                               :  1;
      unsigned      gpdma_1_rst                               :  1;
      unsigned      gpdma_0_rst                               :  1;
      unsigned      trng_rst                                  :  1;
-     unsigned      pka_zeroiza_rst                           :  1;
      unsigned      pka__rst                                  :  1;
      unsigned      mdio_rst                                  :  1;
      unsigned      ssp_rst                                   :  1;
@@ -557,40 +558,38 @@ typedef struct
      unsigned      uart_2_rst                                :  1;
      unsigned      uart_1_rst                                :  1;
      unsigned      uart_0_rst                                :  1;
-     unsigned      smb_0_rst                                 :  1;
+     unsigned      smb_rst                                   :  1;
      unsigned      i2c_2_rst                                 :  1;
      unsigned      i2c_1_rst                                 :  1;
      unsigned      i2c_0_rst                                 :  1;
      unsigned      emmc_rst                                  :  1;
-     unsigned      femac_rst                                 :  1;
+     unsigned      gemac_rst                                 :  1;
      unsigned      axis_rst                                  :  1;
 #else    /* Little Endian */
           /* word 0 */
-     unsigned      apb2ser0_rst                              :  1;
-     unsigned      apb2ser1_rst                              :  1;
-     unsigned      apb2ser2_rst                              :  1;
-     unsigned      apb2ser3_rst                              :  1;
-     unsigned      nrcp_rst                                  :  1;
-     unsigned      nrcp_pllctl_rst                           :  1;
-     unsigned      tvsense_rst                               :  1;
-     unsigned      cpm_logic_rst                             :  1;
+     unsigned      timer_rst                                 :  1;
+     unsigned      jtag2axi_rst                              :  1;
      unsigned      ipi_rst                                   :  1;
-     unsigned      cpu2tap_rst                               :  1;
-     unsigned      ser2smart_rst                             :  1;
-     unsigned      reserved1                                 :  5;
-     unsigned      hold_po0                                  :  1;
-     unsigned      hold_po1                                  :  1;
-     unsigned      hold_po2                                  :  1;
-     unsigned      hold_po3                                  :  1;
-     unsigned      reserved0                                 : 12;
+     unsigned      pei0_rst                                  :  1;
+     unsigned      pei1_rst                                  :  1;
+     unsigned      pei2_rst                                  :  1;
+     unsigned      reserved3                                 :  3;
+     unsigned      srio_gpreg_rst                            :  1;
+     unsigned      reserved2                                 :  1;
+     unsigned      nrcp_rst                                  :  1;
+     unsigned      reserved1                                 :  4;
+     unsigned      sata0_rst                                 :  1;
+     unsigned      sata1_rst                                 :  1;
+     unsigned      reserved0                                 : 13;
+     unsigned      cpm_rst                                   :  1;
           /* word 1 */
      unsigned      axis_rst                                  :  1;
-     unsigned      femac_rst                                 :  1;
+     unsigned      gemac_rst                                 :  1;
      unsigned      emmc_rst                                  :  1;
      unsigned      i2c_0_rst                                 :  1;
      unsigned      i2c_1_rst                                 :  1;
      unsigned      i2c_2_rst                                 :  1;
-     unsigned      smb_0_rst                                 :  1;
+     unsigned      smb_rst                                   :  1;
      unsigned      uart_0_rst                                :  1;
      unsigned      uart_1_rst                                :  1;
      unsigned      uart_2_rst                                :  1;
@@ -598,18 +597,24 @@ typedef struct
      unsigned      ssp_rst                                   :  1;
      unsigned      mdio_rst                                  :  1;
      unsigned      pka__rst                                  :  1;
-     unsigned      pka_zeroiza_rst                           :  1;
      unsigned      trng_rst                                  :  1;
      unsigned      gpdma_0_rst                               :  1;
      unsigned      gpdma_1_rst                               :  1;
-     unsigned      xvrc_rst                                  :  1;
+     unsigned      usb_phy_rst                               :  1;
      unsigned      mtc_rst                                   :  1;
-     unsigned      cm3_rst                                   :  1;
-     unsigned      reserved3                                 :  7;
-     unsigned      usb2_rst                                  :  1;
-     unsigned      spf_rst                                   :  1;
-     unsigned      reserved2                                 :  1;
+     unsigned      axi2ser0_rst                              :  1;
+     unsigned      axi2ser1_rst                              :  1;
+     unsigned      axi2ser2_rst                              :  1;
+     unsigned      axi2ser3_rst                              :  1;
+     unsigned      axi2ser4_rst                              :  1;
+     unsigned      axi2ser5_rst                              :  1;
+     unsigned      axi2ser6_rst                              :  1;
+     unsigned      axi2ser7_rst                              :  1;
+     unsigned      usb_rst                                   :  1;
+     unsigned      gpio_rst                                  :  1;
+     unsigned      gic490_rst                                :  1;
      unsigned      sbb_rst                                   :  1;
+     unsigned      lsm_rst                                   :  1;
 #endif
 } __attribute__ ( ( packed ) ) ncp_syscon_reset_axis_r_t;
 
@@ -619,10 +624,10 @@ typedef struct
 #define NCP_REGION_TIMER_TMGR_SYSTEM_COUNT  NCP_REGION_ID(NCP_NODE_TIMER, 0x0012) /* 25.18 */
 #define NCP_REGION_AXIS_APB2SER3_SYSCON     NCP_REGION_ID(NCP_NODE_AXIS_APB2SER3, 0x0000) /* 342.0 */
 
-#define NCP_TMGR_SYSTEM_COUNT_CFG_SYSTEM_COUNTER_CONTROL_5600  (0x00000114)
-#define NCP_SYSCON_KEY                                         (0x00001000)
-#define NCP_SYSCON_RESET_MOD                                   (0x00001038)
-#define NCP_SYSCON_RESET_AXIS                                  (0x00001040)
+#define NCP_TMGR_SYSTEM_COUNT_CFG_SYSTEM_COUNTER_CONTROL	  (0x00000114)
+#define NCP_SYSCON_KEY                                         (0x00002000)
+#define NCP_SYSCON_RESET_MOD                                   (0x00002038)
+#define NCP_SYSCON_RESET_AXIS                                  (0x00002040)
 
 static ncp_st_t
 ncp_dev_reset_hw(void)
@@ -633,6 +638,13 @@ ncp_dev_reset_hw(void)
     ncp_syscon_reset_mod_r_t    resetReg = {0};
     ncp_syscon_reset_axis_r_t   resetAxisReg = {0};
 
+    /* Make sure the boot counter is decoupled from the Nuevo timestamp */
+    NCP_CALL(ncr_write32(NCP_REGION_TIMER_TMGR_SYSTEM_COUNT,
+         NCP_TMGR_SYSTEM_COUNT_CFG_SYSTEM_COUNTER_CONTROL, 0));
+
+    /* wait for the PIO to complete */
+    udelay(10000);
+
     /* quiesce the system */
     ncpStatus = ncp_dev_quiesce();
     if (ncpStatus != NCP_ST_SUCCESS)
@@ -640,23 +652,24 @@ ncp_dev_reset_hw(void)
         NCP_MSG(NCP_MSG_ERROR, "ncp_dev_quiesce failed with %d\n", ncpStatus);
     }
 
-    /* Make sure the boot counter is decoupled from the Nuevo timestamp */
-    NCP_CALL(ncr_write32(NCP_REGION_TIMER_TMGR_SYSTEM_COUNT,
-         NCP_TMGR_SYSTEM_COUNT_CFG_SYSTEM_COUNTER_CONTROL_5600, 0));
-    
-    /* wait for the PIO to complete */
-    udelay(10000);
-
     /* Enable protected writes.  Key is the only field in this register. */
     NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON, NCP_SYSCON_KEY, 0xAB));
 
-    resetReg.mppy_rst         = 1;
+    resetReg.eioa_phy0_rst    = 1;
+    resetReg.eioa_phy1_rst    = 1;
+    resetReg.eioa_phy2_rst    = 1;
+    resetReg.eioa_phy3_rst    = 1;
+    resetReg.eioa_phy4_rst    = 1;
+    resetReg.eioa_phy5_rst    = 1;
+    resetReg.eioa_phy6_rst    = 1;
+    resetReg.eioa_phy7_rst    = 1;
+    resetReg.eioa_phy8_rst    = 1;
+    resetReg.eioa_phy9_rst    = 1;
     resetReg.treemem_rst      = 1;
-    resetReg.cmem0_rst        = 1;
-    resetReg.cmem_phy_rst     = 1;
-    resetReg.cmem1_rst        = 1;
+    resetReg.mppy_rst         = 1;
     resetReg.nca_rst          = 1;
     resetReg.mme_rst          = 1;
+
     resetReg.spp_rst          = 1;
     resetReg.dpi_rst          = 1;
     resetReg.pic_rst          = 1;
@@ -664,70 +677,86 @@ ncp_dev_reset_hw(void)
     resetReg.sed_rst          = 1;
     resetReg.mtm_rst          = 1;
     resetReg.tmgr_rst         = 1;
-    resetReg.eioa0_rst        = 1;
-    resetReg.eioa1_rst        = 1;
-    resetReg.eioa_phy0_rst    = 1;
-    resetReg.eioa_phy1_rst    = 1;
+    resetReg.ring_bp_rst      = 1;
     resetReg.isb_rst          = 1;
     resetReg.pcx_rst          = 1;
     resetReg.ccm_rst          = 1;
-    resetReg.ring_bp_rst      = 1;
-    resetReg.eioa2_rst        = 1;
-    resetReg.eioa3_rst        = 1;
-    resetReg.eioa4_rst        = 1;
-    resetReg.eioa5_rst        = 1;
-    resetReg.eioa6_rst        = 1;
-    resetReg.eioa7_rst        = 1;
-    resetReg.eioa_phy2_rst    = 1;
-    resetReg.eioa_phy3_rst    = 1;
-    resetReg.eioa_phy4_rst    = 1;
+    resetReg.eioam0_rst       = 1;
+    resetReg.eioam1_rst       = 1;
+    resetReg.eioasm0_rst      = 1;
+    resetReg.eioasm1_rst      = 1;
+    resetReg.eioasm2_rst      = 1;
+    resetReg.eioasm3_rst      = 1;
+    resetReg.eioasm4_rst      = 1;
+    resetReg.eioasm5_rst      = 1;
     resetReg.isbs_rst         = 1;
+    resetReg.ccms_rst         = 1;
     resetReg.pkt_buffer_rst   = 1;
     resetReg.nic_rst          = 1;
-    resetReg.ccms_rst         = 1;
     resetReg.pbm_rst          = 1;
-    resetReg.cmem0_phy_io_rst = 1;
-    resetReg.cmem1_phy_io_rst = 1;
-    resetReg.timestamp_rst    = 1;
 
+	resetReg.cmem0_rst        = 1;
+	resetReg.cmem1_rst        = 1;
+	resetReg.cmem0_phy_io_rst = 1;
+	resetReg.cmem1_phy_io_rst = 1;
+
+#if 0
+    resetReg.smem0_phy_io_rst = 1;
+    resetReg.smem1_phy_io_rst = 1;
+    resetReg.smc0_rst         = 1;
+    resetReg.smc1_rst         = 1;
+    resetReg.elm0_rst         = 1;
+    resetReg.elm1_rst         = 1;
+    resetReg.gic500_rst       = 1;
+    resetReg.scnt_dist_rst    = 1;
+#endif
+
+
+	printf("writing NCP_SYSCON_RESET_MOD\n");
     reg = (ncp_uint32_t *)&resetReg;
-    NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
+    ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
                          NCP_SYSCON_RESET_MOD, 
-                         *reg));
+                         *reg);
     reg++;
-    NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
+    ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
                          NCP_SYSCON_RESET_MOD + 4, 
-                         *reg));
+                         *reg);
+	printf("Done\n");
+	printf("before writing NCP_SYSCON_RESET_AXIS\n");
 
-    resetAxisReg.nrcp_rst     = 1;
-
+    resetAxisReg.nrcp_rst = 1;
+	printf("writing NCP_SYSCON_RESET_AXIS\n");
     reg = (ncp_uint32_t *)&resetAxisReg;
-    NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
+    ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
                        NCP_SYSCON_RESET_AXIS,
-                       *reg));
+                       *reg);
     reg++;
-    NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
+    ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
                        NCP_SYSCON_RESET_AXIS + 4,
-                       *reg));
-    udelay(10000);
+                       *reg);
+	printf("Done\n");
 
-    NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
+	printf("writing NCP_SYSCON_RESET_MOD\n");
+    ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
                          NCP_SYSCON_RESET_MOD, 
-                         0));
-    NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
+                         0);
+    ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
                          NCP_SYSCON_RESET_MOD + 4, 
-                         0));
-    
-    NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
+                         0);
+	printf("Done\n");
+
+	printf("writing NCP_SYSCON_RESET_AXIS\n");
+    ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
                          NCP_SYSCON_RESET_AXIS,
-                         0));
-    NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
+                         0);
+    ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
                          NCP_SYSCON_RESET_AXIS + 4,
-                         0));
+                         0);
+	printf("Done\n");
     udelay(10000);
 
     /* Disable protected writes */
-    NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON, NCP_SYSCON_KEY, 0x0));
+    ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON, NCP_SYSCON_KEY, 0x0);
 
 NCP_RETURN_LABEL
     if(st != NCP_ST_SUCCESS)
@@ -748,7 +777,9 @@ ncp_dev_reset_sw(void)
     nca_cfg_init->cfg_ring_ack_timer_en = 1;
     ncr_write32(NCP_REGION_ID(0x101, 0), NCP_NCA_CONFIG_INIT_55XX, reg);
 
+	printf("mb1\n");
     ncr_write32(NCP_REGION_ID(0x101, 0), NCP_NCA_CFG_RING_ACK_TIMER_CNT, 0x5f5e10);
+	printf("mb2\n");
 
     /* Enable config ring parity checking */
     ncr_read32(NCP_REGION_ID(0x101, 0), NCP_NCA_CFG_RING_PARITY, &reg);
@@ -759,9 +790,24 @@ ncp_dev_reset_sw(void)
     nca_cfg_ring_parity->singlebit_ecc_detect_en = 1;
     nca_cfg_ring_parity->singlebit_ecc_correct_en = 1;
     ncr_write32(NCP_REGION_ID(0x101, 0), NCP_NCA_CFG_RING_PARITY, reg);
+	printf("mb3\n");
 
     /* make all masters secure */
-    ncr_write32(NCP_REGION_ID(0x1d0, 0), 0x0014, 0);
+    /*ncr_write32(NCP_REGION_ID(0x1d0, 0), 0x0014, 0);*/
+	/*nca_security 0x80_3200_0008*/
+	reg = readl(0x8032000008);
+	reg |= 1<<0;
+	writel(reg, 0x8032000008);
+	printf("mb: %s() nca sec read back 0x%x\n",__func__, readl(0x8032000008));
+	/*mme_security 0x80_3200_002c*/
+	reg = readl(0x803200002c);
+	reg |= 1<<0;
+	writel(reg, 0x803200002c);
+	printf("mb: %s() mme sec read back 0x%x\n", __func__,readl(0x803200002c));
+	/*gpdma 0x80_3200_0038*/
+	reg = readl(0x8032000038);
+	reg |= 0x3<<0;
+	printf("mb: %s() gpdma read back 0x%x\n", __func__,readl(0x8032000038));
 
 NCP_RETURN_LABEL
     return ncpStatus;
@@ -779,6 +825,7 @@ ncp_dev_reset(void)
     
     /* Quiet the read/write smem transactions */
     ncpStatus = ncp_dev_quiesce();
+	printf("mb: ncp_dev_quiesce\n");
     if(ncpStatus != NCP_ST_SUCCESS)
     {
         NCP_MSG(NCP_MSG_ERROR, "ncp_dev_quiesce failed with %d\n", ncpStatus);
@@ -787,6 +834,7 @@ ncp_dev_reset(void)
     
 	/* Reset Modules */
     ncpStatus = ncp_dev_reset_hw();
+	printf("mb: ncp_dev_reset_hw\n");
     if(ncpStatus != NCP_ST_SUCCESS)
     {
         NCP_MSG(NCP_MSG_ERROR, "ncp_dev_reset_hw failed with %d\n", ncpStatus);
@@ -794,6 +842,7 @@ ncp_dev_reset(void)
     }
 
     ncpStatus = ncp_dev_reset_sw();
+	printf("mb: ncp_dev_reset_sw\n");
     if(ncpStatus != NCP_ST_SUCCESS)
     {
         NCP_MSG(NCP_MSG_ERROR, "ncp_dev_reset_sw failed with %d\n", ncpStatus);
@@ -812,11 +861,11 @@ static int
 ncp_dev_do_read(ncr_command_t *command, unsigned *value)
 {
 	if (NCP_REGION_ID(0x200, 1) == command->region) {
-		*value = *((volatile unsigned long *)command->offset);
+		*value = *(volatile unsigned*)(unsigned long)command->offset;
 
 		return 0;
 	} else if (0 != ncr_read32(command->region, command->offset, value)) {
-		printf("READ ERROR: n=0x%x t=0x%x o=0x%lx\n",
+		printf("READ ERROR: n=0x%x t=0x%x o=0x%x\n",
 			    NCP_NODE_ID(command->region),
 			    NCP_TARGET_ID(command->region), command->offset);
 		return -1;
@@ -837,7 +886,7 @@ ncp_dev_do_read(ncr_command_t *command, unsigned *value)
   ncp_dev_do_write
 */
 
-static int
+int __weak
 ncp_dev_do_write(ncr_command_t *command)
 {
 #if 0
@@ -847,7 +896,7 @@ ncp_dev_do_write(ncr_command_t *command)
 #endif
 #endif
 	if (NCP_REGION_ID(0x200, 1) == command->region) {
-		*((volatile unsigned long *)command->offset) = command->value;
+		*((volatile unsigned *)(unsigned long)command->offset) = command->value;
 #ifdef USE_CACHE_SYNC
 		flush_cache(command->offset, 4);
 #endif
@@ -867,10 +916,11 @@ ncp_dev_do_write(ncr_command_t *command)
 #endif
 		if (0 != ncr_write32(command->region, command->offset,
 				     command->value)) {
-			printf("WRITE ERROR: n=0x%x t=0x%x o=0x%lx "
+			printf("WRITE ERROR: n=0x%x t=0x%x o=0x%x "
 				    "v=0x%x\n",
 				    NCP_NODE_ID(command->region),
 				    NCP_TARGET_ID(command->region),
+
 				    command->offset, command->value);
 
 			return -1;
@@ -880,6 +930,32 @@ ncp_dev_do_write(ncr_command_t *command)
 	return 0;
 }
 
+static int
+ncp_dev_do_write_mb(ncr_command_t *command)
+{
+	if (NCP_REGION_ID(0x200, 1) == command->region) {
+		printf("mb: val 0x%lx @ 0x%lx\n", 
+				(unsigned long)command->value,  (unsigned long)command->offset);
+ 		*(volatile unsigned long *)(unsigned long)(command->offset) = command->value;
+		
+		printf("mb: reading back... val 0x%x @ 0x%x\n",
+			*(volatile unsigned*)(unsigned long)command->offset, command->offset);
+		return 0;
+	}
+	if (0 != ncr_write32(command->region, command->offset,
+				 command->value)) {
+		printf("WRITE ERROR: n=0x%x t=0x%x o=0x%x "
+				"v=0x%x\n",
+				NCP_NODE_ID(command->region),
+				NCP_TARGET_ID(command->region),
+				command->offset, command->value);
+
+		return -1;
+	}
+	
+
+	return 0;
+}
 /*
   ------------------------------------------------------------------------------
   ncp_dev_do_modify
@@ -894,12 +970,12 @@ ncp_dev_do_modify(ncr_command_t *command)
         command->value &= ~command->mask;
         command->value |= command->value;
 
-        ncp_dev_do_write(command);
+        ncp_dev_do_write_mb(command);
 
 		return 0;
 	} else if (0 != ncr_modify32(command->region, command->offset,
 			      command->mask, command->value)) {
-		printf("MODIFY ERROR: n=0x%x t=0x%x o=0x%lx m=0x%x "
+		printf("MODIFY ERROR: n=0x%x t=0x%x o=0x%x m=0x%x "
 			    "v=0x%x\n",
 			    NCP_NODE_ID(command->region),
 			    NCP_TARGET_ID(command->region), command->offset,
@@ -963,7 +1039,7 @@ ncp_dev_configure(ncr_command_t *commands) {
 	while (NCR_COMMAND_NULL != commands->command) {
 		switch (commands->command) {
 		case NCR_COMMAND_WRITE:
-			rc = ncp_dev_do_write(commands);
+			rc = ncp_dev_do_write_mb(commands);
 			break;
 		case NCR_COMMAND_READ:
 			rc = ncp_dev_do_read(commands, &value);
@@ -984,7 +1060,7 @@ ncp_dev_configure(ncr_command_t *commands) {
 			break;
         case NCR_COMMAND_FUNC:
             if(commands->offset) {
-                func_config_port func_ptr = (func_config_port)commands->offset;
+                func_config_port func_ptr = (func_config_port)commands->func;
                 /* call the function in offset field with param in value field */
                 rc = func_ptr(commands->value);
             }

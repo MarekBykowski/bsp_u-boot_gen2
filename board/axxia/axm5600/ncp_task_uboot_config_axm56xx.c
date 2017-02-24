@@ -20,6 +20,9 @@
 
 #define NCP_TASK_USE_56XX_HEADERS
 
+#define DEBUG
+#include <config.h>
+
 #if 0 /* UBOOT */
 #include "ncp_dev.h"
 #include "ncp_release_id.h"
@@ -38,6 +41,10 @@
 #include "ncp_task_inline_funcs_axm56xx.h"
 #endif
 
+#include "ncp_mpcq_reg_defines.h"
+
+
+#define NCP_TASK_DEBUG_MME
 
 /*
  * WARNING:
@@ -45,82 +52,142 @@
  */
  
 /* ACP5.Engines.NCA.NcaDomainInfo.DomainEntry[id=0].startOffset */
-#define DOMAINBUNDLE_PA 0x2FC00000 /* 801112064 */
+#define DOMAINBUNDLE_PA 2181038080
 
 /* ACP5.Engines.NCA.NcaDomainInfo.DomainEntry[id=0].size */
-#define DOMAINBUNDLE_SIZE 0x14000 /* 81920 */
+#define DOMAINBUNDLE_SIZE 81920
 
 /* ACP5.Engines.NCA.NcaDomainInfo.DomainEntry[id=0].otbpOffset */
-#define OTBP_PA 0x2FC00000 /* 801112064 */
+#define OTBP_PA 2181038080
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ThreadQueueSet[id=0].oPcQOffset */
-#define OPCQ_OFFSET 0x2FC01480 /* 801117312 */
+#define OPCQ_OFFSET 2181043328
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ThreadQueueSet[id=0].cPcQOffset */
-#define CPCQ_OFFSET 0x2FC02480 /* 801121408 */
+#define CPCQ_OFFSET 2181047424
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ThreadQueueSet[id=0].cfgDmaBuffersOffset */
-#define CFG_BUFFS_OFFSET 0x2FC02900 /* 801122560 */
+#define CFG_BUFFS_OFFSET 2181048576
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ThreadQueueSet[id=0].TaskReceiveQueue[id=0].iPcQOffset */
-#define IPCQ_OFFSET 0x2FC01080 /* 801116288 */
+#define IPCQ_OFFSET 2181042304
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ncaPgitOffset */
-#define NCAPGIT_OFFSET 0x2FC01000 /* 801116160 */
+#define NCAPGIT_OFFSET 2181042176
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].cpuPgitOffset */
-#define CPUPGIT_OFFSET 0x2FC01040 /* 801116224 */
+#define CPUPGIT_OFFSET 2181042240
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ThreadQueueSet[id=0].Allocators.Allocator[id=0].allocatorOffset */
-#define MMEALLOCATOR_OFFSET 0x2FC12C00 /* 801188864 */
+#define MMEALLOCATOR_OFFSET 2181114880
 
-/* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=0].physicalBaseAddress */
-#define POOL_0_PA 0
+/* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=0].physicalBaseAddress should be
+ * ACP5.Engines.MME.MemoryPoolMap.VPPMemoryPools.VPPMemoryPool[id=0].physicalBaseAddress */
+#define POOL_0_PA 2456330240
 
 /* ACP5.Engines.MME.MemoryPoolMap.VPPMemoryPools.VPPMemoryPool[id=0].maxDynamic */
-#define POOL_0_SIZE 901565439
-
+#define POOL_0_SIZE 2493206527
 
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].physicalBaseAddress */
-#define POOL_2_PA 937295872
+#define POOL_2_PA 2493218816
 
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].size */
-#define POOL_2_SIZE 126214656
+#define POOL_2_SIZE 853262080
 
 /*
  * Note - MME presents the following in the reverse order of what Task I/O needs
  */
  
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=3].physicalBaseAddress */
-#define POOL_2_SZ0_PA 1051367424
-#define POOL_2_SZ0_VA 1051367424
+#define POOL_2_SZ0_PA 3071692800
+#define POOL_2_SZ0_VA 3071692800
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=3].size */
-#define POOL_2_SZ0_SIZE 12143104
-#define POOL_2_SZ0_NUMBLOCKS 774
+#define POOL_2_SZ0_SIZE 274788096
+#define POOL_2_SZ0_NUMBLOCKS 1073391
 
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=2].physicalBaseAddress */
-#define POOL_2_SZ1_VA 1019772928
-#define POOL_2_SZ1_PA 1019772928
+#define POOL_2_SZ1_VA 2783297535
+#define POOL_2_SZ1_PA 2783297535
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=2].size */
-#define POOL_2_SZ1_SIZE 31594496
-#define POOL_2_SZ1_NUMBLOCKS 1938
+#define POOL_2_SZ1_SIZE 288395264
+#define POOL_2_SZ1_NUMBLOCKS 140818
 
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=1].physicalBaseAddress */
-#define POOL_2_SZ2_VA 988020736
-#define POOL_2_SZ2_PA 988020736
+#define POOL_2_SZ2_VA 2493218816
+#define POOL_2_SZ2_PA 2493218816
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=1].size */
-#define POOL_2_SZ2_SIZE 31752192
-#define POOL_2_SZ2_NUMBLOCKS 15427
+#define POOL_2_SZ2_SIZE 290078720
+#define POOL_2_SZ2_NUMBLOCKS 17705
 
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=0].physicalBaseAddress */
-#define POOL_2_SZ3_VA 937295872
-#define POOL_2_SZ3_PA 937295872
+#define POOL_2_SZ3_VA 2493218816
+#define POOL_2_SZ3_PA 2493218816
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=0].size */
-#define POOL_2_SZ3_SIZE 50724864 
-#define POOL_2_SZ3_NUMBLOCKS 47434 
+#define POOL_2_SZ3_SIZE 0
+#define POOL_2_SZ3_NUMBLOCKS 0
    
-   
-   
+
+/*
+ * TWM: Test 03-05-2014
+ * New API.   Called by NCA after domain bundle is mapped
+ * and mPCQ queue memory has been memset to 0.
+ */
+ncp_st_t 
+ncp_mme_enable_mpcq(ncp_uint32_t mpcqId)
+{
+    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+
+    if ( mpcqId > 0)
+    {
+        NCP_CALL(NCP_ST_MME_INVALID_MPCQ_ID);
+    }
+
+    if (! pNcpNcaV2_TaskSwState->threadQueueSets[0].mme[0].valid)
+    {
+        NCP_CALL(NCP_ST_MME_INVALID_MPCQ_ID);
+    }
+    
+    if (mpcqId < 32)
+    {    
+        ncp_uint32_t enable0=0;
+        ncp_uint32_t *pU32;
+            
+
+        pU32 = &enable0;
+        ncr_read32( NCP_REGION_MME_MME_CORE,
+                  	NCP_MME_CORE_MPCQ_BASE + NCP_MPCQ_ENABLE0,      
+                  	((ncp_uint32_t*)(pU32)));    
+        enable0 = enable0 | ( 1 << mpcqId);
+        
+        ncr_write32(NCP_REGION_MME_MME_CORE,
+					NCP_MME_CORE_MPCQ_BASE + NCP_MPCQ_ENABLE0,
+					(*((ncp_uint32_t*)(pU32))));            
+
+        ncr_read32( NCP_REGION_MME_MME_CORE,
+                  	NCP_MME_CORE_MPCQ_BASE + NCP_MPCQ_ENABLE0,      
+                  	((ncp_uint32_t*)(pU32)));    
+		debug("mb: %s() enabling %d reading reg back 0x%x\n", __func__, mpcqId, *pU32);
+    }
+    else
+    { 
+        ncp_uint32_t enable1=0;
+        ncp_uint32_t *pU32;
+                   
+        pU32 = &enable1;
+        ncr_read32( NCP_REGION_MME_MME_CORE,
+                    NCP_MME_CORE_MPCQ_BASE + NCP_MPCQ_ENABLE1,      
+                    ((ncp_uint32_t*)(pU32)));  
+        enable1 = enable1 | ( 1 << (mpcqId - 32));  
+        
+        ncr_write32(NCP_REGION_MME_MME_CORE,
+					NCP_MME_CORE_MPCQ_BASE + NCP_MPCQ_ENABLE1,
+					(*((ncp_uint32_t*)(pU32))));
+    }
+
+NCP_RETURN_LABEL
+   	return ncpStatus;
+}                               
+
 ncp_st_t
 ncp_task_v2_uboot_config_mme_for_tqs(ncp_int32_t tqsID)
 {
@@ -146,7 +213,7 @@ ncp_task_v2_uboot_config_mme_for_tqs(ncp_int32_t tqsID)
              * Get VA and memset entire allocation interface.  
              * Size is 4 queues of 128 64bit entries plus 
              * 4 64bit read pointers.   The read pointers index
-             * into the queues,   which are populated by MME with
+             * into the queues, which are populated by MME with
              * free task buffers. 
              */
             NCP_CALL(NCP_TASK_INITIALIZE_DOMAIN_OBJ_VA(
@@ -299,14 +366,17 @@ ncp_task_v2_uboot_config_mme_for_tqs(ncp_int32_t tqsID)
              
                 
 #if defined(NCP_TASK_DEBUG_MME) && !defined(NCP_KERNEL)                 
-            NCP_LOG(NCP_MSG_INFO, "Contents:\r\n");
             ncp_r32((ncp_uint32_t *)pTQS->mme[i].allocIF[0].entries_baseVA, 256);
 #endif            
+
+           /*
+            * Now enable the mPCQ allocation interface                     
+            */
+            NCP_CALL(ncp_mme_enable_mpcq(pTQS->mme[i].id));
                                    
             p64_VA++;
             
 #ifdef NCP_TASK_PRINT_BASE_ADDRESSES_AND_MAPPINGS
-            
            NCP_MSG(NCP_MSG_INFO, "initialized shared pool allocator (%d) @offset 0x%llx baseVA=%p, endVA=%p\r\n",
                 pTQS->mme[i].id,
                 pTQS->mme[i].cfgOffset,
@@ -500,7 +570,6 @@ ncp_task_uboot_config(void)
             
     /* config cPCQ 0 */
 
-
     pcq = &pNcpNcaV2_TaskSwState->cPCQs[0];   
      
     pcq->u.cpcq_info.cPcqOffset = CPCQ_OFFSET;               
@@ -642,7 +711,7 @@ ncp_task_uboot_config(void)
     /*
      * Hook task I/O state off nca handle
      */
-     nca->myNcpNcaTaskState = pNcpNcaV2_TaskSwState;
+    nca->myNcpNcaTaskState = pNcpNcaV2_TaskSwState;
      
     /*
      * Cache items from ncp handle 
@@ -652,8 +721,6 @@ ncp_task_uboot_config(void)
     pNcpNcaV2_TaskSwState->inWarmRestart = FALSE;                
     pNcpNcaV2_TaskSwState->inUmode = TRUE;
     pNcpNcaV2_TaskSwState->domainIsInternal = ncp->domainIsInternal = TRUE;
-
-
 
 NCP_RETURN_LABEL
     return(ncpStatus);

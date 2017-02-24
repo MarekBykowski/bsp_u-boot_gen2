@@ -52,7 +52,7 @@
 
 
 /* HACK: Define it until cache coherency is figured out */
-/* #define USE_CACHE_SYNC */
+/*#define USE_CACHE_SYNC*/
 
 /*
   ==============================================================================
@@ -174,7 +174,7 @@
 
 
 /* HACK: Define it until cache coherency is figured out */
-/* #define USE_CACHE_SYNC */
+#define USE_CACHE_SYNC
 
 /*
   ==============================================================================
@@ -230,6 +230,7 @@
   ------------------------------------------------------------------------------
 */
 
+#define CONFIG_CMD_CACHE
 #define CONFIG_AXXIA_56XX
 #define ARM64
 #define NCP_64
@@ -260,6 +261,9 @@
 
 /********** FEMAC PHY ADDRESS *************/
 #define CONFIG_AXXIA_PHY_ADDRESS 0x7
+
+/* HACK: Define it until cache coherency is figured out */
+#define USE_CACHE_SYNC
 
 #define CONFIG_AXXIA_MDIO
 #define CONFIG_AXXIA_NEMAC

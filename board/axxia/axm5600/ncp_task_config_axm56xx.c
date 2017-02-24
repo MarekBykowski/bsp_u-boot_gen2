@@ -17,11 +17,10 @@
  */
 
 #define NCP_TASK_USE_56XX_HEADERS
-/*
 #define DEBUG
 #include <common.h>
 #define NCP_TASK_DEBUG_MME
-*/
+
 #ifdef NCP_DEV_FBRS
 #define NCP_TASK_NCA_GLOBALS
 #endif

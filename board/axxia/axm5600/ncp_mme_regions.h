@@ -33,6 +33,12 @@ extern "C" {
 #define    NCP_REGION_MME_POKE                                  NCP_REGION_ID(0x109,0x0) /* 265.0 */
 #define    NCP_REGION_MME_CFG_NODE                              NCP_REGION_ID(NCP_NODE_MME, 0x00ff) /* 21.255 */
 
+#define     NCP_MME_CORE_MPCQ_BASE                              (0x11000000)
+#define     NCP_MME_CORE_MPCQ_END                               (0x12000000)
+#define     NCP_MME_CORE_MPCQ_RANGE(addr) \
+                   (((addr) >= NCP_MME_CORE_MPCQ_BASE) && \
+                            ((addr) < NCP_MME_CORE_MPCQ_END))
+
 
 #ifdef __cplusplus
 }

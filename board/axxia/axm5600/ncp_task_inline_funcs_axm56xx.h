@@ -460,7 +460,7 @@ ncp_task_v2_MMEpool_alloc(
     ncp_uint64_t x64;
     ncp_raw_addr_t va;
 
-    debug_cond(1, "ncp_task_v2_MMEpool_alloc(): size=%d, queueValid=%d\n", size,
+    debug("ncp_task_v2_MMEpool_alloc(): size=%d, queueValid=%d\n", size,
         myTaskHdl->mmeAllocator->allocIF[0].queueValid);
     
 #ifdef NCP_TASK_DEBUG_MME    
@@ -506,20 +506,20 @@ ncp_task_v2_MMEpool_alloc(
                 pAllocIF->readP_swVA);
 #endif    
   
-mme_alloc_retry:
+/*mme_alloc_retry:*/
         
     /*
      * Get 64bit Virtual Index (addr) value stored in next mPCQ entry
      */    
     x64 = *(pAllocIF->readP_swVA);
 
-/*    debug("ncp_task_v2_MMEpool_alloc(): readP_swVA=0x%llx\n", x64); */
+	debug("ncp_task_v2_MMEpool_alloc(): (*readP_swVA)=0x%llx\n", x64); 
            
     if (0LL == x64)
     {
-/*        debug("ncp_task_v2_MMEpool_alloc(): poking 0x%llx\n", 
+		debug("ncp_task_v2_MMEpool_alloc(): poking 0x%llx\n", 
                 pAllocIF->readP_hw_indx0_val);
-                */
+
         NCP_CALL(ncr_write32(
                      NCP_REGION_MME_POKE,
                      0,
@@ -531,7 +531,7 @@ mme_alloc_retry:
                      (ncp_uint32_t)(pAllocIF->readP_hw_indx0_val
                      & 0x00000000FFFFFFFFLL)));    
                                  
-        goto mme_alloc_retry;             
+        /*goto mme_alloc_retry;             */
     }    
     
     *(pAllocIF->readP_swVA) = 0LL; /* Is this eally necessary ? */
@@ -539,7 +539,7 @@ mme_alloc_retry:
     va = (ncp_raw_addr_t) x64; 
 
 #ifdef NCP_TASK_DEBUG_MME    
-    NCP_LOG(NCP_MSG_INFO, "mPCQ read entry @ %p : VA = %p\r\n", 
+    NCP_LOG(NCP_MSG_INFO, "mPCQ read entry @ %p : VA = 0x%p\r\n", 
             pAllocIF->readP_swVA,
             ((void *)va));
 #endif
@@ -557,7 +557,7 @@ mme_alloc_retry:
     }   
     
 #ifdef NCP_TASK_DEBUG_MME    
-    NCP_LOG(NCP_MSG_INFO, "new swReadP is %p max is %p, hwReadp=%lld\r\n",
+    NCP_LOG(NCP_MSG_INFO, "new swReadP is %p max is %p, hwReadp=%llx\r\n",
         pAllocIF->readP_swVA,
         pAllocIF->entries_baseVA,
         *(pAllocIF->readP_hwVA));
@@ -2468,7 +2468,6 @@ ncp_task_v2_check_input_queue( ncp_pvt_task_hdl_t          *myTaskHdl,
 
     /* HACK: Temporary invalidate until cache coherency is figured in uboot */
 #ifdef USE_CACHE_SYNC
-    kdfldfk
     INVALIDATE_DCACHE_RANGE_ALIGN(pInputQueueEntry, sizeof(ncp_task_ncaV2_iPCQ_entry_t));
 #endif
     if (0LL != (ncp_uint64_t)(pInputQueueEntry->taskAddr))
