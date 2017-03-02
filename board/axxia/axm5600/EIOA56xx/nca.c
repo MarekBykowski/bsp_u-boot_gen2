@@ -946,6 +946,9 @@ static ncr_command_t nca[] = {
 
 	/* End TCLd Threshold Group */
 
+	/* COW TIL ARB mode set */
+	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 1), {.offset = 0x00000004}, 0x6804987e, 0},
+
 	/* TCLd Logical Queue clear */
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 0), {.offset = 0x00000180}, 0x00000000, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 0), {.offset = 0x00000600}, 0x00000000, 0},
@@ -984,6 +987,9 @@ static ncr_command_t nca[] = {
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 0), {.offset = 0x00010014}, 0x00000000, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 0), {.offset = 0x00010018}, 0x00000000, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 0), {.offset = 0x0001001c}, 0x00000000, 0},
+
+	/* TIL Input Queue Weight */
+	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 1), {.offset = 0x00000400}, 0x0000000f, 0},
 
 	/* TCLd Add Task Queue to Logical Queue */
 
@@ -1316,6 +1322,9 @@ static ncr_command_t nca[] = {
 	/* CAAL Configuration End */
 
 	/* MCIP Configuration Begin */
+	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 4), {.offset = 0x00000048}, 0x00180018, 0},
+	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 4), {.offset = 0x00000040}, 0x00180000, 0},
+	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 4), {.offset = 0x00000050}, 0x000c000c, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 4), {.offset = 0x00000058}, 0x08702880, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 4), {.offset = 0x0000005c}, 0x08201400, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 4), {.offset = 0x00000064}, 0x000123e8, 0},
@@ -1671,7 +1680,6 @@ static ncr_command_t nca[] = {
 
 	/* TCLd Init address ptr */
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 0), {.offset = 0x00000004}, 0x014e00a5, 0},
-	{NCR_COMMAND_USLEEP, 0, {.offset = 0}, 1000, 0},
 
 	/* TIL Online */
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 1), {.offset = 0x00000004}, 0x6804807f, 0},

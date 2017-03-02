@@ -1,0 +1,21 @@
+if (nodeId < 0x100)
+ncp_dev_cfg_pio_io32
+
+
+===================================
+{NCR_COMMAND_READ, NCP_REGION_ID(8, 255), {.offset = 0x00000000}, 0, 0},
+case NCP_REGION_ID(0x08, 0x0a):     /* CMEM0 */
+case NCP_REGION_ID(0x09, 0x0a):     /* CMEM1 */
+case NCP_REGION_ID(0x22, 0x01):     /* SMEM0 */
+case NCP_REGION_ID(0x0f, 0x01):     /* SMEM1 */
+    region->writeFn   = __ncp_dev_56xx_ddr_phy_write;
+
+
+/* 512.1 -  sysmem access via NCA NIC interface */              
+{ NCP_REGION_NCA_NIC_SYSMEM,        ncpSysmemRegionMap,         
+                                    __ncp_dev_sysmem_nic_read,  
+                                    __ncp_dev_sysmem_nic_write, 
+                                    0,                          
+},                                                              
+
+
