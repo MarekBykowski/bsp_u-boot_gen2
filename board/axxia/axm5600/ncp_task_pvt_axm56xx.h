@@ -108,7 +108,7 @@
 /* #define NCP_TASK_DBG_TRACK_ALLOC_FREE */
 /* #define NCP_TASK_DBG_TRACK_AUX_DATA */
 /* #define NCP_TASK_PRINT_BASE_ADDRESSES_AND_MAPPINGS */
-#define NCP_TASK_NCAV2_SHPOOL_PTR_DEBUG  0 
+#define NCP_TASK_NCAV2_SHPOOL_PTR_DEBUG  1
 /* #define NCP_KMODE_DEBUG */
  
 /* ================================================

@@ -222,6 +222,8 @@ ncp_task_v2_uboot_config_mme_for_tqs(ncp_int32_t tqsID)
                 &pTQS->mme[i].baseVA,
                 FALSE));
 
+			printf("mb: %s() val 0x%llx @ addr baseVA %p",__func__, pTQS->mme[i].baseVA, 
+					(void*)(ncp_uint64_t *)pTQS->mme[i].baseVA);	
             p64_VA = (ncp_uint64_t *)pTQS->mme[i].baseVA;
                         
             /* 

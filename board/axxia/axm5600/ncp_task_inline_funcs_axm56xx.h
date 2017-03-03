@@ -23,6 +23,7 @@
 
 #define DEBUG
 #include <common.h>
+#define NCP_TASK_DBG_55XX_TASK_FLOW
 #define NCP_TASK_DEBUG_MME
 /*
  * =============================
@@ -1186,6 +1187,7 @@ ncp_task_v2_put_completion_plus_deallocate(ncp_pvt_task_hdl_t *myTaskHdl,
 /*
  * WORKAROUND FOR HW BUG - Remove when fixed in production silicon!
  */    
+#undef NCP_TASK_BUFFSZ_BITS_REQ_FOR_SHARED_POOL_BUG
 #ifdef NCP_TASK_BUFFSZ_BITS_REQ_FOR_SHARED_POOL_BUG
     if (NCP_TASK_IS_SHARED_POOL(myTaskHdl->poolID))
     {  
@@ -1565,7 +1567,7 @@ ncp_task_v2_put_deallocate_immediate(ncp_pvt_task_hdl_t *myTaskHdl,
 #ifdef NCP_TASK_DBG_55XX_TASK_FLOW 
     NCP_MSG(NCP_MSG_INFO, 
                     " Dealloc Immediate: VP=%p",
-                    pDeallocImmediate->pduSegAddr0);   
+                    (void*)pDeallocImmediate->pduSegAddr0);   
 #endif 
     
     switch(pDeallocImmediate->ptrCnt)
@@ -2184,6 +2186,7 @@ ncp_task_v2_put_tOutput(ncp_pvt_task_hdl_t *myTaskHdl,
 /*
  * WORKAROUND FOR HW BUG - Remove when fixed in production silicon!
  */    
+#undef NCP_TASK_BUFFSZ_BITS_REQ_FOR_SHARED_POOL_BUG
 #ifdef NCP_TASK_BUFFSZ_BITS_REQ_FOR_SHARED_POOL_BUG
     debug("ncp_task_v2_put_tOutput(): before NCP_TASK_IS_SHARED_POOL\n");
     if (NCP_TASK_IS_SHARED_POOL(myTaskHdl->poolID))
@@ -2596,6 +2599,7 @@ ncp_task_v2_check_input_queue( ncp_pvt_task_hdl_t          *myTaskHdl,
 
 
 #if (NCP_TASK_NCAV2_SHPOOL_PTR_DEBUG) || defined(NCP_TASK_DBG_55XX_TASK_FLOW)             
+
         NCP_MSG(NCP_MSG_INFO, 
                     "RX Task VA=0x%p\r\n",
                     pHdr);

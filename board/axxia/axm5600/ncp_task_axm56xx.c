@@ -196,6 +196,8 @@ ncp_task_v2_hdl_create(
     if (FALSE == pNcpNcaV2_TaskSwState->inUmode)
     {
         shared = TRUE;
+		/*mb:*/
+		shared = FALSE;
     }    
     
     /*

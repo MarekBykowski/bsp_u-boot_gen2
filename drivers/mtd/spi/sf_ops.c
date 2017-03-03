@@ -8,6 +8,7 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+#define DEUBUG
 #include <common.h>
 #include <errno.h>
 #include <malloc.h>

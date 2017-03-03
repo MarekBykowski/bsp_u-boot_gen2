@@ -26,7 +26,7 @@
 
 unsigned char ethernet_address[6];
 int dumprx = 0;
-int dumptx = 0;
+int dumptx = 1;
 
 int axxia_mdio_init(void);
 int nemac_initialize(bd_t *);

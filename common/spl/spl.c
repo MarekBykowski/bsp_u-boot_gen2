@@ -20,6 +20,8 @@
 #include <linux/compiler.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+#define DEBUG
+#include <config.h>
 
 #ifndef CONFIG_SYS_UBOOT_START
 #define CONFIG_SYS_UBOOT_START	CONFIG_SYS_TEXT_BASE

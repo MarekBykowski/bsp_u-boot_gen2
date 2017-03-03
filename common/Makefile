@@ -5,6 +5,8 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
+obj-y += cmd_lsi_net.o
+
 # core
 ifndef CONFIG_SPL_BUILD
 obj-y += main.o

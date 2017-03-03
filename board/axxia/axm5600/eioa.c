@@ -205,6 +205,7 @@ typedef struct {
 typedef enum {
 	NCR_COMMAND_NULL,
 	NCR_COMMAND_WRITE,
+	NCR_COMMAND_WRITE64,
 	NCR_COMMAND_READ,
 	NCR_COMMAND_MODIFY,
 	NCR_COMMAND_USLEEP,
@@ -255,6 +256,7 @@ ncp_task_uboot_unconfig(void);
 #include "EIOA56xx/nca.c"
 #include "EIOA56xx/eioa.c"
 #include "EIOA56xx/hss_gmac.c"
+/*#include "EIOA56xx/all.c"*/
 //#include "EIOA56xx/hss_xgmac.c"
 #else
 #error "EIOA is not defined for this architecture!"
@@ -695,12 +697,12 @@ ncp_dev_reset_hw(void)
     resetReg.nic_rst          = 1;
     resetReg.pbm_rst          = 1;
 
+#if 0
 	resetReg.cmem0_rst        = 1;
 	resetReg.cmem1_rst        = 1;
 	resetReg.cmem0_phy_io_rst = 1;
 	resetReg.cmem1_phy_io_rst = 1;
 
-#if 0
     resetReg.smem0_phy_io_rst = 1;
     resetReg.smem1_phy_io_rst = 1;
     resetReg.smc0_rst         = 1;
@@ -807,6 +809,7 @@ ncp_dev_reset_sw(void)
 	/*gpdma 0x80_3200_0038*/
 	reg = readl(0x8032000038);
 	reg |= 0x3<<0;
+	writel(reg, 0x8032000038);
 	printf("mb: %s() gpdma read back 0x%x\n", __func__,readl(0x8032000038));
 
 NCP_RETURN_LABEL
@@ -933,15 +936,23 @@ ncp_dev_do_write(ncr_command_t *command)
 static int
 ncp_dev_do_write_mb(ncr_command_t *command)
 {
+	/*ncr_command_t val = *command;
+	ncr_command_t *start = &val;*/
 	if (NCP_REGION_ID(0x200, 1) == command->region) {
-		printf("mb: val 0x%lx @ 0x%lx\n", 
-				(unsigned long)command->value,  (unsigned long)command->offset);
- 		*(volatile unsigned long *)(unsigned long)(command->offset) = command->value;
+ 		*(volatile unsigned*)(unsigned long)(command->offset) = (unsigned) command->value;
 		
-		printf("mb: reading back... val 0x%x @ 0x%x\n",
-			*(volatile unsigned*)(unsigned long)command->offset, command->offset);
+		unsigned int read_back = *(volatile unsigned*)(unsigned long)command->offset;
+		if (read_back != command->value) {
+			printf("WRITE ERROR: n=0x%x t=0x%x o=0x%x "
+				"v=0x%x\n",
+				NCP_NODE_ID(command->region),
+				NCP_TARGET_ID(command->region),
+				command->offset, command->value);
+			return -1;
+		}
 		return 0;
 	}
+
 	if (0 != ncr_write32(command->region, command->offset,
 				 command->value)) {
 		printf("WRITE ERROR: n=0x%x t=0x%x o=0x%x "
@@ -952,9 +963,57 @@ ncp_dev_do_write_mb(ncr_command_t *command)
 
 		return -1;
 	}
+
+#if 0
+	udelay(1000);
+	
+	unsigned read_back;
+	if (0 != ncr_read32(start->region, start->offset, &read_back)) {
+		printf("mb: READ ERROR: n=0x%x t=0x%x o=0x%x "
+				"v=0x%x\n",
+				NCP_NODE_ID(start->region),
+				NCP_TARGET_ID(start->region),
+				start->offset, start->value);
+		return -1;
+	} 
+
+	if (read_back != start->value)  {
+		printf("mb: write/read error: written 0x%x, read back 0x%x"
+				" n=0x%x t=0x%x o=0x%x v=0x%x\n",
+				start->value, read_back,
+				NCP_NODE_ID(start->region),
+				NCP_TARGET_ID(start->region),
+				start->offset, start->value);
+		return -1;
+	}
+#endif
 	
 
 	return 0;
+}
+
+static int
+ncp_dev_do_write_mb64(ncr_command_t *command)
+{
+	if (NCP_REGION_ID(0x200, 1) == command->region) {
+		printf("mb: val 0x%lx @ addr 0x%lx\n", 
+				(unsigned long)command->value,  (unsigned long)command->offset);
+ 		*(volatile unsigned long*)(unsigned long)(command->offset) = (unsigned long) command->value;
+		
+		unsigned long read_back = *(volatile unsigned long*)(unsigned long)command->offset;
+		if (read_back != command->value) {
+			printf("WRITE ERROR: n=0x%x t=0x%x o=0x%x "
+				"v=0x%x\n",
+				NCP_NODE_ID(command->region),
+				NCP_TARGET_ID(command->region),
+				command->offset, command->value);
+			return -1;
+		}
+		
+		return 0;
+	}
+
+	return -1;
 }
 /*
   ------------------------------------------------------------------------------
@@ -1040,6 +1099,9 @@ ncp_dev_configure(ncr_command_t *commands) {
 		switch (commands->command) {
 		case NCR_COMMAND_WRITE:
 			rc = ncp_dev_do_write_mb(commands);
+			break;
+		case NCR_COMMAND_WRITE64:
+			rc = ncp_dev_do_write_mb64(commands);
 			break;
 		case NCR_COMMAND_READ:
 			rc = ncp_dev_do_read(commands, &value);
@@ -1569,46 +1631,52 @@ initialize_task_io(struct eth_device *dev)
     ncp_task_uboot_domain_bundle_clear();
     debug("done\n");
 
-    debug("Configuring MME...");
-	if (0 != ncp_dev_configure(mme)) {
-		printf("MME Configuration Failed\n");
-		return -1;
-	}
-    debug("done\n");
+	debug("Configuring MME...");
+    if (0 != ncp_dev_configure(mme)) {
+            printf("MME Configuration Failed\n");
+            return -1;
+    }
+	debug("done\n");
 
-    debug("Configuring PBM...");
-    if (0 != ncp_dev_configure(pbm)) {
-		printf("PBM Configuration Failed\n");
-		return -1;
-	}
-    debug("done\n");
+	debug("Configuring PBM...");
+	if (0 != ncp_dev_configure(pbm)) {
+				printf("PBM Configuration Failed\n");
+				return -1;
+		}
+	debug("done\n");
 
-    debug("Configuring VP...");
-	if (0 != ncp_dev_configure(vp)) {
-		printf("Virtual Pipeline Configuration Failed\n");
-		return -1;
-	}
-    debug("done\n");
+	debug("Configuring VP...");
+		if (0 != ncp_dev_configure(vp)) {
+				printf("Virtual Pipeline Configuration Failed\n");
+				return -1;
+		}
+	debug("done\n");
 
-    debug("Configuring NCA...");
-	if (0 != ncp_dev_configure(nca)) {
-		printf("NCA Configuration Failed\n");
-		return -1;
-	}
-    debug("done\n");
+	debug("Configuring NCA...");
+		if (0 != ncp_dev_configure(nca)) {
+				printf("NCA Configuration Failed\n");
+				return -1;
+		}
+	debug("done\n");
+
+	debug("Configuring Uboot task io...");
+	/* initialize task io */
+	NCP_CALL(ncp_task_uboot_config());
+	debug("done\n");
+
+	debug("Configuring EIOA...");
+		if (0 != ncp_dev_configure(eioa)) {
+				printf("EIOA Configuration Failed\n");
+				return -1;
+		}
+	debug("done\n");
+
 
     debug("Configuring Uboot task io...");
     /* initialize task io */
 	NCP_CALL(ncp_task_uboot_config());
     debug("done\n");
 
-    debug("Configuring EIOA...");
-	if (0 != ncp_dev_configure(eioa)) {
-		printf("EIOA Configuration Failed\n");
-		return -1;
-	}
-    debug("done\n");
-    
     if((NCP_USE_ALL_PORTS == eioaPort && port_type_by_index[0] == EIOA_PORT_TYPE_GMAC) ||
        (NCP_USE_ALL_PORTS != eioaPort && port_type_by_index[index_by_port[eioaPort]] == EIOA_PORT_TYPE_GMAC)) {
         debug("Configuring all HSS for GMAC...");
