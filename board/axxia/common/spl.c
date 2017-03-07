@@ -789,6 +789,7 @@ jump_to_monitor(void *address)
 	axxia_configuration->baud_rate = gd->baudrate;
 	entry = (void (*)(void *, void *))address;
 	cleanup_before_linux();
+asm volatile("kot:  b kot\n");
 	entry(NULL, axxia_configuration);
 	acp_failure(__FILE__, __func__, __LINE__);
 
