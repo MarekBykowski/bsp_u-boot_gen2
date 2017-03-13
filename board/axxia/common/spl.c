@@ -30,7 +30,12 @@
 #include <asm/io.h>
 
 DECLARE_GLOBAL_DATA_PTR;
+extern void _start(void);
 
+int dupa(int i) {
+	printf("mb: %s() i %d\n",__func__, ++i);
+	return i;
+}
 /*
   ==============================================================================
   ==============================================================================
@@ -789,10 +794,15 @@ jump_to_monitor(void *address)
 	axxia_configuration->baud_rate = gd->baudrate;
 	entry = (void (*)(void *, void *))address;
 	cleanup_before_linux();
-asm volatile("kot:  b kot\n");
+{
+	int i = dupa(3);
+	printf("%d\n", i);
 	entry(NULL, axxia_configuration);
+	asm volatile("kot2:  b kot2\n");
+#ifndef SYSCACHE_ONLY_MODE
 	acp_failure(__FILE__, __func__, __LINE__);
-
+#endif
+}
 	return;
 }
 
@@ -1096,6 +1106,9 @@ load_image(void)
 }
 
 #endif	/* SYSCACHE_ONLY_MODE */
+
+
+
 
 /*
   ------------------------------------------------------------------------------
@@ -1442,6 +1455,11 @@ board_init_f(ulong dummy)
 	load_image();
 	printf("U-Boot Loaded in System Cache, Jumping to Monitor\n");
 	jump_to_monitor((void *)0x8031001000);
+    writel(0x0, (MMAP_SCB + 0x42800));
+{
+	int i = dupa(3);
+	printf("%d\n", i);
+}
 #endif	/* SYSCACHE_ONLY_MODE */
 
 	if (0 != (global->flags & PARAMETERS_GLOBAL_RUN_SMEM_BIST)) {
