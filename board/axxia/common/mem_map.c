@@ -11,28 +11,25 @@
 				  unsigned long ro_start,	               \
 				  unsigned long ro_limit)	               \
 	{							               \
-	       mmap_add_region(total_base, total_base, \
+	       mmap_add_region(total_base,total_base, \
 			       total_size,             \
-			       MT_MEMORY | MT_RW | MT_NS);	           \
+			       MT_MEMORY | MT_RW | MT_SECURE);	\
                                                                   \
-	       mmap_add_region(ro_start, ro_start, \
-			       ro_limit,             \
-			       MT_MEMORY | MT_RO | MT_NS);	          \
-																\
 	       mmap_add_region(DICKENS, DICKENS, 0x0040000000,       \
-			       MT_DEVICE | MT_RW | MT_NS);                 \
+			       MT_DEVICE | MT_RW | MT_SECURE);                 \
 		                                                               \
 	       mmap_add_region(IO, IO, 0x0040000000,       \
-			       MT_DEVICE | MT_RW | MT_NS);                 \
-                                                                               \
-	       mmap_add_region(0, 0, CONFIG_UBOOT_MAX_MEM,                \
-			       MT_MEMORY | MT_RW | MT_NS | MT_CACHED);     \
+			       MT_DEVICE | MT_RW | MT_SECURE);                 \
+													\
+	       mmap_add_region(0, 0, CONFIG_UBOOT_MAX_MEM, \
+					MT_MEMORY | MT_RW | MT_SECURE | MT_CACHED);     \
 		                                                               \
 	       init_xlat_tables();				               \
 								               \
-	       enable_mmu_el##_el(0);		               \
+	       enable_mmu_el##_el(DISABLE_DCACHE);		               \
 	}
 
+
 /* Define EL2 and EL3 variants of the function initialising the MMU */
-DEFINE_CONFIGURE_MMU_EL(2)
+/*DEFINE_CONFIGURE_MMU_EL(2)*/
 DEFINE_CONFIGURE_MMU_EL(3)

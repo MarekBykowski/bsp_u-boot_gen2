@@ -31,10 +31,10 @@
 #ifndef __XLAT_TABLES_H__
 #define __XLAT_TABLES_H__
 
-#define ADDR_SPACE_SIZE                 (1ULL << 40)               
-#define MAX_XLAT_TABLES         8                                  
-
+#define ADDR_SPACE_SIZE                 (1UL << 40)               
+#define MAX_XLAT_TABLES         8
 #define MAX_MMAP_REGIONS                16 
+
 #define DISABLE_DCACHE		(1 << 0)
 
 #ifndef __ASSEMBLY__

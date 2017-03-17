@@ -28,14 +28,11 @@
 #include <spi_flash.h>
 #include <watchdog.h>
 #include <asm/io.h>
+#include "xlat_tables.h"
 
 DECLARE_GLOBAL_DATA_PTR;
-extern void _start(void);
 
-int dupa(int i) {
-	printf("mb: %s() i %d\n",__func__, ++i);
-	return i;
-}
+
 /*
   ==============================================================================
   ==============================================================================
@@ -794,15 +791,9 @@ jump_to_monitor(void *address)
 	axxia_configuration->baud_rate = gd->baudrate;
 	entry = (void (*)(void *, void *))address;
 	cleanup_before_linux();
-{
-	int i = dupa(3);
-	printf("%d\n", i);
 	entry(NULL, axxia_configuration);
-	asm volatile("kot2:  b kot2\n");
-#ifndef SYSCACHE_ONLY_MODE
 	acp_failure(__FILE__, __func__, __LINE__);
-#endif
-}
+
 	return;
 }
 
@@ -825,6 +816,43 @@ jtag_jump_to_monitor(void)
 */
 
 #ifdef SYSCACHE_ONLY_MODE
+static __attribute__((noclone)) void display_mapping(unsigned long address);
+
+static void
+display_mapping(unsigned long address)
+{
+    unsigned long par_el1;
+
+    printf("----- Translating VA 0x%lx\n", address);
+    __asm__ __volatile__ ("at s1e3r, %0" : : "r" (address));
+    __asm__ __volatile__ ("mrs %0, PAR_EL1\n" : "=r" (par_el1));
+
+    if (0 != (par_el1 & 1)) {
+        printf("Address Translation Failed: 0x%lx\n"
+              "    FSC: 0x%lx\n"
+              "    PTW: 0x%lx\n"
+              "      S: 0x%lx\n",
+              address,
+              (par_el1 & 0x7e) >> 1,
+              (par_el1 & 0x100) >> 8,
+              (par_el1 & 0x200) >> 9);
+    } else {
+        printf("Address Translation Succeeded: 0x%lx\n"
+              "  SH: 0x%lx\n"
+              "  NS: 0x%lx\n"
+              "  PA: 0x%lx\n"
+              "ATTR: 0x%lx\n",
+              address,
+              (par_el1 & 0x180) >> 7,
+              (par_el1 & 0x200) >> 9,
+              par_el1 & 0xfffffffff000,
+              (par_el1 & 0xff00000000000000) >> 56);
+    }
+
+    return;
+}
+
+extern void mmu_configure(u64 *, unsigned int flags);
 
 static void
 load_image(void)
@@ -1106,9 +1134,6 @@ load_image(void)
 }
 
 #endif	/* SYSCACHE_ONLY_MODE */
-
-
-
 
 /*
   ------------------------------------------------------------------------------
@@ -1450,16 +1475,53 @@ board_init_f(ulong dummy)
 	writel(value, (PERIPH_SCB + 0x44108));
 
 #ifdef SYSCACHE_ONLY_MODE
-	if (0 != setup_security())
+	{
+		void (*entry)(void *, void *);
+		extern unsigned long *_pgt_start;
+		unsigned int junk;
+		unsigned long *pgt = (unsigned long*) &_pgt_start, address = LSM;
+
+		if (0 != setup_security())
+			acp_failure(__FILE__, __func__, __LINE__);
+		load_image();
+		
+		printf("pgt are at %p\n", (void*) pgt);
+
+asm volatile("kot: b kot\n");
+		mmu_configure((u64*)pgt, DISABLE_DCACHE);
+
+		display_mapping(0);
+
+		/* Walk page tables */
+		/*asm volatile("dsb sy");
+		__asm_invalidate_tlb_all();*/
+
+		for (i = 0; i < SZ_256K; i+=sizeof(unsigned int)) {         
+			junk = readl(address);                                
+			junk = junk;                                                 
+			address += sizeof(unsigned int);                             
+		}                                                                
+
+		/* Enable dcache */
+		set_sctlr(get_sctlr() | CR_C);
+		isb();                                                           
+
+		display_mapping(0);
+																	 
+		/* TODO: Fine grain mmu mapping */
+		/*configure_mmu_el3(LSM, SZ_256K, 
+					0x0000008031000000, 0x000000803101ab3c);*/
+		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
+		entry = (void (*)(void *, void *))0x0;
+		flush_dcache_range((unsigned long) LSM, (unsigned long) (LSM+SZ_256K));
+
+		/* Jump to Uboot at address 0x0 */
+		(*entry)(NULL, NULL);
+
+		/* Should never get here! */           
+		printf("Jump to Address 0 Failed!\n");  
 		acp_failure(__FILE__, __func__, __LINE__);
-	load_image();
-	printf("U-Boot Loaded in System Cache, Jumping to Monitor\n");
-	jump_to_monitor((void *)0x8031001000);
-    writel(0x0, (MMAP_SCB + 0x42800));
-{
-	int i = dupa(3);
-	printf("%d\n", i);
-}
+	}
 #endif	/* SYSCACHE_ONLY_MODE */
 
 	if (0 != (global->flags & PARAMETERS_GLOBAL_RUN_SMEM_BIST)) {

@@ -74,6 +74,61 @@ inline void set_pgtable_table(u64 *page_table, u64 index, u64 *table_addr)
 	set_sctlr(get_sctlr() | CR_M);
 }
 
+
+
+void mmu_configure(u64 *addr, int flags)
+{
+	u64 *page_table = addr, i, j;
+	int el;
+	uint32_t sctlr = get_sctlr();;
+
+	/* Setup an identity-mapping for all spaces */
+	for (i = 0; i < (PGTABLE_SIZE >> 3); i++) {
+		set_pgtable_section(page_table, i, i << SECTION_SHIFT,
+				    MT_DEVICE_NGNRNE, PMD_SECT_NON_SHARE);
+	}
+
+	ulong start = 0;
+	ulong end = 0x40000000;
+	for (j = start >> SECTION_SHIFT;
+		 j < end >> SECTION_SHIFT; j++) {
+		set_pgtable_section(page_table, j, j << SECTION_SHIFT,
+					MT_NORMAL, PMD_SECT_NON_SHARE);
+	}
+
+	start = LSM;
+	/* Minumum granule size is 2MB. Needs changing. */
+	end = LSM + 0x20000000; /*SZ_256K*/
+	for (j = start >> SECTION_SHIFT;
+		 j < end >> SECTION_SHIFT; j++) {
+		set_pgtable_section(page_table, j, j << SECTION_SHIFT,
+					MT_NORMAL_NC, PMD_SECT_NON_SHARE);
+	}
+
+	/* load TTBR0 */
+	el = current_el();
+	if (el == 1) {
+		set_ttbr_tcr_mair(el, (u64)addr,
+				  TCR_EL1_RSVD | TCR_FLAGS | TCR_EL1_IPS_BITS,
+				  MEMORY_ATTRIBUTES);
+	} else if (el == 2) {
+		set_ttbr_tcr_mair(el, (u64)addr,
+				  TCR_EL2_RSVD | TCR_FLAGS | TCR_EL2_IPS_BITS,
+				  MEMORY_ATTRIBUTES);
+	} else {
+		set_ttbr_tcr_mair(el, (u64)addr,
+				  TCR_EL3_RSVD | TCR_FLAGS | TCR_EL3_IPS_BITS,
+				  MEMORY_ATTRIBUTES);
+	}
+
+	if (flags == DISABLE_DCACHE)
+		sctlr &= ~CR_C;
+	else 
+		sctlr |= CR_C;
+
+	/* enable the mmu */
+	set_sctlr(get_sctlr() | CR_M);
+}
 /*
  * Performs a invalidation of the entire data cache at all levels
  */

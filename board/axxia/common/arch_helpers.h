@@ -40,21 +40,21 @@
  *********************************************************************/
 
 #define _DEFINE_SYSREG_READ_FUNC(_name, _reg_name)		\
-static inline uint64_t read_ ## _name(void)			\
+static inline u64 read_ ## _name(void)			\
 {								\
-	uint64_t v;						\
+	u64 v;						\
 	asm volatile ("mrs %0, " #_reg_name : "=r" (v));	\
 	return v;						\
 }
 
 #define _DEFINE_SYSREG_WRITE_FUNC(_name, _reg_name)			\
-static inline void write_ ## _name(uint64_t v)				\
+static inline void write_ ## _name(u64 v)				\
 {									\
 	asm volatile ("msr " #_reg_name ", %0" : : "r" (v));	\
 }
 
 #define _DEFINE_SYSREG_WRITE_CONST_FUNC(_name, _reg_name)		\
-static inline void write_ ## _name(const uint64_t v)			\
+static inline void write_ ## _name(const u64 v)			\
 {									\
 	asm volatile ("msr " #_reg_name ", %0" : : "i" (v));	\
 }
@@ -107,7 +107,7 @@ static inline void _op ## _type(void)			\
 
 /* Define function for system instruction with register parameter */
 #define DEFINE_SYSOP_TYPE_PARAM_FUNC(_op, _type)	\
-static inline void _op ## _type(uint64_t v)		\
+static inline void _op ## _type(u64 v)		\
 {							\
 	 asm (#_op " " #_type ", %0" : : "r" (v));	\
 }
@@ -115,11 +115,11 @@ static inline void _op ## _type(uint64_t v)		\
 /*******************************************************************************
  * Aarch64 translation tables manipulation helper prototypes
 ******************************************************************************/
-uint64_t create_table_desc(uint64_t *next_table_ptr);
-uint64_t create_block_desc(uint64_t desc, uint64_t addr, uint32_t level);
-uint64_t create_device_block(uint64_t output_addr, uint32_t level, uint32_t ns);
-uint64_t create_romem_block(uint64_t output_addr, uint32_t level, uint32_t ns);
-uint64_t create_rwmem_block(uint64_t output_addr, uint32_t level, uint32_t ns);
+u64 create_table_desc(u64 *next_table_ptr);
+u64 create_block_desc(u64 desc, u64 addr, u32 level);
+u64 create_device_block(u64 output_addr, u32 level, u32 ns);
+u64 create_romem_block(u64 output_addr, u32 level, u32 ns);
+u64 create_rwmem_block(u64 output_addr, u32 level, u32 ns);
 
 /*******************************************************************************
  * TLB maintenance accessor prototypes
