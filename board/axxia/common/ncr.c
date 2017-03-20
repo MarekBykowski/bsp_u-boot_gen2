@@ -1101,9 +1101,9 @@ ncr_write(ncp_uint32_t region,
 	  ncp_uint32_t address_upper, ncp_uint32_t address,
 	  int number, void *buffer)
 {
-	command_data_register_0_t cdr0;
-	command_data_register_1_t cdr1;
-	command_data_register_2_t cdr2;
+	command_data_register_0_t cdr0 = {0};
+	command_data_register_1_t cdr1 = {0};
+	command_data_register_2_t cdr2 = {0};
 	int dbs = (number - 1);
 	int wfc_timeout = WFC_TIMEOUT;
 
@@ -1150,25 +1150,20 @@ ncr_write(ncp_uint32_t region,
 	case 0x1d0:
 	case 0x149:
 	case 0x14f:
-#if !defined(CONFIG_AXXIA_56XX) && \
-  !defined(CONFIG_AXXIA_56XX_EMU) && \
-  !defined(CONFIG_AXXIA_XLF) && \
-  !defined(CONFIG_AXXIA_XLF_EMU) && \
-  !defined(CONFIG_AXXIA_SIM)
 		if (NULL != buffer) {
-			ncp_uint32_t offset = 0;
+			ncp_uint64_t offset = 0;
 
 			if(NCP_NODE_ID(region) == 0x101) {
-				offset = (NCA + address);
+				offset = (unsigned long)(NCA + address);
 			} else if(NCP_NODE_ID(region) == 0x109) {
-				offset = (MME_POKE + address);
+				offset = (unsigned long)(MME_POKE + address);
 			} else if(NCP_NODE_ID(region) == 0x1d0) {
-				offset = (SCB + address);
+				offset = (unsigned long)(SCB + address);
 			} else if (NCP_NODE_ID(region) == 0x149) {
-				offset = (GPREG + address);
-			} else if (NCP_NODE_ID(region) == 0x14f) {
-				offset = (SRIO_GPREG + address);
-			}
+				offset = (unsigned long)(GPREG + address);
+			} /*else if (NCP_NODE_ID(region) == 0x14f) {
+				offset = (unsigned long)(SRIO_GPREG + address);
+			}*/
 
 			while (4 <= number) {
 				ncr_register_write(*((ncp_uint32_t *)buffer),
@@ -1185,7 +1180,6 @@ ncr_write(ncp_uint32_t region,
 				ncr_register_write(temp, POINTER(offset));
 			}
 		}
-#endif	/* Not 5600 */
 		return 0;
 		break;
 	case 0x200:
@@ -1233,8 +1227,8 @@ ncr_write(ncp_uint32_t region,
 	}
 
 	ncr_register_write( cdr1.raw, POINTER(NCA + NCP_NCA_CFG_PIO_CDR1));
-	if( NCP_REGION_ID( 512, 1 ) == region )
-		printf("mb: %s() ncr_register_write (cdr1.raw 0x%x, NCA 0x%lx + NCP_NCA_CFG_PIO_CDR1 0x%lx\n",
+	if( NCP_REGION_ID( 0x15, 0x10 ) == region )
+		printf("mb: %s() to nca cdr1.raw v 0x%x, o NCA 0x%lx + NCP_NCA_CFG_PIO_CDR1 0x%lx\n",
 				__func__, cdr1.raw, (unsigned long)NCA, (unsigned long)NCP_NCA_CFG_PIO_CDR1 );
 
 	/*
@@ -1242,8 +1236,8 @@ ncr_write(ncp_uint32_t region,
 	*/
 
 	if (NULL != buffer) {
-		if( NCP_REGION_ID( 512, 1 ) == region )
-			printf("mb: %s() buffer %p v 0x%x\n", __func__, (void*)buffer, *((ncp_uint32_t *)buffer));
+		if( NCP_REGION_ID( 0x15, 0x10 ) == region )
+			printf("mb: writel to nca %s() v 0x%x o %p\n", __func__, *((ncp_uint32_t *)buffer), buffer);
 		void *offset;
 
 		offset = (void *)(NCA + NCP_NCA_CDAR_MEMORY_BASE);
@@ -1251,6 +1245,9 @@ ncr_write(ncp_uint32_t region,
 		while (4 <= number) {
 			ncr_register_write(*((ncp_uint32_t *)buffer),
 					   POINTER(offset));
+			if( NCP_REGION_ID( 0x15, 0x10 ) == region )
+				printf("mb: writel 0x%x readl(NCA+CDAR mem) 0x%x", 
+					  *((ncp_uint32_t *)buffer), readl(POINTER(offset)));
 			offset += 4;
 			buffer += 4;
 			number -= 4;
