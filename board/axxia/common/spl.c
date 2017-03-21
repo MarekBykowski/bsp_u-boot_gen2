@@ -1487,15 +1487,11 @@ board_init_f(ulong dummy)
 		
 		printf("pgt are at %p\n", (void*) pgt);
 
-asm volatile("kot: b kot\n");
 		mmu_configure((u64*)pgt, DISABLE_DCACHE);
 
 		display_mapping(0);
 
 		/* Walk page tables */
-		/*asm volatile("dsb sy");
-		__asm_invalidate_tlb_all();*/
-
 		for (i = 0; i < SZ_256K; i+=sizeof(unsigned int)) {         
 			junk = readl(address);                                
 			junk = junk;                                                 

@@ -90,11 +90,17 @@ lowlevel_init:
      * Do MMU for U-Boot
      */
 
+
+/*
+ Don't do the MMU now. Use what SPL did.
+*/
+#define SKIP_MMU 
+
+#ifdef SKIP_MMU
 #if defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_SPL_BUILD)
-	/*ldr x0, =(MMAP_SCB + 0x42800)
-	str XZR, [x0]*/
 	mov x28, x30 /* Save LR */
 	bl __asm_do_mmu
+#endif
 #endif
 
 	/*

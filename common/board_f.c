@@ -799,6 +799,22 @@ int switch_to_EL2_non_secure(void)
 	armv8_switch_to_el2();
 	return 0;
 }
+int memmove_mb(void)
+{
+	/*   _pgt_end is in SPL linker script so need to give it by hand here.
+		extern unsigned long* _pgt_end; 
+		unsigned long *pgt = (unsigned long*) &_pgt_end;
+		_pgt_end = 0x0000008031020000
+	*/
+	/*
+	  	Cache 1K of Uboot and copy to LSM
+ 	*/
+	memmove((void*) 0x0000008031020000, (void*) 0, 1024);
+	
+	if ( 0 != memcmp((void*) 0x0000008031020000, (void*) 0, 1024) )
+		return 1;	
+	return 0;
+}
 #endif
 
 static init_fnc_t init_sequence_f[] = {
@@ -806,6 +822,7 @@ static init_fnc_t init_sequence_f[] = {
 	do_heap, 
 	init_mem_axxia,
 	flush_all,
+	memmove_mb,
 	switch_to_EL2_non_secure,
 #endif
 #ifdef CONFIG_SANDBOX
