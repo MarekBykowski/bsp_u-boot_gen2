@@ -1295,6 +1295,10 @@ line_setup(int index, struct eth_device *dev)
 	    return -1;
     }
 
+	printf("mb: (should gmac1 -> nemac1 @0x1f.0x12.0x0) \n"
+		" hwPortIndex 0x%x eioaRegion 0x%x gmacRegion 0x%x gmacPortOffset 0x%x\n",
+			hwPortIndex, eioaRegion, gmacRegion, gmacPortOffset);
+
 	/* Disable stuff. */
 	NCR_CALL(ncr_modify32(gmacRegion, 0x330 + gmacPortOffset, 0x3f, 0));
 	NCR_CALL(ncr_modify32(gmacRegion, 0x300 + gmacPortOffset, 0x8, 0x0));
@@ -1312,9 +1316,9 @@ line_setup(int index, struct eth_device *dev)
 			phy_by_index[index] = simple_strtoul(envstring, NULL, 0);
 		}
         
-        mdio_initialize("axxia-gmac1");
     }
 
+    mdio_initialize("axxia-gmac1");
 	bus = miiphy_get_dev_by_name("axxia-gmac1");
 	phy_dev = phy_connect(bus, phy_by_index[index], dev, PHY_INTERFACE_MODE_RGMII);
 
@@ -1635,7 +1639,7 @@ initialize_task_io(struct eth_device *dev)
 		}
     }
 
-    debug("Not resetting device...");
+    debug("Resetting device...");
 	/*if (0 != ncp_dev_reset()) {
 		printf("Device reset Failed\n");
 		return -1;
@@ -1672,11 +1676,6 @@ initialize_task_io(struct eth_device *dev)
 				printf("NCA Configuration Failed\n");
 				return -1;
 		}
-	debug("done\n");
-
-	debug("Configuring Uboot task io...");
-	/* initialize task io */
-	NCP_CALL(ncp_task_uboot_config());
 	debug("done\n");
 
 	debug("Configuring EIOA...");

@@ -68,7 +68,8 @@ mdio_initialize(const char *mdio_dev)
 
 	dev0 = mdio_alloc();                                    
 	snprintf(dev0->name, MDIO_NAME_LEN, mdio_dev);     
-	dev0->priv = (void *)(unsigned long)phy_by_index[1];  /*MDIO addr of port gmac1*/
+	/*dev0->priv = (void *)(unsigned long)phy_by_index[1];*/  /*MDIO addr of port gmac1*/
+	dev0->priv  = (void *)CONFIG_AXXIA_MDIO0_BASE;
 	dev0->read = axxia_mdio_read;                           
 	dev0->write = axxia_mdio_write;                         
 	dev0->reset = axxia_mdio_reset;                         
@@ -88,6 +89,19 @@ mdio_initialize(const char *mdio_dev)
 #ifdef CONFIG_AXXIA_ANY_56XX
 	writel(0x10, PERIPH_GPREG + 0x18);
 #endif
+#endif
+
+	/*
+	  Set the RGMII Clock Pad Skew
+
+	  This is PHY specific, and may only apply to Victoria/Waco.
+	*/
+
+#ifdef CONFIG_TARGET_HARDWARE
+	dev0->write(dev0, phy_by_index[1], 0, 0xd, 2);
+	dev0->write(dev0, phy_by_index[1], 0, 0xe, 8);
+	dev0->write(dev0, phy_by_index[1], 0, 0xd, 0x4002);
+	dev0->write(dev0, phy_by_index[1], 0, 0xe, 0x3ff);
 #endif
 
 	initialize = 1;
