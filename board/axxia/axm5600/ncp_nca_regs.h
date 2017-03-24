@@ -174,49 +174,52 @@ extern "C" {
 typedef struct
 {
 #ifdef NCP_BIG_ENDIAN
-     unsigned      reserved0                                 :  1;
+     unsigned      spare6                                    :  1;
      unsigned      itask_end_data_fill_off                   :  1;
      unsigned      cfg_ring_ack_timer_en                     :  1;
-     unsigned      tfc_compl_cnt_reset                       :  1;
-     unsigned      tfc_flush                                 :  1;
+     unsigned      spare5                                    :  2;
      unsigned      cpcq_en                                   :  1;
      unsigned      otask_accum_en                            :  1;
      unsigned      itask_accum_en                            :  1;
-     unsigned      tfc_en                                    :  1;
+     unsigned      spare4                                    :  1;
      unsigned      otbp_soft_reset                           :  1;
-     unsigned      rbp_soft_reset                            :  1;
-     unsigned      rbp_en                                    :  1;
-     unsigned      reserved1                                 :  4;
-     unsigned      opcq_cons_ent                             :  4;
-     unsigned      opcq_num_beat                             :  2;
-     unsigned      ipcq_num_beat                             :  2;
-     unsigned      tpcq_num_beat                             :  2;
-     unsigned      rpcq_num_beat                             :  2;
+     unsigned      spare3                                    :  1;
+     unsigned      mpbf_en                                   :  1;
+     unsigned      otbp_ext_mem_wen                          :  1;
+     unsigned      spare2                                    :  2;
+     unsigned      cpcq_exec_disable                         :  1;
+     unsigned      spare1                                    :  2;
+     unsigned      opcq_num_ent_per_req_m1                   :  2;
+     unsigned      ota_num_beat                              :  2;
+     unsigned      ita_num_beat                              :  2;
+     unsigned      spare0                                    :  4;
      unsigned      pgit_w_num_beat                           :  2;
      unsigned      pgit_r_num_beat                           :  2;
 #else    /* Little Endian */
      unsigned      pgit_r_num_beat                           :  2;
      unsigned      pgit_w_num_beat                           :  2;
-     unsigned      rpcq_num_beat                             :  2;
-     unsigned      tpcq_num_beat                             :  2;
-     unsigned      ipcq_num_beat                             :  2;
-     unsigned      opcq_num_beat                             :  2;
-     unsigned      opcq_cons_ent                             :  4;
-     unsigned      reserved1                                 :  4;
-     unsigned      rbp_en                                    :  1;
-     unsigned      rbp_soft_reset                            :  1;
+     unsigned      spare0                                    :  4;
+     unsigned      ita_num_beat                              :  2;
+     unsigned      ota_num_beat                              :  2;
+     unsigned      opcq_num_ent_per_req_m1                   :  2;
+     unsigned      spare1                                    :  2;
+     unsigned      cpcq_exec_disable                         :  1;
+     unsigned      spare2                                    :  2;
+     unsigned      otbp_ext_mem_wen                          :  1;
+     unsigned      mpbf_en                                   :  1;
+     unsigned      spare3                                    :  1;
      unsigned      otbp_soft_reset                           :  1;
-     unsigned      tfc_en                                    :  1;
+     unsigned      spare4                                    :  1;
      unsigned      itask_accum_en                            :  1;
      unsigned      otask_accum_en                            :  1;
      unsigned      cpcq_en                                   :  1;
-     unsigned      tfc_flush                                 :  1;
-     unsigned      tfc_compl_cnt_reset                       :  1;
+     unsigned      spare5                                    :  2;
      unsigned      cfg_ring_ack_timer_en                     :  1;
      unsigned      itask_end_data_fill_off                   :  1;
-     unsigned      reserved0                                 :  1;
+     unsigned      spare6                                    :  1;
 #endif
 } ncp_nca_config_init_reg_t;
+
 
 /*! @struct ncp_nca_config_init_reg_32xx_t
  *  @brief NCA Config and Initialization Parameters

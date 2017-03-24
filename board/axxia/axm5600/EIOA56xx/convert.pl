@@ -99,7 +99,7 @@ sub convert
 						    print OUTPUT
 							"\t{NCR_COMMAND_WRITE, " .
 							"NCP_REGION_ID($node, $target), " .
-							sprintf("0x%08x, 0x%08x, 0},\n",
+							sprintf("{.offset = 0x%08x}, 0x%08x, 0},\n",
 								$offset, hex($value));
 						    $offset += 4;
 						}
@@ -123,12 +123,12 @@ sub convert
     				    my $offset = hex($4);
 
     				    print OUTPUT
-    					"\t{NCR_COMMAND_USLEEP, 0, 0, 1000, 0},\n";
+    					"\t{NCR_COMMAND_USLEEP, 0, {.offset = 0}, 1000, 0},\n";
 
     				    print OUTPUT
     					"\t{NCR_COMMAND_READ, " .
     					"NCP_REGION_ID($node, $target), " .
-    					sprintf("0x%08x, 0, 0},\n", $offset);
+    					sprintf("{.offset = 0x%08x}, 0, 0},\n", $offset);
     				} 
     				else 
     				{
@@ -151,7 +151,7 @@ sub convert
 				    print OUTPUT
 					"\t{NCR_COMMAND_MODIFY, " .
 					"NCP_REGION_ID($node, $target), " .
-					sprintf("0x%08x, 0x%08x, 0x%08x},\n",
+					sprintf("{.offset = 0x%08x}, 0x%08x, 0x%08x},\n",
 						$offset, $value, $mask);
 				} 
 				else 
@@ -164,7 +164,7 @@ sub convert
 				my $value = sprintf("%d", $2);
 
 				print OUTPUT
-				    "\t{NCR_COMMAND_USLEEP, 0, 0, $value, 0},\n";
+				    "\t{NCR_COMMAND_USLEEP, 0, {.offset = 0}, $value, 0},\n";
 		    } 
 		    elsif ("ncpPoll" eq $command) 
 		    {
@@ -184,7 +184,7 @@ sub convert
 				    print OUTPUT
 					"\t{NCR_COMMAND_POLL, " .
 					"NCP_REGION_ID($node, $target), " .
-					sprintf("0x%08x, 0x%08x, 0x%08x},\n",
+					sprintf("{.offset = 0x%08x}, 0x%08x, 0x%08x},\n",
 						$offset, $mask, $value);
 				} 
 				else
@@ -203,7 +203,7 @@ sub convert
 
     # Footer
     print OUTPUT
-	"\t{NCR_COMMAND_NULL, 0, 0, 0, 0}\n" .
+	"\t{NCR_COMMAND_NULL, 0, {.offset = 0}, 0, 0}\n" .
 	"};\n";
 
     close OUTPUT;

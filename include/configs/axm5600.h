@@ -174,7 +174,7 @@
 
 
 /* HACK: Define it until cache coherency is figured out */
-#define USE_CACHE_SYNC
+/*#define USE_CACHE_SYNC*/
 
 /*
   ==============================================================================
@@ -235,6 +235,12 @@
 #define ARM64
 #define NCP_64
 
+#ifdef ARM64
+#define POINTER(address) ((unsigned int *)((unsigned long)(address)))
+#else
+#define POINTER(address) ((unsigned long *)((unsigned long)(address)))
+#endif
+
 #define CONFIG_AXXIA_AXM_I2C
 
 /*
@@ -263,7 +269,7 @@
 #define CONFIG_AXXIA_PHY_ADDRESS 0x7
 
 /* HACK: Define it until cache coherency is figured out */
-#define USE_CACHE_SYNC
+/*#define USE_CACHE_SYNC*/
 
 #define CONFIG_AXXIA_MDIO
 #define CONFIG_AXXIA_NEMAC

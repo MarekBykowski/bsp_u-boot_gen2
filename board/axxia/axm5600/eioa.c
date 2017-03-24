@@ -48,12 +48,12 @@
 #include "ncp_task_basetypes.h"
 #include "ncp_task.h"
 #include "ncp_nca_regs.h"
+#include "ncp_nodes.h"
 #include "../common/ncp_nca_reg_defines.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
-/*
-  ==============================================================================
+/*==============================================================================
   ==============================================================================
   Private Interface
   ==============================================================================
@@ -631,11 +631,12 @@ typedef struct
 #define NCP_SYSCON_RESET_MOD                                   (0x00002038)
 #define NCP_SYSCON_RESET_AXIS                                  (0x00002040)
 
-static ncp_st_t
+ncp_st_t __weak
 ncp_dev_reset_hw(void)
 {
     ncp_st_t                    ncpStatus = NCP_ST_SUCCESS;
     ncp_st_t                    st = NCP_ST_SUCCESS;
+	/*ncp_uint32_t 				ubootCmemInit = 0;*/
     ncp_uint32_t                *reg = NULL;
     ncp_syscon_reset_mod_r_t    resetReg = {0};
     ncp_syscon_reset_axis_r_t   resetAxisReg = {0};
@@ -657,9 +658,7 @@ ncp_dev_reset_hw(void)
     /* Enable protected writes.  Key is the only field in this register. */
     NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON, NCP_SYSCON_KEY, 0xAB));
 
-/* mb: finished here
-
-    resetReg.eioa_phy0_rst    = 1;
+    /*resetReg.eioa_phy0_rst    = 1;
     resetReg.eioa_phy1_rst    = 1;
     resetReg.eioa_phy2_rst    = 1;
     resetReg.eioa_phy3_rst    = 1;
@@ -672,9 +671,9 @@ ncp_dev_reset_hw(void)
     resetReg.treemem_rst      = 1;
     resetReg.mppy_rst         = 1;
     resetReg.nca_rst          = 1;
-    resetReg.mme_rst          = 1;
+    resetReg.mme_rst          = 1;*/
 
-    resetReg.spp_rst          = 1;
+    /*resetReg.spp_rst          = 1;
     resetReg.dpi_rst          = 1;
     resetReg.pic_rst          = 1;
     resetReg.pab_rst          = 1;
@@ -697,14 +696,24 @@ ncp_dev_reset_hw(void)
     resetReg.ccms_rst         = 1;
     resetReg.pkt_buffer_rst   = 1;
     resetReg.nic_rst          = 1;
-    resetReg.pbm_rst          = 1;
+    resetReg.pbm_rst          = 1;*/
 
-#if 0
-	resetReg.cmem0_rst        = 1;
-	resetReg.cmem1_rst        = 1;
-	resetReg.cmem0_phy_io_rst = 1;
-	resetReg.cmem1_phy_io_rst = 1;
 
+ /* 
+ *  Read the NTEMC0 local config node scratch register.
+ *  If set then u-boot has initialized the external 
+ *  CMEM and we should not reset it.
+    ncr_read32(NCP_REGION_ID(NCP_NODE_NTEMC(0), 0xff), 0x20, &ubootCmemInit);
+	if(0 == ubootCmemInit) {
+		resetReg.cmem0_rst        = 1;
+		resetReg.cmem1_rst        = 1;
+		resetReg.cmem0_phy_io_rst = 1;
+		resetReg.cmem1_phy_io_rst = 1;
+	}
+ */ 
+
+#define NCP_DEV_ACE
+#ifndef NCP_DEV_ACE
     resetReg.smem0_phy_io_rst = 1;
     resetReg.smem1_phy_io_rst = 1;
     resetReg.smc0_rst         = 1;
@@ -739,8 +748,9 @@ ncp_dev_reset_hw(void)
                        NCP_SYSCON_RESET_AXIS + 4,
                        *reg);
 	printf("Done\n");
+    udelay(100000);
 
-	printf("writing NCP_SYSCON_RESET_MOD\n");
+	printf("zeroing NCP_SYSCON_RESET_MOD\n");
     ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
                          NCP_SYSCON_RESET_MOD, 
                          0);
@@ -749,7 +759,7 @@ ncp_dev_reset_hw(void)
                          0);
 	printf("Done\n");
 
-	printf("writing NCP_SYSCON_RESET_AXIS\n");
+	printf("zeroing NCP_SYSCON_RESET_AXIS\n");
     ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON,
                          NCP_SYSCON_RESET_AXIS,
                          0);
@@ -757,7 +767,7 @@ ncp_dev_reset_hw(void)
                          NCP_SYSCON_RESET_AXIS + 4,
                          0);
 	printf("Done\n");
-    udelay(10000);
+    udelay(100000);
 
     /* Disable protected writes */
     ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON, NCP_SYSCON_KEY, 0x0);
@@ -772,14 +782,15 @@ ncp_st_t
 ncp_dev_reset_sw(void)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-    ncp_uint32_t reg;
-    ncp_nca_config_init_reg_t *nca_cfg_init = (ncp_nca_config_init_reg_t *) &reg;
-    ncp_nca_cfg_ring_parity_reg_t *nca_cfg_ring_parity = (ncp_nca_cfg_ring_parity_reg_t *) &reg;
+    ncp_uint32_t reg = 0;
+    ncp_nca_config_init_reg_t *nca_cfg_init = NULL;
+    ncp_nca_cfg_ring_parity_reg_t *nca_cfg_ring_parity = NULL;
 
     /* Enable NCA config ring timeouts */
-    ncr_read32(NCP_REGION_ID(0x101, 0), NCP_NCA_CONFIG_INIT_55XX, &reg);
+	ncr_read32(NCP_REGION_ID(0x101, 0), NCP_NCA_CONFIG_INIT_55XX, &reg);
+	nca_cfg_init = (ncp_nca_config_init_reg_t *) &reg;
     nca_cfg_init->cfg_ring_ack_timer_en = 1;
-    ncr_write32(NCP_REGION_ID(0x101, 0), NCP_NCA_CONFIG_INIT_55XX, reg);
+	ncr_write32(NCP_REGION_ID(0x101, 0), NCP_NCA_CONFIG_INIT_55XX, reg);
 
 	printf("mb1\n");
     ncr_write32(NCP_REGION_ID(0x101, 0), NCP_NCA_CFG_RING_ACK_TIMER_CNT, 0x5f5e10);
@@ -787,6 +798,7 @@ ncp_dev_reset_sw(void)
 
     /* Enable config ring parity checking */
     ncr_read32(NCP_REGION_ID(0x101, 0), NCP_NCA_CFG_RING_PARITY, &reg);
+	nca_cfg_ring_parity = (ncp_nca_cfg_ring_parity_reg_t *) &reg;
     nca_cfg_ring_parity->cfg_parity_err_en_ring0 = 1;
     nca_cfg_ring_parity->cfg_parity_err_en_ring1 = 1;
     nca_cfg_ring_parity->cfg_parity_err_en_ring2 = 1;
@@ -797,6 +809,15 @@ ncp_dev_reset_sw(void)
 	printf("mb3\n");
 
     /* make all masters secure */
+	writel(0x2, MMAP_SCB + 0x47800);
+
+	reg = readl(TZC + 0x0008);
+	/* (Enable Gate keeper register to allow secure access from tzc) */  
+	writel(0x1, TZC + 0x0008);
+	/*  Enable read/write acccess */                                     
+	writel(0xc0000001, TZC + 0x0110);
+
+#if 0
     /*ncr_write32(NCP_REGION_ID(0x1d0, 0), 0x0014, 0);*/
 	/*nca_security 0x80_3200_0008*/
 	reg = readl(0x8032000008);
@@ -813,6 +834,7 @@ ncp_dev_reset_sw(void)
 	reg |= 0x3<<0;
 	writel(reg, 0x8032000038);
 	printf("mb: %s() gpdma read back 0x%x\n", __func__,readl(0x8032000038));
+#endif
 
 NCP_RETURN_LABEL
     return ncpStatus;
@@ -823,22 +845,13 @@ NCP_RETURN_LABEL
   ncp_dev_reset
 */
 
- int __weak
+int __weak
 ncp_dev_reset(void)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-    
-    /* Quiet the read/write smem transactions */
-    ncpStatus = ncp_dev_quiesce();
-	printf("mb: ncp_dev_quiesce\n");
-    if(ncpStatus != NCP_ST_SUCCESS)
-    {
-        NCP_MSG(NCP_MSG_ERROR, "ncp_dev_quiesce failed with %d\n", ncpStatus);
-        return -1;
-    }
-    
+
 	/* Reset Modules */
-    ncpStatus = ncp_dev_reset_hw();
+    /*ncpStatus = ncp_dev_reset_hw();*/
 	printf("mb: ncp_dev_reset_hw\n");
     if(ncpStatus != NCP_ST_SUCCESS)
     {
@@ -1550,7 +1563,7 @@ static int *memset_int(int *s, int c, size_t count)
   initialize_task_io
 */
 
-static int
+int
 initialize_task_io(struct eth_device *dev)
 {
 	ncp_st_t ncpStatus = NCP_ST_SUCCESS;
@@ -1964,6 +1977,7 @@ ncp_return:
   ==============================================================================
   ==============================================================================
 */
+
 
 /*
   -------------------------------------------------------------------------------

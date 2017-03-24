@@ -32,13 +32,6 @@
 #define DEBUG
 #include <common.h>
 
-
-#ifdef ARM64
-#define POINTER(address) ((unsigned int *)((unsigned long)(address)))
-#else
-#define POINTER(address) ((unsigned long *)((unsigned long)(address)))
-#endif
-
 static int ncr_sysmem_mode_disabled = 1;
 static int ncr_tracer_disabled = 1;
 void ncr_tracer_enable( void ) { ncr_tracer_disabled = 0; }
@@ -276,7 +269,7 @@ typedef union {
   ncr_register_read
 */
 
-static __inline__ ncp_uint32_t
+static __inline ncp_uint32_t
 ncr_register_read(unsigned int *address)
 {
 #ifdef NCP_NCA_BIG_ENDIAN
@@ -291,7 +284,7 @@ ncr_register_read(unsigned int *address)
   ncr_register_write
 */
 
-static __inline__ void
+static __inline void
 ncr_register_write(const unsigned value, unsigned int *address)
 {
 #ifdef NCP_NCA_BIG_ENDIAN
@@ -832,11 +825,6 @@ ncr_read(ncp_uint32_t region,
 	case 0x1d0:
 	case 0x149:
 	case 0x14f:
-#if !defined(CONFIG_AXXIA_56XX) && \
-  !defined(CONFIG_AXXIA_56XX_EMU) && \
-  !defined(CONFIG_AXXIA_XLF) && \
-  !defined(CONFIG_AXXIA_XLF_EMU) && \
-  !defined(CONFIG_AXXIA_SIM)
 		/*
 		  If reading from within NCA/MME_POKE/SCB,
 		  just do the plain and simple read
@@ -852,11 +840,7 @@ ncr_read(ncp_uint32_t region,
 				offset = (SCB + address);
 			} else if (NCP_NODE_ID(region) == 0x149) {
 				offset = (GPREG + address);
-			} else if (NCP_NODE_ID(region) == 0x14f) {
-				offset = (SRIO_GPREG + address);
-			}
-
-            
+			} 
 
 			while (4 <= number) {
 				*((ncp_uint32_t *)buffer) =
@@ -873,7 +857,6 @@ ncr_read(ncp_uint32_t region,
 				memcpy(buffer, (void *)&temp, number);
 			}
 		}
-#endif	/* Not 5600 */
 		return 0;
 		break;
 	case 0x200:
@@ -1161,9 +1144,7 @@ ncr_write(ncp_uint32_t region,
 				offset = (unsigned long)(SCB + address);
 			} else if (NCP_NODE_ID(region) == 0x149) {
 				offset = (unsigned long)(GPREG + address);
-			} /*else if (NCP_NODE_ID(region) == 0x14f) {
-				offset = (unsigned long)(SRIO_GPREG + address);
-			}*/
+			} 
 
 			while (4 <= number) {
 				ncr_register_write(*((ncp_uint32_t *)buffer),
@@ -1214,9 +1195,11 @@ ncr_write(ncp_uint32_t region,
 	}
 
 	ncr_register_write( cdr2.raw, POINTER( NCA + NCP_NCA_CFG_PIO_CDR2 ) );
+#ifdef DEBUG_MAREK
 	if( NCP_REGION_ID( 512, 1 ) == region )
 		printf("mb: %s() ncr_register_write (cdr2.raw 0x%x, NCA 0x%lx + NCP_NCA_CFG_PIO_CDR2 0x%lx\n",
 				__func__, cdr2.raw, (unsigned long)NCA, (unsigned long)NCP_NCA_CFG_PIO_CDR2 );
+#endif
 
 	cdr1.raw = 0;
 
@@ -1227,17 +1210,21 @@ ncr_write(ncp_uint32_t region,
 	}
 
 	ncr_register_write( cdr1.raw, POINTER(NCA + NCP_NCA_CFG_PIO_CDR1));
+#ifdef DEBUG_MAREK
 	if( NCP_REGION_ID( 0x15, 0x10 ) == region )
 		printf("mb: %s() to nca cdr1.raw v 0x%x, o NCA 0x%lx + NCP_NCA_CFG_PIO_CDR1 0x%lx\n",
 				__func__, cdr1.raw, (unsigned long)NCA, (unsigned long)NCP_NCA_CFG_PIO_CDR1 );
+#endif
 
 	/*
 	  Copy data from the buffer.
 	*/
 
 	if (NULL != buffer) {
+#ifdef DEBUG_MAREK
 		if( NCP_REGION_ID( 0x15, 0x10 ) == region )
 			printf("mb: writel to nca %s() v 0x%x o %p\n", __func__, *((ncp_uint32_t *)buffer), buffer);
+#endif
 		void *offset;
 
 		offset = (void *)(NCA + NCP_NCA_CDAR_MEMORY_BASE);
@@ -1245,9 +1232,11 @@ ncr_write(ncp_uint32_t region,
 		while (4 <= number) {
 			ncr_register_write(*((ncp_uint32_t *)buffer),
 					   POINTER(offset));
+#ifdef DEBUG_MAREK
 			if( NCP_REGION_ID( 0x15, 0x10 ) == region )
 				printf("mb: writel 0x%x readl(NCA+CDAR mem) 0x%x", 
 					  *((ncp_uint32_t *)buffer), readl(POINTER(offset)));
+#endif
 			offset += 4;
 			buffer += 4;
 			number -= 4;
@@ -1377,11 +1366,7 @@ ncr_write32(ncp_uint32_t region, ncp_uint32_t offset, ncp_uint32_t value)
 {
 	int rc;
 
-	if (NCP_REGION_ID(0x200, 1) == region) {
-#define NCR_TRACER
-		NCR_TRACE_WRITE32(region, offset, value);
-#undef NCR_TRACER
-	}
+	NCR_TRACE_WRITE32(region, offset, value);
 		
 	rc = ncr_write(region, 0, offset, 4, &value);
 
