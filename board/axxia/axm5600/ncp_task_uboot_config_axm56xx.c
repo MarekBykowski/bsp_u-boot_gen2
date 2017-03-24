@@ -52,79 +52,99 @@
  */
  
 /* ACP5.Engines.NCA.NcaDomainInfo.DomainEntry[id=0].startOffset */
+/* Confirmed with ASE */
+/* 0x101.0x0.0x13784 Output Task Backpressure Virtual Index Register1  */
 #define DOMAINBUNDLE_PA 2181038080
 
 /* ACP5.Engines.NCA.NcaDomainInfo.DomainEntry[id=0].size */
+/* Confirmed with ASE */
 #define DOMAINBUNDLE_SIZE 81920
 
 /* ACP5.Engines.NCA.NcaDomainInfo.DomainEntry[id=0].otbpOffset */
+/* Confirmed with ASE */
+/* 0x101.0x0.0x13784 Output Task Backpressure Virtual Index Register1  */
 #define OTBP_PA 2181038080
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ThreadQueueSet[id=0].oPcQOffset */
+/* Confirmed with ASE */
+/* 0x101.0x0.0x11000 + [0..31 * 0x10] + 0xc - Register 3 of the PCQ Queue descriptor */
 #define OPCQ_OFFSET 2181043328
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ThreadQueueSet[id=0].cPcQOffset */
+/* Confirmed with ASE */ 
 #define CPCQ_OFFSET 2181047424
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ThreadQueueSet[id=0].cfgDmaBuffersOffset */
+/* Confirmed with ASE */
 #define CFG_BUFFS_OFFSET 2181048576
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ThreadQueueSet[id=0].TaskReceiveQueue[id=0].iPcQOffset */
+/* Confirmed with ASE */
+/* 0x101.0x0.0x11000 + [0..31 * 0x10] + 0xc - Register 3 of the PCQ Queue descriptor */
 #define IPCQ_OFFSET 2181042304
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ncaPgitOffset */
+/* Confirmed with ASE */
+/* 0x101.0x0.0x10400 + [0..15 * 0x20] + 0xc - PCQ Group Base Initialization Register3 */
 #define NCAPGIT_OFFSET 2181042176
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].cpuPgitOffset */
+/* Confirmed with ASE */
+/* 0x101.0x0.0x10400 + [0..15 * 0x20] + 0x14 - PCQ Group Base Initialization Register 5 */
 #define CPUPGIT_OFFSET 2181042240
 
 /* ACP5.Engines.NCA.QueueGroup[id=0].ThreadQueueSet[id=0].Allocators.Allocator[id=0].allocatorOffset */
+/* Confirmed with ASE */
 #define MMEALLOCATOR_OFFSET 2181114880
 
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=0].physicalBaseAddress should be
  * ACP5.Engines.MME.MemoryPoolMap.VPPMemoryPools.VPPMemoryPool[id=0].physicalBaseAddress */
-#define POOL_0_PA 2456330240
+#define POOL_0_PA 0
 
 /* ACP5.Engines.MME.MemoryPoolMap.VPPMemoryPools.VPPMemoryPool[id=0].maxDynamic */
-#define POOL_0_SIZE 2493206527
+#define POOL_0_SIZE 2284220415
 
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].physicalBaseAddress */
-#define POOL_2_PA 2493218816
+#define POOL_2_PA 2489057280
 
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].size */
-#define POOL_2_SIZE 853262080
+#define POOL_2_SIZE 1728533248
 
 /*
  * Note - MME presents the following in the reverse order of what Task I/O needs
  */
  
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=3].physicalBaseAddress */
-#define POOL_2_SZ0_PA 3071692800
-#define POOL_2_SZ0_VA 3071692800
+#define POOL_2_SZ0_PA 4054464512
+#define POOL_2_SZ0_VA 3444586496
+
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=3].size */
-#define POOL_2_SZ0_SIZE 274788096
-#define POOL_2_SZ0_NUMBLOCKS 1073391
+#define POOL_2_SZ0_SIZE 163126016
+#define POOL_2_SZ0_NUMBLOCKS 637211
 
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=2].physicalBaseAddress */
-#define POOL_2_SZ1_VA 2783297535
-#define POOL_2_SZ1_PA 2783297535
+#define POOL_2_SZ1_VA 3011739648
+#define POOL_2_SZ1_PA 3621617664
+
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=2].size */
-#define POOL_2_SZ1_SIZE 288395264
-#define POOL_2_SZ1_NUMBLOCKS 140818
+#define POOL_2_SZ1_SIZE 432846848
+#define POOL_2_SZ1_NUMBLOCKS 211351
 
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=1].physicalBaseAddress */
-#define POOL_2_SZ2_VA 2493218816
-#define POOL_2_SZ2_PA 2493218816
+#define POOL_2_SZ2_VA 2576351232
+#define POOL_2_SZ2_PA 3186229248
+
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=1].size */
-#define POOL_2_SZ2_SIZE 290078720
-#define POOL_2_SZ2_NUMBLOCKS 17705
+#define POOL_2_SZ2_SIZE 435388416
+#define POOL_2_SZ2_NUMBLOCKS 26574
 
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=0].physicalBaseAddress */
-#define POOL_2_SZ3_VA 2493218816
-#define POOL_2_SZ3_PA 2493218816
+#define POOL_2_SZ3_VA 1879179264
+#define POOL_2_SZ3_PA 2489057280
+
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=0].size */
-#define POOL_2_SZ3_SIZE 0
-#define POOL_2_SZ3_NUMBLOCKS 0
+#define POOL_2_SZ3_SIZE 697171968
+#define POOL_2_SZ3_NUMBLOCKS 10638
    
 
 /*
