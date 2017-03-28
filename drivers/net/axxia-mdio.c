@@ -18,7 +18,7 @@
 #define MDIO_REG_CLK_OFFSET	0x08
 #define MDIO_REG_CLK_PERIOD	0x0c
 
-int
+static int
 axxia_mdio_read(struct mii_dev *bus, int addr, int devad, int reg)
 {
 	void __iomem *base = bus->priv;
@@ -55,7 +55,7 @@ axxia_mdio_read(struct mii_dev *bus, int addr, int devad, int reg)
 	return (command & 0xffff);
 }
 
-int
+static int
 axxia_mdio_write(struct mii_dev *bus, int addr, int devad, int reg, u16 val)
 {
 	void __iomem *base = bus->priv;
@@ -78,11 +78,11 @@ axxia_mdio_write(struct mii_dev *bus, int addr, int devad, int reg, u16 val)
 
 	/* Write the command */
 	command = 0x08000000;	/* op_code: write */
-	/* Port addr */
+	/* Port addr which is device addr */
 	command |= (addr & 0x1f) << 16;
+	/* Regs within the device addr */
 	command |= (reg & 0x1f) << 21;
 	command |= val;
-	printf("mb: %s() writing command 0x%x\n", __func__, command);
 	writel(command, base + MDIO_REG_CTRL);
 
 #if defined(BZ33327_WA)
@@ -101,7 +101,7 @@ axxia_mdio_write(struct mii_dev *bus, int addr, int devad, int reg, u16 val)
 	return 0;
 }
 
-int
+static int
 axxia_mdio_reset(struct mii_dev *bus)
 {
 	return 0;

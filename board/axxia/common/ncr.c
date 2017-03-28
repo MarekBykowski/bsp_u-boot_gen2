@@ -784,9 +784,9 @@ ncr_read(ncp_uint32_t region,
 	 ncp_uint32_t address_upper, ncp_uint32_t address,
 	 int number, void *buffer)
 {
-	command_data_register_0_t cdr0;	/* 0x101.0.0xf0 */
-	command_data_register_1_t cdr1;	/* 0x101.0.0xf4 */
-	command_data_register_2_t cdr2;	/* 0x101.0.0xf8 */
+	command_data_register_0_t cdr0 = {0};	/* 0x101.0.0xf0 */
+	command_data_register_1_t cdr1 = {0};	/* 0x101.0.0xf4 */
+	command_data_register_2_t cdr2 = {0};	/* 0x101.0.0xf8 */
 	int wfc_timeout = WFC_TIMEOUT;
 
 	if ((NCP_NODE_ID(region) >= 0x110) &&

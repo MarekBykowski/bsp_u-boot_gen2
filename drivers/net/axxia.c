@@ -121,9 +121,9 @@ axxia_dump_packet_tx(const char *header, void *packet, int length)
 int
 board_eth_init(bd_t *bd)
 {
-	axxia_mdio_init();
 
 #if defined(CONFIG_AXXIA_NEMAC)
+	axxia_mdio_init();
 	if (nemac_initialize(bd) != 0) {
 		puts("Failed to add NEMAC device.\n");
 	}
@@ -235,7 +235,7 @@ void lsi_net_receive_test(struct eth_device *dev)
 #endif
 		} else if(strcmp(act, "LSI_EIOA") == 0) {
 #ifdef CONFIG_AXXIA_EIOA
-			//lsi_eioa_receive_test(dev);
+			lsi_eioa_receive_test(dev);
 #endif
 		}
 	}

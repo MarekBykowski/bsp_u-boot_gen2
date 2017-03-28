@@ -3966,9 +3966,9 @@ int write_parameters(void);
 #endif
 
 #ifndef __ASSEMBLY__
-int mdio_initialize(const char *);
-/*unsigned short mdio_read(int phy, int reg);
-void mdio_write(int phy, int reg, unsigned short value);*/
+int mdio_initialize(void);
+unsigned short mdio_read(int phy, int reg);
+void mdio_write(int phy, int reg, unsigned short value);
 #endif
 
 #endif	/* CONFIG_SPL_BUILD */

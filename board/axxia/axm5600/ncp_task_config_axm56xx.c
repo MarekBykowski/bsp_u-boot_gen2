@@ -3606,6 +3606,7 @@ ncp_task_v2_config_mme_for_tqs(ncp_int32_t tqsID)
              * Initialize MME Queues.
              * Queues are laid out from 64K to 256B 
              */  
+			debug("Initialize MME Queues. Queues are laid out from 64K to 256B\n");
             
             /* 64K queue */ 
 #ifdef NCP_TASK_DEBUG_MME             
@@ -3647,7 +3648,7 @@ ncp_task_v2_config_mme_for_tqs(ncp_int32_t tqsID)
              * where we will manage a physAddr that us read by the h/w.
              * We will also maintain a sw pointer for direct access into
              * mPCQ entries. Test for queue wrap will be performed on
-             * the s/w pointer,  since that is a 32-bit test with current 
+             * the s/w pointer, since that is a 32-bit test with current 
              * target platforms.
              */
             
@@ -3669,10 +3670,8 @@ ncp_task_v2_config_mme_for_tqs(ncp_int32_t tqsID)
             pTQS->mme[i].allocIF[1].readP_swVA_max_val 
                 = (ncp_uint64_t *)pTQS->mme[i].allocIF[1].readP_swVA + 127;
                 
-#if defined(NCP_TASK_DEBUG_MME) && !defined(NCP_KERNEL)                 
             NCP_LOG(NCP_MSG_INFO, "Contents:\r\n");
             ncp_r32((ncp_uint32_t *)pTQS->mme[i].allocIF[1].entries_baseVA, 256);
-#endif
             
             /* 16K */
                        
@@ -3693,10 +3692,8 @@ ncp_task_v2_config_mme_for_tqs(ncp_int32_t tqsID)
                 = (ncp_uint64_t *)pTQS->mme[i].allocIF[2].readP_swVA + 127;
              
                 
-#if defined(NCP_TASK_DEBUG_MME) && !defined(NCP_KERNEL)                 
             NCP_LOG(NCP_MSG_INFO, "Contents:\r\n");
             ncp_r32((ncp_uint32_t *)pTQS->mme[i].allocIF[2].entries_baseVA, 256);
-#endif                         
                          
             /* 64K */           
             p64_VA++;
@@ -3718,10 +3715,8 @@ ncp_task_v2_config_mme_for_tqs(ncp_int32_t tqsID)
                 = (ncp_uint64_t *)pTQS->mme[i].allocIF[3].readP_swVA + 127;
             
                 
-#if defined(NCP_TASK_DEBUG_MME) && !defined(NCP_KERNEL)                 
             NCP_LOG(NCP_MSG_INFO, "Contents:\r\n");
             ncp_r32((ncp_uint32_t *)pTQS->mme[i].allocIF[3].entries_baseVA, 256);
-#endif            
                          
             /* 256B */           
             p64_VA++;                        
@@ -3743,22 +3738,17 @@ ncp_task_v2_config_mme_for_tqs(ncp_int32_t tqsID)
                 = (ncp_uint64_t *)pTQS->mme[i].allocIF[0].readP_swVA + 127;
              
                 
-#if defined(NCP_TASK_DEBUG_MME) && !defined(NCP_KERNEL)                 
             NCP_LOG(NCP_MSG_INFO, "Contents:\r\n");
             ncp_r32((ncp_uint32_t *)pTQS->mme[i].allocIF[0].entries_baseVA, 256);
-#endif            
                                    
             p64_VA++;
             
-#ifdef NCP_TASK_PRINT_BASE_ADDRESSES_AND_MAPPINGS
             
-           NCP_MSG(NCP_MSG_INFO, "initialized shared pool allocator (%d) @offset 0x%llx baseVA=%p, endVA=%p\r\n",
+           NCP_MSG(NCP_MSG_INFO, "initialized shared pool allocator (%ld) @offset 0x%llx baseVA=%p, endVA=%p\r\n",
                 pTQS->mme[i].id,
                 pTQS->mme[i].cfgOffset,
                 (void *)pTQS->mme[i].baseVA,
                 (void *)p64_VA);
-#endif                
-               
         }    
     }            
         

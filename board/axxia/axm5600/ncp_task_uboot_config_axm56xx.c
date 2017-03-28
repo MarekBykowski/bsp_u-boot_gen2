@@ -242,7 +242,8 @@ ncp_task_v2_uboot_config_mme_for_tqs(ncp_int32_t tqsID)
                 &pTQS->mme[i].baseVA,
                 FALSE));
 
-			printf("mb: %s() val 0x%llx @ addr baseVA %p",__func__, pTQS->mme[i].baseVA, 
+			printf("mb: %s() val 0x%llx @ addr baseVA %p\n",
+					__func__, pTQS->mme[i].baseVA, 
 					(void*)(ncp_uint64_t *)pTQS->mme[i].baseVA);	
             p64_VA = (ncp_uint64_t *)pTQS->mme[i].baseVA;
                         
@@ -388,13 +389,16 @@ ncp_task_v2_uboot_config_mme_for_tqs(ncp_int32_t tqsID)
              
                 
 #if defined(NCP_TASK_DEBUG_MME) && !defined(NCP_KERNEL)                 
-            ncp_r32((ncp_uint32_t *)pTQS->mme[i].allocIF[0].entries_baseVA, 256);
+            NCP_LOG(NCP_MSG_INFO, "Contents:\r\n");
+            /*ncp_r32((ncp_uint32_t *)pTQS->mme[i].allocIF[0].entries_baseVA, 256);*/
+			ncp_r64_swap(pTQS->mme[i].allocIF[3].entries_baseVA, 128);
 #endif            
 
            /*
             * Now enable the mPCQ allocation interface                     
+            * Not needed. Should be already in the trace
+              NCP_CALL(ncp_mme_enable_mpcq(pTQS->mme[i].id));
             */
-            NCP_CALL(ncp_mme_enable_mpcq(pTQS->mme[i].id));
                                    
             p64_VA++;
             

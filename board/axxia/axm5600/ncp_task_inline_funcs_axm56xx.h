@@ -461,12 +461,8 @@ ncp_task_v2_MMEpool_alloc(
     ncp_uint64_t x64;
     ncp_raw_addr_t va;
 
-    debug("ncp_task_v2_MMEpool_alloc(): size=%d, queueValid=%d\n", size,
-        myTaskHdl->mmeAllocator->allocIF[0].queueValid);
     
-#ifdef NCP_TASK_DEBUG_MME    
     NCP_LOG(NCP_MSG_INFO, "Enter mme alloc: request for %d bytes\r\n",size);
-#endif         
 
     /*
      * The following code will advance to a larger buffer,   if the best-fit
@@ -502,19 +498,20 @@ ncp_task_v2_MMEpool_alloc(
         NCP_CALL(NCP_ST_TASK_BUFFSIZE_TOO_LARGE);
     } 
     
-#ifdef NCP_TASK_DEBUG_MME    
-    NCP_LOG(NCP_MSG_INFO, "mme pAllocIF = %p, readP_swVA=0x%p\r\n",pAllocIF,
-                pAllocIF->readP_swVA);
-#endif    
+    debug("%s(): size=%d, queueValid=%d\n", __func__, size, 1);
+    NCP_LOG(NCP_MSG_INFO, "mme allocator (of matching pool) @ 0x%p, readP_swVA @ 0x%p\n",
+			pAllocIF, pAllocIF->readP_swVA);
   
-/*mme_alloc_retry:*/
+mme_alloc_retry:
         
     /*
      * Get 64bit Virtual Index (addr) value stored in next mPCQ entry
      */    
     x64 = *(pAllocIF->readP_swVA);
 
-	debug("ncp_task_v2_MMEpool_alloc(): (*readP_swVA)=0x%llx\n", x64); 
+	debug("%s(): mPCQ index is at pAllocIF->readP_swVA 0x%p & its value is *(pAllocIF->readP_swVA)=0x%llx\n",
+		 __func__, pAllocIF->readP_swVA, (unsigned long long) x64); 
+
            
     if (0LL == x64)
     {
@@ -532,19 +529,16 @@ ncp_task_v2_MMEpool_alloc(
                      (ncp_uint32_t)(pAllocIF->readP_hw_indx0_val
                      & 0x00000000FFFFFFFFLL)));    
                                  
-        /*goto mme_alloc_retry;             */
+        goto mme_alloc_retry;
     }    
     
+	/* Zeroing an mPCQ dereferenced above */
+	debug("Zeroing *(pAllocIF->readP_swVA)\n"
+		"  not sure if necessary\n");
     *(pAllocIF->readP_swVA) = 0LL; /* Is this eally necessary ? */
     
     va = (ncp_raw_addr_t) x64; 
 
-#ifdef NCP_TASK_DEBUG_MME    
-    NCP_LOG(NCP_MSG_INFO, "mPCQ read entry @ %p : VA = 0x%p\r\n", 
-            pAllocIF->readP_swVA,
-            ((void *)va));
-#endif
-                  
     /* Advance read pointer */                       
     if (pAllocIF->readP_swVA != pAllocIF->readP_swVA_max_val)
     {
@@ -557,12 +551,9 @@ ncp_task_v2_MMEpool_alloc(
         *(pAllocIF->readP_hwVA) = pAllocIF->readP_hw_indx0_val;
     }   
     
-#ifdef NCP_TASK_DEBUG_MME    
-    NCP_LOG(NCP_MSG_INFO, "new swReadP is %p max is %p, hwReadp=%llx\r\n",
+    NCP_LOG(NCP_MSG_INFO, "new readP_swVA is 0x%p hwReadp=%llx\r\n",
         pAllocIF->readP_swVA,
-        pAllocIF->entries_baseVA,
         *(pAllocIF->readP_hwVA));
-#endif
                 
     *taskAddr = (void *)va;   
     

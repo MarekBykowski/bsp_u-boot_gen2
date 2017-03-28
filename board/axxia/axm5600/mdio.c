@@ -42,11 +42,88 @@
 
 static int initialize = 0;
 
-extern int axxia_mdio_reset(struct mii_dev *bus);
-extern int axxia_mdio_write(struct mii_dev *bus, int addr, int devad, int reg, u16 val);
-extern int axxia_mdio_read(struct mii_dev *bus, int addr, int devad, int reg);
 extern int phy_by_index[];
 
+unsigned short
+mdio_read(int phy, int reg)
+{
+	u32 command;
+#if defined(BZ33327_WA)
+	u32 status;
+#endif
+
+#if defined(BZ33327_WA)
+	/* Set the mdio_busy (status) bit.  */
+	status = readl(CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_STATUS);
+	status |= 0x40000000;
+	writel(status, CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_STATUS);
+#endif
+	/* Write the command. */
+	command = 0x10000000;	/* op_code: read */
+	command |= (phy & 0x1f) << 16;
+	command |= (reg & 0x1f) << 21;
+	writel(command, CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_CTRL);
+
+#if defined(BZ33327_WA)
+	/* Wait for the mdio_busy (status) bit to clear. */
+	do {
+		status = readl(CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_STATUS);
+	} while(0 != (status & 0x40000000));
+#endif /* BZ33327_WA */
+
+	/* Wait for the mdio_busy (control) bit to clear */
+	do {
+		command = readl(CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_CTRL);
+	} while ((command & 0x80000000) != 0);
+
+	printf("mdio_read: phy@0x%x [%#x] -> %#x\n", phy, reg, command & 0xffff);
+	return (command & 0xffff);
+}
+
+void
+mdio_write(int phy, int reg, unsigned short value)
+{
+	u32 command;
+#if defined(BZ33327_WA)
+	u32 status;
+#endif
+
+	/* Wait for mdio_busy (control) to be clear. */
+	do {
+		command = readl(CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_CTRL);
+	} while ((command & 0x80000000) != 0);
+
+#if defined(BZ33327_WA)
+	/* Set the mdio_busy (status) bit */
+	status = readl(CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_STATUS);
+	status |= 0x40000000;
+	writel(status, CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_STATUS);
+#endif
+
+	/* Write the command */
+	command = 0x08000000;	/* op_code: write */
+	/* Port addr which is device addr */
+	command |= (phy & 0x1f) << 16;
+	/* Regs within the device addr */
+	command |= (reg & 0x1f) << 21;
+	command |= value;
+	writel(command, CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_CTRL);
+
+#if defined(BZ33327_WA)
+	/* Wait for the mdio_busy (status) bit to clear */
+	do {
+		status = readl(CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_STATUS);
+	} while ((status & 0x40000000) != 0);
+#endif
+
+	/* Wait for the mdio_busy (control) bit to clear */
+	do {
+		command = readl(CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_CTRL);
+	} while ((command & 0x80000000) != 0);
+
+	printf("mdio_write: phy@0x%x [%#x] <- %#x\n", phy, reg, value);
+	return;
+}
 
 /*
   ----------------------------------------------------------------------
@@ -54,10 +131,9 @@ extern int phy_by_index[];
 */
 
 int
-mdio_initialize(const char *mdio_dev)
+mdio_initialize(void)
 {
 	unsigned long offset, period;
-	struct mii_dev *dev0;
 
     if(initialize)
 		return 0;
@@ -66,23 +142,8 @@ mdio_initialize(const char *mdio_dev)
 	period = getenv_ulong("mdio_clk_period", 0, MDIO_CLK_PERIOD_DEFAULT);
 	printf("MDIO: offset is 0x%lx, period is 0x%lx\n", offset, period);
 
-	dev0 = mdio_alloc();                                    
-	snprintf(dev0->name, MDIO_NAME_LEN, mdio_dev);     
-	/*dev0->priv = (void *)(unsigned long)phy_by_index[1];*/  /*MDIO addr of port gmac1*/
-	dev0->priv  = (void *)CONFIG_AXXIA_MDIO0_BASE;
-	dev0->read = axxia_mdio_read;                           
-	dev0->write = axxia_mdio_write;                         
-	dev0->reset = axxia_mdio_reset;                         
-															
-	if (mdio_register(dev0) < 0) {                          
-		debug("Failed to register MDIO %s\n", dev0->name);  
-		free(dev0);                                         
-															
-		return -1;                                          
-	}                                                       
-															
-	writel(offset, dev0->priv + MDIO_REG_CLK_OFFSET);       
-	writel(period, dev0->priv + MDIO_REG_CLK_PERIOD);       
+	writel(offset, CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_CLK_OFFSET);       
+	writel(period, CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_CLK_PERIOD);       
 
 	/* Enable the MDIO Clock. */
 #ifndef CONFIG_TARGET_EMULATION
@@ -97,11 +158,14 @@ mdio_initialize(const char *mdio_dev)
 	  This is PHY specific, and may only apply to Victoria/Waco.
 	*/
 
-#ifdef CONFIG_TARGET_HARDWARE
+#if 0
+#if defined (CONFIG_TARGET_HARDWARE)
+				     /* addr,  */
 	dev0->write(dev0, phy_by_index[1], 0, 0xd, 2);
 	dev0->write(dev0, phy_by_index[1], 0, 0xe, 8);
 	dev0->write(dev0, phy_by_index[1], 0, 0xd, 0x4002);
 	dev0->write(dev0, phy_by_index[1], 0, 0xe, 0x3ff);
+#endif
 #endif
 
 	initialize = 1;

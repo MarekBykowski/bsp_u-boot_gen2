@@ -2477,11 +2477,9 @@ ncp_task_ncav2_buffer_alloc (
                 myTaskHdl, 
                 size, 
                 taskAddr));
-#if (NCP_TASK_NCAV2_SHPOOL_PTR_DEBUG) || defined(NCP_TASK_DBG_55XX_TASK_FLOW)
         NCP_LOG(NCP_MSG_INFO, 
                     "ALLOC va0=%p\r\n",
                     *taskAddr);
-#endif                 
     }                
 NCP_RETURN_LABEL
 
@@ -4966,7 +4964,7 @@ ncp_task_attach_mme_allocator(ncp_pvt_task_hdl_t *myTaskHdl)
                     for (_xx=0; _xx<4; _xx++)
                     {    
                         NCP_LOG(NCP_MSG_INFO,
-    "AllofIF[%d]:queueValid=%d, readP_swVA=%p,readP_swVAmax_val=%p,entriesBaseVA=%p, readP_hw_indx0_val=%lld\r\n ",
+    "AllofIF[%d]:queueValid=%d, readP_swVA=0x%p,readP_swVAmax_val=0x%p,entriesBaseVA=0x%p, readP_hw_indx0_val=0x%lld\r\n ",
                         _xx,
                         pAllocator->allocIF[_xx].queueValid,
                         pAllocator->allocIF[_xx].readP_swVA,

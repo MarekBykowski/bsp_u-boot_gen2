@@ -255,7 +255,7 @@ ncp_task_uboot_unconfig(void);
 #include "EIOA56xx/vp.c"
 #include "EIOA56xx/nca.c"
 #include "EIOA56xx/eioa.c"
-#include "EIOA56xx/hss_gmac.c"
+/*#include "EIOA56xx/hss_gmac.c"*/
 /*#include "EIOA56xx/all.c"*/
 //#include "EIOA56xx/hss_xgmac.c"
 #else
@@ -880,9 +880,10 @@ ncp_dev_do_read(ncr_command_t *command, unsigned *value)
 {
 	if (NCP_REGION_ID(0x200, 1) == command->region) {
 		*value = *(volatile unsigned*)(unsigned long)command->offset;
-
 		return 0;
-	} else if (0 != ncr_read32(command->region, command->offset, value)) {
+	} 
+
+	if (0 != ncr_read32(command->region, command->offset, value)) {
 		printf("READ ERROR: n=0x%x t=0x%x o=0x%x\n",
 			    NCP_NODE_ID(command->region),
 			    NCP_TARGET_ID(command->region), command->offset);
@@ -1013,6 +1014,7 @@ ncp_dev_do_write_mb64(ncr_command_t *command)
 	if (NCP_REGION_ID(0x200, 1) == command->region) {
 		printf("mb: val 0x%lx @ addr 0x%lx\n", 
 				(unsigned long)command->value,  (unsigned long)command->offset);
+
  		*(volatile unsigned long*)(unsigned long)(command->offset) = (unsigned long) command->value;
 		
 		unsigned long read_back = *(volatile unsigned long*)(unsigned long)command->offset;
@@ -1047,7 +1049,9 @@ ncp_dev_do_modify(ncr_command_t *command)
         ncp_dev_do_write_mb(command);
 
 		return 0;
-	} else if (0 != ncr_modify32(command->region, command->offset,
+	} 
+
+	if (0 != ncr_modify32(command->region, command->offset,
 			      command->mask, command->value)) {
 		printf("MODIFY ERROR: n=0x%x t=0x%x o=0x%x m=0x%x "
 			    "v=0x%x\n",
@@ -1056,15 +1060,17 @@ ncp_dev_do_modify(ncr_command_t *command)
 			    command->mask, command->value);
 
 		return -1;
-	} else {
+	} 
+
 #if 0
+else {
 #ifdef NCR_DEBUG
 		debug("MODIFY: r=0x%x o=0x%lx m=0x%x v=0x%x\n",
 			    command->region, command->offset,
 			    command->mask, command->value);
 #endif
-#endif
 	}
+#endif
 
 	return 0;
 }
@@ -1208,10 +1214,10 @@ static int
 line_setup(int index, struct eth_device *dev)
 {
 	int rc;
-#if defined(CONFIG_AXXIA_55XX)
+#if defined(CONFIG_AXXIA_56XX)
 	int retries = 100000;
 #endif
-#if defined(CONFIG_AXXIA_55XX) || defined(CONFIG_AXXIA_55XX_EMU)
+#if defined(CONFIG_AXXIA_56XX) || defined(CONFIG_AXXIA_56XX_EMU)
 	unsigned short ad_value;
 	unsigned short ge_ad_value;
 #elif defined(CONFIG_AXXIA_56XX)
@@ -1228,8 +1234,6 @@ line_setup(int index, struct eth_device *dev)
 	unsigned top;
 	unsigned bottom;
 	unsigned short control;
-	struct mii_dev *bus;
-	struct phy_device *phy_dev;
 
     if(index >= 128 || (index < 128 && index_by_port[port_by_index[index]] == -1))
     {
@@ -1315,12 +1319,9 @@ line_setup(int index, struct eth_device *dev)
         {
 			phy_by_index[index] = simple_strtoul(envstring, NULL, 0);
 		}
-        
-    }
 
-    mdio_initialize("axxia-gmac1");
-	bus = miiphy_get_dev_by_name("axxia-gmac1");
-	phy_dev = phy_connect(bus, phy_by_index[index], dev, PHY_INTERFACE_MODE_RGMII);
+    	mdio_initialize();
+    }
 
 	/* Check for "macspeed".  If set, ignore the PHYs... */
 	envstring = getenv("macspeed");
@@ -1361,11 +1362,9 @@ line_setup(int index, struct eth_device *dev)
 
         /* do phy configuration for copper PHY */
         if(phy_media_by_index[index] == EIOA_PHY_MEDIA_COPPER) {
-            /*control = mdio_read(phy_by_index[index], 0);*/
-			/* Below is how it should be converted for all accesses to PHY */
-			control = phy_read(phy_dev, MDIO_DEVAD_NONE, 0);
-		    ad_value = phy_read(phy_dev, MDIO_DEVAD_NONE, 4);
-		    ge_ad_value = phy_read(phy_dev, MDIO_DEVAD_NONE, 9);
+			control = mdio_read(phy_by_index[index], 0);    
+			ad_value = mdio_read(phy_by_index[index], 4);   
+			ge_ad_value = mdio_read(phy_by_index[index], 9);
 
             control &= 0xdebf; /* clear bit 6, 8 and 13 */
             ad_value &= 0xfe1f; /* clear bits 5, 6, 7, 8 */
@@ -1392,14 +1391,14 @@ line_setup(int index, struct eth_device *dev)
     			return -1;
     		}
             
-            phy_write(phy_dev, MDIO_DEVAD_NONE, 4, ad_value);
-		    phy_write(phy_dev, MDIO_DEVAD_NONE, 9, ge_ad_value);
-            phy_write(phy_dev, MDIO_DEVAD_NONE, 0, control);
+			mdio_write(phy_by_index[index], 4, ad_value);    
+			mdio_write(phy_by_index[index], 9, ge_ad_value); 
+			mdio_write(phy_by_index[index], 0, control);     
         }
 	} else {
 	    /* do phy configuration for copper PHY */
         if(phy_media_by_index[index] == EIOA_PHY_MEDIA_COPPER) {
-#if defined(CONFIG_AXXIA_55XX)
+#if defined(CONFIG_AXXIA_56XX)
     		/* Get ad_value and ge_ad_value from the environment. */
     		envstring = getenv("ad_value");
 
@@ -1418,19 +1417,19 @@ line_setup(int index, struct eth_device *dev)
     		}
 
     		/* Set the AN advertise values. */
-    		phy_write(phy_dev, MDIO_DEVAD_NONE, 4, ad_value);
-    		phy_write(phy_dev, MDIO_DEVAD_NONE, 9, ge_ad_value);
+			mdio_write(phy_by_index[index], 4, ad_value);
+			mdio_write(phy_by_index[index], 9, ge_ad_value);
 
     		/* Force re-negotiation. */
-    		control = phy_read(phy_dev, MDIO_DEVAD_NONE, 0);
+    		control = mdio_read(phy_by_index[index], 0);
     		control |= 0x1200;
-    		phy_write(phy_dev, MDIO_DEVAD_NONE, 0, control);
+			mdio_write(phy_by_index[index], 0, control);
 
     		DELAY();
 
     		/* Wait for AN complete. */
     		for (;;) {
-    			status = phy_read(phy_dev, MDIO_DEVAD_NONE, 1);
+				status = mdio_read(phy_by_index[index], 1);
 
     			if (0 != (status & 0x20))
     				break;
@@ -1451,7 +1450,7 @@ line_setup(int index, struct eth_device *dev)
     			if (NCP_USE_ALL_PORTS != eioaPort)
     				return -1; /* Don't Error Out in AUTO Mode. */
     		} else {
-    			status = phy_read(phy_dev, MDIO_DEVAD_NONE, 0x1c);
+				status = mdio_read(phy_by_index[index], 0x1c);
             }
 #else
     		status = 0x28; /* For FPGA, its 100MF */
@@ -1694,10 +1693,10 @@ initialize_task_io(struct eth_device *dev)
     if((NCP_USE_ALL_PORTS == eioaPort && port_type_by_index[0] == EIOA_PORT_TYPE_GMAC) ||
        (NCP_USE_ALL_PORTS != eioaPort && port_type_by_index[index_by_port[eioaPort]] == EIOA_PORT_TYPE_GMAC)) {
         debug("Configuring all HSS for GMAC...");
-    	if (0 != ncp_dev_configure(hss_gmac)) {
+    	/*if (0 != ncp_dev_configure(hss_gmac)) {
     		printf("HSS Configuration failed for GMACs.\n");
     		return -1;
-    	}
+    	}*/
     } else if((NCP_USE_ALL_PORTS == eioaPort && port_type_by_index[0] == EIOA_PORT_TYPE_XGMAC) ||
        (NCP_USE_ALL_PORTS != eioaPort && port_type_by_index[index_by_port[eioaPort]] == EIOA_PORT_TYPE_XGMAC)) {
         debug("Configuring all HSS for XGMAC...");
@@ -1803,6 +1802,7 @@ typedef struct
 void
 finalize_task_io(void)
 {
+#if 0
     int rc = 0;
 	unsigned value;
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
@@ -1966,6 +1966,7 @@ finalize_task_io(void)
 	initialized = 0;
 
 ncp_return:
+#endif
 	return;
 }
 
@@ -2066,6 +2067,8 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 		if (length != task_send(&taskMetaData)) {
 			printf("Send Failed on Port %d\n", port_by_index[i]);
 		} else {
+			printf("Send %d bytes on Port %d\n", length, port_by_index[i]);
+			getc();
 			bytes_sent = length;
 		}
 

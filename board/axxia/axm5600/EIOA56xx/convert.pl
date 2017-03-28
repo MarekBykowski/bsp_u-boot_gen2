@@ -113,8 +113,8 @@ sub convert
 		    elsif ("ncpRead" eq $command) 
 		    {
 				# Reads are ignored for all but hss. They introduce necessary delays. 
-				if("hss" eq $architecture)
-				{
+				#if("hss" eq $architecture)
+				#{
 				    if ($2 =~ /
     				    ([^\.]*)\.([^\.]*)\.([^\.]*)\.([^\s]*)/x) 
     				{
@@ -134,7 +134,7 @@ sub convert
     				{
     			    	croak "Unable to parse $2";
     				}
-				}
+				#}
 		    } 
 		    elsif ("ncpModify" eq $command) 
 		    {
