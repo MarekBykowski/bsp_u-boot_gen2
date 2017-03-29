@@ -830,7 +830,11 @@ ncr_read(ncp_uint32_t region,
 		  just do the plain and simple read
 		*/
 		if (NULL != buffer) {
-			ncp_uint32_t offset = 0;
+			ncp_uint64_t offset = 0;
+
+if ((NCP_NODE_ID(region) == 0x101 ) && (NCP_TARGET_ID(region) == 0) && (address == 0x11800))
+	printf("mb: writing *buffer 0x%x @ 0x%x.0x%x.0x%x- hej\n",
+				(unsigned)*((ncp_uint32_t *)buffer), NCP_NODE_ID(region), NCP_TARGET_ID(region), address);
 
 			if(NCP_NODE_ID(region) == 0x101) {
 				offset = (NCA + address);

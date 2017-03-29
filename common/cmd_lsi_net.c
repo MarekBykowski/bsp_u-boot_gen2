@@ -91,6 +91,8 @@ do_net(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	if( 0 == strncmp( argv[1], "s", strlen( "s" ) ) ) {
 		char * buffer = malloc( 60 );
+		/* Copy Uboot to buffer */
+		memmove(buffer, 0, 60);
 
 		if( ( char * ) 0 == buffer ) {
 			printf( "malloc() failed!\n" );

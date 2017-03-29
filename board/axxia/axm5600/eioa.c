@@ -1802,6 +1802,7 @@ typedef struct
 void
 finalize_task_io(void)
 {
+	printf("mb: initialized %d fake %s()\n", initialized, __func__);
 #if 0
     int rc = 0;
 	unsigned value;
@@ -2024,8 +2025,8 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 	int i;
     ncp_task_ncaV2_send_meta_t taskMetaData;
 
-    debug("lsi_eioa_eth_send(): packet=0x%p, length=%d\n",
-	  packet, length);
+    debug("%s(): packet=0x%p, length=%d\n",
+	  __func__, packet, length);
 
 	for (i = 0; i < EIOA_NUM_PORTS; ++i) {
         /* if sending on single port, skip other ports */
@@ -2103,6 +2104,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
     /* receive the task */
     NCP_CALL(ncp_task_ncav2_recv(taskHdl, &recvQueueId, &vpHdl, &engineSeqId, 
                 &task, NULL, FALSE));
+	printf("mb: %s() after ncp_task_ncav2_recv()\n", __func__);
 
     if(dumprx) {
       axxia_dump_packet("LSI_EIOA RX", (void *)(task->pduSegAddr0), 
@@ -2114,7 +2116,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
     invalidate_dcache_all();
 #endif
 
-    debug("lsi_eioa_eth_rx(): received task addr=0x%p, port=%d, size=%d\n", 
+    printf("lsi_eioa_eth_rx(): received task addr=0x%p, port=%d, size=%d\n", 
                 task, task->params[0], task->pduSegSize0);
 
     /* 
@@ -2166,10 +2168,12 @@ lsi_eioa_receive_test(struct eth_device *dev)
 {
 	int packets_received = 0;
 
+	printf("mb: %s()\n", __func__);
     rxtest = 1;
 	eth_halt();
 
 	if (0 != eth_init()) {
+		printf("mb: %s() eth_init returned fail\n", __func__);
         rxtest = 0;
 		eth_halt();
 		return;
@@ -2177,6 +2181,7 @@ lsi_eioa_receive_test(struct eth_device *dev)
 
 	for (;;) {
         int packet_len = eth_rx();
+		printf("mb: %s() packet_len %d\n",__func__,  packet_len);
 		if (0 != packet_len) {
 			++packets_received;
         }

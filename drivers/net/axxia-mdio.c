@@ -51,7 +51,7 @@ axxia_mdio_read(struct mii_dev *bus, int addr, int devad, int reg)
 		command = readl(base + MDIO_REG_CTRL);
 	} while ((command & 0x80000000) != 0);
 
-	printf("mdio_read: phy@0x%x [%#x] -> %#x\n", addr, reg, command & 0xffff);
+	debug("mdio_read: phy@0x%x [%#x] -> %#x\n", addr, reg, command & 0xffff);
 	return (command & 0xffff);
 }
 
@@ -97,7 +97,7 @@ axxia_mdio_write(struct mii_dev *bus, int addr, int devad, int reg, u16 val)
 		command = readl(base + MDIO_REG_CTRL);
 	} while ((command & 0x80000000) != 0);
 
-	printf("mdio_write: phy@0x%x [%#x] <- %#x\n", addr, reg, val);
+	debug("mdio_write: phy@0x%x [%#x] <- %#x\n", addr, reg, val);
 	return 0;
 }
 

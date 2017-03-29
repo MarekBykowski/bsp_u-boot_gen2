@@ -2460,6 +2460,9 @@ ncp_task_v2_check_input_queue( ncp_pvt_task_hdl_t          *myTaskHdl,
     ncp_task_ncaV2_iPCQ_entry_t *pInputQueueEntry = p_iPCQ->u.ipcq_info.pIPCQentry; 
     ncp_uint64_t taskAddr64;
 
+	printf("mb: p_iPCQ->u.ipcq_info.pIPCQentry->taskAddr 0x%llu\n",
+			(long long unsigned) p_iPCQ->u.ipcq_info.pIPCQentry->taskAddr);
+
     /* HACK: Temporary invalidate until cache coherency is figured in uboot */
 #ifdef USE_CACHE_SYNC
     INVALIDATE_DCACHE_RANGE_ALIGN(pInputQueueEntry, sizeof(ncp_task_ncaV2_iPCQ_entry_t));
@@ -2469,7 +2472,7 @@ ncp_task_v2_check_input_queue( ncp_pvt_task_hdl_t          *myTaskHdl,
         ncp_task_ncaV2_recv_buf_t  *pHdr;
         ncp_uint32_t              *wordsHdr;
 
-        debug("ncp_task_v2_check_input_queue(): saw a task!!! addr=0x%llx\n", 
+        printf("ncp_task_v2_check_input_queue(): saw a task!!! addr=0x%llx\n", 
                 pInputQueueEntry->taskAddr);
         
         /* 

@@ -953,9 +953,12 @@ ncp_task_ncav2_recv(
     if (NULL == (myRecvQueue = myTaskHdl->currRecvPtr))
     {
         /* return error */
+		printf("mb: %s() Before NCP_ST_TASK_HANDLE_HEAD_NULL\n", __func__);
         NCP_CALL(NCP_ST_TASK_HANDLE_HEAD_NULL);
     }
     firstRecvQueue =  myRecvQueue;
+	printf("mb: %s() myTaskHdl->currRecvPtr->recvQueueId %d, myTaskHdl->currRecvPtr->ncaQueueId %d\n", 
+		__func__, (int) myTaskHdl->currRecvPtr->recvQueueId,(int) myTaskHdl->currRecvPtr->ncaQueueId);
 
     do {
 
@@ -982,7 +985,7 @@ ncp_recv_retry:
             ncp_bool_t dropTask = FALSE;
 #endif
 
-            debug("ncp_task_ncav2_recv(): received task!! task addr=0x%p\n", myTask);
+            printf("ncp_task_ncav2_recv(): received task!! task addr=0x%p\n", myTask);
             
             dbg_manage_rxstats=1;
 
@@ -1153,6 +1156,8 @@ ncp_recv_retry:
         /*
          * === No task recevied on this queue, so advance to next regardless of wrrCounter
          */
+		printf("mb: %s() No task recevied on this queue, so advance to next regardless of wrrCounter\n",
+							__func__);
 
         myTaskHdl->currRecvPtr = myRecvQueue = myRecvQueue->next;
         myRecvQueue->wrrCounter = myRecvQueue->weight;
@@ -3531,10 +3536,10 @@ ncp_uint32_t ncp_task_v2_debug_array_index(
     if (   ((ncp_raw_addr_t)taskAddr >  (ncp_raw_addr_t)(pPoolEntry->pool_EndVA)) 
         || ((ncp_raw_addr_t)taskAddr <  (ncp_raw_addr_t)(pPoolEntry->pool_VA)))
     {
-        NCP_MSG( NCP_MSG_ERROR, "Bad task buffer passed to ncp_task_get_debug_array_index, addr=0x%p, low=0x%x, high=0x%x\r\n",
+       /* NCP_MSG( NCP_MSG_ERROR, "Bad task buffer passed to ncp_task_get_debug_array_index, addr=0x%p, low=0x%x, high=0x%x\r\n",
             taskAddr,
             (ncp_raw_addr_t)(pPoolEntry->u.cpu.poolBuffersBaseVA),
-            (ncp_raw_addr_t)(pPoolEntry->u.cpu.poolBuffersEndVA));
+            (ncp_raw_addr_t)(pPoolEntry->u.cpu.poolBuffersEndVA));*/
         ncp_task_v2_breakpoint(0x80);
     }
 

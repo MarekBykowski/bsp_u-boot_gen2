@@ -25,7 +25,7 @@
 #include <net.h>
 
 unsigned char ethernet_address[6];
-int dumprx = 0;
+int dumprx = 1;
 int dumptx = 1;
 
 int axxia_mdio_init(void);
