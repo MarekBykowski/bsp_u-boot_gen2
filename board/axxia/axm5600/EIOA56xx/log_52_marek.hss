@@ -5,6 +5,7 @@ ncpWrite   0.272.0.0x0000000000 0x00102000
 ncpWrite   0.272.0.0x0000000000 0x00102200
 ncpWrite   0.272.0.0x0000000000 0x00102000
 ncpRead    0.273.0.0x0000000000 1
+ncpWrite   0.273.0.0x0000000000 0x00102100
 ncpWrite   0.273.0.0x0000000000 0x00102000
 ncpWrite   0.273.0.0x0000000000 0x00102200
 ncpWrite   0.273.0.0x0000000000 0x00102000
@@ -139,96 +140,6 @@ ncpUsleep 150
 ncpRead    0.769.0.0x0000000144 1
 ncpRead    0.272.0.0x0000000000 1
 ncpWrite   0.272.0.0x0000000000 0x00102000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.272.0.0x000000008c 1
-ncpUsleep 5000
 ncpRead    0.272.0.0x000000008c 1
 ncpUsleep 5000
 ncpRead    0.272.0.0x000000008c 1
@@ -457,96 +368,6 @@ ncpUsleep 5000
 ncpRead    0.273.0.0x000000008c 1
 ncpUsleep 5000
 ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.273.0.0x000000008c 1
 ncpRead    0.273.0.0x000000008c 1
 ncpRead    0.273.0.0x0000000018 1
 ncpWrite   0.273.0.0x0000000018 0x00517021
@@ -722,90 +543,6 @@ ncpUsleep 5000
 ncpRead    0.274.0.0x000000008c 1
 ncpUsleep 5000
 ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.274.0.0x000000008c 1
 ncpRead    0.274.0.0x000000008c 1
 ncpRead    0.274.0.0x0000000018 1
 ncpWrite   0.274.0.0x0000000018 0x00517021
@@ -947,118 +684,6 @@ ncpUsleep 150
 ncpRead    0.769.0.0x0000000144 1
 ncpRead    0.275.0.0x0000000000 1
 ncpWrite   0.275.0.0x0000000000 0x00102000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
-ncpRead    0.275.0.0x000000008c 1
-ncpUsleep 5000
 ncpRead    0.275.0.0x000000008c 1
 ncpUsleep 5000
 ncpRead    0.275.0.0x000000008c 1
@@ -1347,3 +972,81 @@ ncpWrite   0.278.0.0x0000000004 0x350f1000
 # skipping serdes 9 config parsing as it is disabled
 # 
 # END: EIOA.SerDes Configuration's
+ncpRead    0.341.0.0x0000000000 1
+ncpWrite   0.341.0.0x0000000000 0xf78a9060
+ncpRead    0.341.0.0x0000000000 1
+ncpWrite   0.341.0.0x0000000000 0xf78a9060
+ncpRead    0.341.0.0x0000000000 1
+### Program NRCP MUX
+ncpRead    0.341.0.0x0000000000 1
+ncpWrite   0.341.0.0x0000000000 0xf78a9060
+ncpRead    0.341.0.0x0000000008 1
+ncpWrite   0.341.0.0x0000000008 0x000f0000
+ncpRead    0.341.0.0x0000000000 1
+ncpWrite   0.341.0.0x0000000000 0xf38a9060
+ncpRead    0.341.0.0x0000000000 1
+ncpWrite   0.341.0.0x0000000000 0x638a9060
+ncpWrite   0.341.0.0x0000000020 0x00000000
+ncpRead    0.341.0.0x0000000018 1
+ncpWrite   0.341.0.0x0000000018 0x00000000
+ncpWrite   0.341.0.0x000000001c 0x00000003
+# End:   Engines.EIOA
+# Begin: Namespaces
+ncpFill   -c 327680 0.512.1.0x0092153c00 0x00000000
+ncpWrite   0.12.17.0x0000000008 0x092153c0 0x00fff303 0x00000000 0x00000000
+ncpWrite   0.12.17.0x0000000018 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.12.17.0x0000000028 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.12.17.0x0000000038 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.12.17.0x0000000048 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.12.17.0x0000000058 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.12.17.0x0000000068 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.12.17.0x0000000078 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.12.17.0x0000000088 0x00000001
+ncpWrite   0.26.40.0x0000010000 0x092193c0 0x00fff50f 0x00000000 0x00000000
+ncpWrite   0.26.40.0x0000010010 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.26.40.0x0000010020 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.26.40.0x0000010030 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.26.40.0x0000010040 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.26.40.0x0000010050 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.26.40.0x0000010060 0x00000000 0x00000000 0x00000000 0x00000000
+ncpWrite   0.26.40.0x0000010070 0x00000000 0x00000000 0x00000000 0x00000000
+ncpRead    0.12.255.0x0000000000 1
+ncpRead    0.12.17.0x0000000088 1
+ncpRead    0.12.255.0x0000000000 1
+ncpRead    0.12.17.0x0000000088 1
+ncpRead    0.12.255.0x0000000000 1
+ncpRead    0.12.17.0x0000000088 1
+ncpRead    0.12.255.0x0000000000 1
+ncpRead    0.12.17.0x0000000088 1
+ncpRead    0.12.255.0x0000000000 1
+ncpRead    0.12.17.0x0000000088 1
+ncpRead    0.12.255.0x0000000000 1
+ncpRead    0.12.17.0x0000000088 1
+ncpRead    0.12.255.0x0000000000 1
+ncpRead    0.12.17.0x0000000088 1
+ncpRead    0.12.255.0x0000000000 1
+ncpRead    0.12.17.0x0000000088 1
+ncpRead    0.12.255.0x0000000000 1
+ncpRead    0.12.17.0x0000000088 1
+# End:   Namespaces
+# Begin: EIOA Switch Entries
+ncpRead    0.23.255.0x0000000000 1
+# Begin: Initialize EIOA Bridge Entries
+# Begin: Adding Bridging Static Entries
+# End: Adding Bridging Static Entries
+# End: Initialize EIOA Bridge
+# End: Initialize EIOA Bridge
+# End:   EIOA Switch Entries
+# Begin: EIOA Port(s) Enable
+ncpRead    0.23.255.0x0000000000 1
+ncpModify  0.31.17.0x0000000020 0x00001001 0x00000000
+ncpModify  0.31.18.0x0000000020 0x00001001 0x00000000
+ncpModify  0.31.18.0x0000000020 0x00000002 0x00000000
+ncpModify  0.31.18.0x0000000020 0x00000004 0x00000000
+ncpModify  0.31.18.0x0000000020 0x00000008 0x00000000
+ncpModify  0.23.18.0x0000000020 0x00001001 0x00000000
+ncpModify  0.23.18.0x0000000020 0x00000002 0x00000000
+ncpModify  0.41.17.0x0000000020 0x00001001 0x00000000
+# End:   EIOA Port(s) Enable
+ncpRead    0.22.0.0x0000000000 1
+ncpModify  0.22.255.0x0000000020 0x00000001 0x00000001

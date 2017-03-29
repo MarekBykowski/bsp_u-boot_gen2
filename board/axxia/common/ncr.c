@@ -833,17 +833,17 @@ ncr_read(ncp_uint32_t region,
 			ncp_uint64_t offset = 0;
 
 if ((NCP_NODE_ID(region) == 0x101 ) && (NCP_TARGET_ID(region) == 0) && (address == 0x11800))
-	printf("mb: writing *buffer 0x%x @ 0x%x.0x%x.0x%x- hej\n",
+	printf("mb: reading *buffer 0x%x @ 0x%x.0x%x.0x%x- hej\n",
 				(unsigned)*((ncp_uint32_t *)buffer), NCP_NODE_ID(region), NCP_TARGET_ID(region), address);
 
 			if(NCP_NODE_ID(region) == 0x101) {
-				offset = (NCA + address);
+				offset = (unsigned long)(NCA + address);
 			} else if(NCP_NODE_ID(region) == 0x109) {
-				offset = (MME_POKE + address);
+				offset = ((unsigned long)MME_POKE + address);
 			} else if(NCP_NODE_ID(region) == 0x1d0) {
-				offset = (SCB + address);
+				offset = ((unsigned long)SCB + address);
 			} else if (NCP_NODE_ID(region) == 0x149) {
-				offset = (GPREG + address);
+				offset = ((unsigned long)GPREG + address);
 			} 
 
 			while (4 <= number) {
@@ -1149,6 +1149,9 @@ ncr_write(ncp_uint32_t region,
 			} else if (NCP_NODE_ID(region) == 0x149) {
 				offset = (unsigned long)(GPREG + address);
 			} 
+if ((NCP_NODE_ID(region) == 0x101 ) && (NCP_TARGET_ID(region) == 0) && (address == 0x11800))
+	printf("mb: writing *buffer 0x%x @ 0x%x.0x%x.0x%x- hej\n",
+				(unsigned)*((ncp_uint32_t *)buffer), NCP_NODE_ID(region), NCP_TARGET_ID(region), address);
 
 			while (4 <= number) {
 				ncr_register_write(*((ncp_uint32_t *)buffer),

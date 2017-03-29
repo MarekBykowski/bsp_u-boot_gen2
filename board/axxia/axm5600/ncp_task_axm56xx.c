@@ -953,7 +953,6 @@ ncp_task_ncav2_recv(
     if (NULL == (myRecvQueue = myTaskHdl->currRecvPtr))
     {
         /* return error */
-		printf("mb: %s() Before NCP_ST_TASK_HANDLE_HEAD_NULL\n", __func__);
         NCP_CALL(NCP_ST_TASK_HANDLE_HEAD_NULL);
     }
     firstRecvQueue =  myRecvQueue;

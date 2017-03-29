@@ -2458,11 +2458,14 @@ ncp_task_v2_check_input_queue( ncp_pvt_task_hdl_t          *myTaskHdl,
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
     ncp_task_pcq_t        *p_iPCQ = myRecvQueue->taskQueue;
     ncp_task_ncaV2_iPCQ_entry_t *pInputQueueEntry = p_iPCQ->u.ipcq_info.pIPCQentry; 
+
     ncp_uint64_t taskAddr64;
 
-	printf("mb: p_iPCQ->u.ipcq_info.pIPCQentry->taskAddr 0x%llu\n",
-			(long long unsigned) p_iPCQ->u.ipcq_info.pIPCQentry->taskAddr);
-
+	/*printf("mb: p_iPCQ->u.ipcq_info.pIPCQentry->taskAddr 0x%llu\n"
+			"pInputQueueEntry->taskAddr 0x%llu\n",
+			(long long unsigned) p_iPCQ->u.ipcq_info.pIPCQentry->taskAddr,
+			(long long unsigned) pInputQueueEntry->taskAddr);
+*/
     /* HACK: Temporary invalidate until cache coherency is figured in uboot */
 #ifdef USE_CACHE_SYNC
     INVALIDATE_DCACHE_RANGE_ALIGN(pInputQueueEntry, sizeof(ncp_task_ncaV2_iPCQ_entry_t));
@@ -2472,8 +2475,8 @@ ncp_task_v2_check_input_queue( ncp_pvt_task_hdl_t          *myTaskHdl,
         ncp_task_ncaV2_recv_buf_t  *pHdr;
         ncp_uint32_t              *wordsHdr;
 
-        printf("ncp_task_v2_check_input_queue(): saw a task!!! addr=0x%llx\n", 
-                pInputQueueEntry->taskAddr);
+        printf("%s(): saw a task!!! addr=0x%llx", 
+                __func__, pInputQueueEntry->taskAddr);
         
         /* 
          * prevent speculative execution of following instructions.
@@ -2492,10 +2495,8 @@ ncp_task_v2_check_input_queue( ncp_pvt_task_hdl_t          *myTaskHdl,
          * and we do not use them anyway
          */
         
-#if 0 && !defined(NCP_KERNEL)
-    NCP_MSG(NCP_MSG_INFO, "RX Task, %p",pHdr);
-    ncp_r32(pHdr,30);
-#endif
+		NCP_MSG(NCP_MSG_INFO, "RX Task, %p",pHdr);
+		ncp_r32((ncp_uint32_t *)pHdr,30);
         
         /* byte swap task input header */
         wordsHdr = (ncp_uint32_t *)pHdr;

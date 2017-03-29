@@ -1949,6 +1949,7 @@ finalize_task_io(void)
                 NCP_EIOA_GEN_CFG_REG_OFFSET(1), 0x00000003, 0x0));
 
 	/* Disable iPCQ 0 (only queue 0 is used) */
+	/* Are you sure endiananess is right? */
 	value = readl(NCA + 0x11800 + (ncaQueueId * 0x10));
 	value &= ~0x00000400;
 	writel(value, (NCA + 0x11800 + (ncaQueueId * 0x10)));
