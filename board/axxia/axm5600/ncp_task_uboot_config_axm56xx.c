@@ -115,24 +115,24 @@
  */
  
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=3].physicalBaseAddress */
-#define POOL_2_SZ0_PA 4054464512
-#define POOL_2_SZ0_VA 3444586496
+#define POOL_2_SZ0_PA 4054464512 /*0xF1AA3800*/
+#define POOL_2_SZ0_VA dummy
 
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=3].size */
 #define POOL_2_SZ0_SIZE 163126016
 #define POOL_2_SZ0_NUMBLOCKS 637211
 
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=2].physicalBaseAddress */
-#define POOL_2_SZ1_VA 3011739648
-#define POOL_2_SZ1_PA 3621617664
+#define POOL_2_SZ1_VA 3011739648 
+#define POOL_2_SZ1_PA 3621617664 /*0xD7DD8000*/
 
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=2].size */
 #define POOL_2_SZ1_SIZE 432846848
 #define POOL_2_SZ1_NUMBLOCKS 211351
 
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=1].physicalBaseAddress */
-#define POOL_2_SZ2_VA 2576351232
-#define POOL_2_SZ2_PA 3186229248
+#define POOL_2_SZ2_VA 2576351232 
+#define POOL_2_SZ2_PA 3186229248 /*0xBDEA0000*/
 
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=1].size */
 #define POOL_2_SZ2_SIZE 435388416
@@ -140,7 +140,7 @@
 
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=0].physicalBaseAddress */
 #define POOL_2_SZ3_VA 1879179264
-#define POOL_2_SZ3_PA 2489057280
+#define POOL_2_SZ3_PA 2489057280 /*0x945C0000*/
 
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=0].size */
 #define POOL_2_SZ3_SIZE 697171968
