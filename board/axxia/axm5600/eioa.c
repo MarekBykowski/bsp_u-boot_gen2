@@ -658,7 +658,7 @@ ncp_dev_reset_hw(void)
     /* Enable protected writes.  Key is the only field in this register. */
     NCP_CALL(ncr_write32(NCP_REGION_AXIS_APB2SER3_SYSCON, NCP_SYSCON_KEY, 0xAB));
 
-    /*resetReg.eioa_phy0_rst    = 1;
+    resetReg.eioa_phy0_rst    = 1;
     resetReg.eioa_phy1_rst    = 1;
     resetReg.eioa_phy2_rst    = 1;
     resetReg.eioa_phy3_rst    = 1;
@@ -671,9 +671,9 @@ ncp_dev_reset_hw(void)
     resetReg.treemem_rst      = 1;
     resetReg.mppy_rst         = 1;
     resetReg.nca_rst          = 1;
-    resetReg.mme_rst          = 1;*/
+    resetReg.mme_rst          = 1;
 
-    /*resetReg.spp_rst          = 1;
+    resetReg.spp_rst          = 1;
     resetReg.dpi_rst          = 1;
     resetReg.pic_rst          = 1;
     resetReg.pab_rst          = 1;
@@ -696,8 +696,7 @@ ncp_dev_reset_hw(void)
     resetReg.ccms_rst         = 1;
     resetReg.pkt_buffer_rst   = 1;
     resetReg.nic_rst          = 1;
-    resetReg.pbm_rst          = 1;*/
-
+    resetReg.pbm_rst          = 1;
 
  /* 
  *  Read the NTEMC0 local config node scratch register.
@@ -851,7 +850,7 @@ ncp_dev_reset(void)
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
 
 	/* Reset Modules */
-    /*ncpStatus = ncp_dev_reset_hw();*/
+    ncpStatus = ncp_dev_reset_hw();
 	printf("mb: ncp_dev_reset_hw\n");
     if(ncpStatus != NCP_ST_SUCCESS)
     {
@@ -1639,10 +1638,10 @@ initialize_task_io(struct eth_device *dev)
     }
 
     debug("Resetting device...");
-	/*if (0 != ncp_dev_reset()) {
+	if (0 != ncp_dev_reset()) {
 		printf("Device reset Failed\n");
 		return -1;
-	}*/
+	}
     debug("done\n");
 
     debug("Clearing NCA domain bundle...");
@@ -1805,8 +1804,7 @@ typedef struct
 void
 finalize_task_io(void)
 {
-	printf("mb: initialized %d fake %s()\n", initialized, __func__);
-#if 0
+#if 1
     int rc = 0;
 	unsigned value;
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
