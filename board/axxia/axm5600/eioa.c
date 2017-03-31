@@ -1740,11 +1740,14 @@ initialize_task_io(struct eth_device *dev)
 	/*
 	  Make sure the network is connected.
 	*/
+	
 
 	if (NCP_USE_ALL_PORTS == eioaPort) {
 		/* Use all ports. */
 		for (i = 0; i < EIOA_NUM_PORTS; ++i) {
-            if(port_type_by_index[i] == EIOA_PORT_TYPE_GMAC) {
+printf("mb: index_by_port[i] %d, port_type_by_index[i] %d\n",
+index_by_port[i], port_type_by_index[i]);
+            if (index_by_port[i] != -1 && (port_type_by_index[i] == EIOA_PORT_TYPE_GMAC)){
     			if (0 != line_setup(i, dev)) {
                     printf("line_setup failed for gmac%d (all)\n", 
                             port_by_index[i]);
@@ -1753,7 +1756,7 @@ initialize_task_io(struct eth_device *dev)
             }
 		}
 	} else {
-        if(port_type_by_index[index_by_port[eioaPort]] == EIOA_PORT_TYPE_GMAC) {
+        if ((index_by_port[eioaPort] != -1) && (port_type_by_index[index_by_port[eioaPort]] == EIOA_PORT_TYPE_GMAC)) {
             printf("Using EIOA Port GMAC%d\n", eioaPort);
     		if (0 != line_setup(index_by_port[eioaPort], dev)) {
                 printf("line_setup failed for gmac%d\n", 
@@ -2031,11 +2034,13 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 
 	for (i = 0; i < EIOA_NUM_PORTS; ++i) {
         /* if sending on single port, skip other ports */
-        if(eioaPort != NCP_USE_ALL_PORTS && port_by_index[i] != eioaPort) {
+        if((eioaPort != NCP_USE_ALL_PORTS && port_by_index[i] != eioaPort)
+			/* if send to all skip unsued ports */
+			 || (index_by_port[i] == -1))	{
             continue;
-        }
-
-        debug("lsi_eioa_eth_send(): sending to port=%d\n", eioaPort);
+        }	
+        debug("lsi_eioa_eth_send(): sending to port=%d\n"
+			"index_by_port[%d] %u\n", eioaPort, i, index_by_port[i]);
 
         bytes_sent = 0;
         
