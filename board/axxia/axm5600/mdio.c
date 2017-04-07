@@ -146,27 +146,8 @@ mdio_initialize(void)
 	writel(period, CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_CLK_PERIOD);       
 
 	/* Enable the MDIO Clock. */
-#ifndef CONFIG_TARGET_EMULATION
-#ifdef CONFIG_AXXIA_ANY_56XX
+	printf("MDIO: New clock enable control val 0x10 at 0x%lx", (unsigned long) (PERIPH_GPREG + 0x18));
 	writel(0x10, PERIPH_GPREG + 0x18);
-#endif
-#endif
-
-	/*
-	  Set the RGMII Clock Pad Skew
-
-	  This is PHY specific, and may only apply to Victoria/Waco.
-	*/
-
-#if 0
-#if defined (CONFIG_TARGET_HARDWARE)
-				     /* addr,  */
-	dev0->write(dev0, phy_by_index[1], 0, 0xd, 2);
-	dev0->write(dev0, phy_by_index[1], 0, 0xe, 8);
-	dev0->write(dev0, phy_by_index[1], 0, 0xd, 0x4002);
-	dev0->write(dev0, phy_by_index[1], 0, 0xe, 0x3ff);
-#endif
-#endif
 
 	initialize = 1;
 

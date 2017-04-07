@@ -151,7 +151,6 @@ static int port_type_by_index[] =
 int phy_by_index[] = 
 { 
     0x12, 0x13, 0x18, 0x19, 0x1b,
-	/* below are invalid */
 	0x18, 0x13, 0x12, 0x11, 0x10, 0x20, 0x21, 
     0x30, 0x31, 0x40, 0x41, 0x50, 0x51, 0x60, 0x61, 0x70, 0x71 
 };
@@ -1060,6 +1059,11 @@ ncp_dev_do_modify(ncr_command_t *command)
 
 		return -1;
 	} 
+#if 0
+	ncr_read32(command->region, command->offset, &ncr_status);
+	printf("mb: modify r 0x%x o 0x%x m 0x%x v 0x%x (expecting 0x%x)\n",
+			 command->region, command->offset, command->mask, ncr_status, command->value); 
+#endif
 
 #if 0
 else {
@@ -1140,13 +1144,13 @@ ncp_dev_configure(ncr_command_t *commands) {
 		case NCR_COMMAND_POLL:
 			rc = ncp_dev_do_poll(commands);
 			break;
-        case NCR_COMMAND_FUNC:
-            if(commands->offset) {
-                func_config_port func_ptr = (func_config_port)commands->func;
-                /* call the function in offset field with param in value field */
-                rc = func_ptr(commands->value);
-            }
-            break;
+		case NCR_COMMAND_FUNC:                                                   
+			if(commands->offset) {                                               
+				func_config_port func_ptr = (func_config_port)commands->func;    
+				/* call the function in offset field with param in value field */
+				rc = func_ptr(commands->value);                                  
+			}                                                                    
+			break;                                                               
 		default:
 			printf("Unknown Command: 0x%x, startCmd=%p, curCmd=%p\n",
 			       (unsigned int)commands->command,
@@ -1204,6 +1208,67 @@ task_send(ncp_task_ncaV2_send_meta_t *taskMetaData)
 
 #define DELAY() udelay(5000)
 
+int
+take_snapshot(int gmac) {
+	int rc, target = 0xdead, offset = 0xdead, val, number = 56;
+	int offset_rx = 0xf00, offset_tx = 0xe00;
+
+	switch (gmac) {
+	case 0:
+		target = 0x11;                 
+		offset = 0xd0c; /*gmac00_config*/
+		val = 0x0;                    
+		break;
+	case 1:
+		target = 0x12;
+		offset = 0xd0c;
+		val = 0x0;
+		break;
+	case 2: 
+		target = 0x12;
+		offset = 0xd10;
+		val = 0x1;
+		break;
+	case 3:
+		target = 0x12;
+		offset = 0xd14;
+		val = 0x2;
+		break;
+	default:
+		printf("Snapshot for gmac%d not supported\n", gmac);
+		return -1;
+	}
+
+	ncr_write32(NCP_REGION_ID(0x1f, target), offset, 0x45ee);
+	ncr_write32(NCP_REGION_ID(0x1f, target), 0xd40, val);
+	
+	printf("Snapshot for gmac%d\n", gmac);
+	while (0 < number--) {
+		rc = ncr_read(NCP_REGION_ID(0x1f, target), 0, offset_tx, 4, &val);
+		if (0 != val) 
+			printf("value 0x%x\n", val);
+
+		if (0 != rc)
+			return -1;
+
+		offset_tx += 4;
+	}
+
+	number = 56;
+	while (0 < number--) {
+		rc = ncr_read(NCP_REGION_ID(0x1f, target), 0, offset_rx, 4, &val);
+		if (0 != val) 
+			printf("value 0x%x\n", val);
+
+		if (0 != rc)
+			return -1;
+
+		offset_rx += 4;
+	}
+	return 0;
+}
+
+
 /*
   ------------------------------------------------------------------------------
   line_setup
@@ -1228,11 +1293,11 @@ line_setup(int index, struct eth_device *dev)
 	unsigned gmacPortOffset;
 	unsigned hwPortIndex;
 	unsigned ncr_status;
-	char *envstring;
-	unsigned short status;
 	unsigned top;
 	unsigned bottom;
+	char *envstring;
 	unsigned short control;
+	unsigned short status;
 
     if(index >= 128 || (index < 128 && index_by_port[port_by_index[index]] == -1))
     {
@@ -1298,12 +1363,14 @@ line_setup(int index, struct eth_device *dev)
 	    return -1;
     }
 
-	printf("mb: (should gmac1 -> nemac1 @0x1f.0x12.0x0) \n"
+	printf("mb: gmac1-4 -> nemac1 @0x1f.0x12.0x0) \n"
 		" hwPortIndex 0x%x eioaRegion 0x%x gmacRegion 0x%x gmacPortOffset 0x%x\n",
 			hwPortIndex, eioaRegion, gmacRegion, gmacPortOffset);
 
 	/* Disable stuff. */
 	NCR_CALL(ncr_modify32(gmacRegion, 0x330 + gmacPortOffset, 0x3f, 0));
+	ncr_read32(gmacRegion, 0x330 + gmacPortOffset, &ncr_status);
+	printf("mb: ncr_status 0x%x (expecting 0x0)\n", ncr_status); 
 	NCR_CALL(ncr_modify32(gmacRegion, 0x300 + gmacPortOffset, 0x8, 0x0));
 	NCR_CALL(ncr_modify32(eioaRegion, 
                 NCP_EIOA_GEN_CFG_REG_OFFSET(hwPortIndex) + 0x0, 
@@ -1361,38 +1428,83 @@ line_setup(int index, struct eth_device *dev)
 
         /* do phy configuration for copper PHY */
         if(phy_media_by_index[index] == EIOA_PHY_MEDIA_COPPER) {
-			control = mdio_read(phy_by_index[index], 0);    
-			ad_value = mdio_read(phy_by_index[index], 4);   
-			ge_ad_value = mdio_read(phy_by_index[index], 9);
+			/* GMAC2, 3, 4, 18 are special ports on Victoria i.e. 
+ 			   they are pure Copper and go through Vitesse PHY’s.
+			   They need correct PHY addresses in ASE also:
+			   GMAC2 (phy 0x18), 3 (phy 0x19), 4 (phy 0x1a), 18 (phy 0x1b)
+			 */
+			switch (phy_by_index[index]) {
+			case 0x18:
+			case 0x19:
+			case 0x1a:
+			case 0x1b:
+				mdio_write(0x18, 0x1f, 0x0000);
+				mdio_write(0x19, 0x1f, 0x0000);
+				mdio_write(0x1a, 0x1f, 0x0000);
+				mdio_write(0x1b, 0x1f, 0x0000);
 
-            control &= 0xdebf; /* clear bit 6, 8 and 13 */
-            ad_value &= 0xfe1f; /* clear bits 5, 6, 7, 8 */
-            ge_ad_value &= 0xcff; /* clear bits 8, 9 */
-            
-            if (0 == strcmp("10MH", envstring)) {
-                ad_value |= 0x20;       /* set bit 5 */
-    		} else if (0 == strcmp("10MF", envstring)) {
-                ad_value |= 0x40;       /* set bit 6 */
-                control |= 0x100; /* set bit 8 */
-    		} else if (0 == strcmp("100MH", envstring)) {
-                ad_value |= 0x80;       /* set bit 7 */
-    			control |= 0x2000; /* set bit 13 */
-    		} else if (0 == strcmp("100MF", envstring)) {
-                ad_value |= 0x100;      /* set bit 8 */
-    		    control |= 0x2100; /* set bit 8, 13 */
-    		} else if (0 == strcmp("1G", envstring)) {
-                ge_ad_value |= 0x300;   /* set bit 8, 9 */
-                control |= 0x40;        /* set bit 6 */
-                control &= 0xdfff;      /* clear bit 13 */
-    		} else {
-    			printf("macspeed must be set to 10MH, 10MF, 100MH, "
-    			       "100MF, or 1G\n");
-    			return -1;
-    		}
-            
-			mdio_write(phy_by_index[index], 4, ad_value);    
-			mdio_write(phy_by_index[index], 9, ge_ad_value); 
-			mdio_write(phy_by_index[index], 0, control);     
+				mdio_write(0x18, 0x17, 0x0000);
+				mdio_write(0x19, 0x17, 0x0000);
+				mdio_write(0x1a, 0x17, 0x0000);
+				mdio_write(0x1b, 0x17, 0x0000);
+
+				mdio_write(0x18, 0x1f, 0x0003);
+				mdio_write(0x19, 0x1f, 0x0003);
+				mdio_write(0x1a, 0x1f, 0x0003);
+				mdio_write(0x1b, 0x1f, 0x0003);
+
+				mdio_write(0x18, 0x10, 0x3080);
+				mdio_write(0x19, 0x10, 0x3080);
+				mdio_write(0x1a, 0x10, 0x3080);
+				mdio_write(0x1b, 0x10, 0x3080);
+
+				mdio_write(0x18, 0x1f, 0x0010);
+				mdio_write(0x19, 0x1f, 0x0000);
+				mdio_write(0x1a, 0x1f, 0x0000);
+				mdio_write(0x1b, 0x1f, 0x0000);
+
+				mdio_write(0x18, 0x13, 0x000f);
+				mdio_write(0x18, 0x12, 0x80f0);
+				mdio_write(0x18, 0x1f, 0x0000);
+				break;
+			default:
+				control = mdio_read(phy_by_index[index], 0);    
+				ad_value = mdio_read(phy_by_index[index], 4);   
+				ge_ad_value = mdio_read(phy_by_index[index], 9);
+
+				control &= 0xdebf; /* clear bit 6, 8 and 13 */
+				ad_value &= 0xfe1f; /* clear bits 5, 6, 7, 8 */
+				ge_ad_value &= 0xcff; /* clear bits 8, 9 */
+				
+				if (0 == strcmp("10MH", envstring)) {
+					ad_value |= 0x20;       /* set bit 5 */
+				} else if (0 == strcmp("10MF", envstring)) {
+					ad_value |= 0x40;       /* set bit 6 */
+					control |= 0x100; /* set bit 8 */
+				} else if (0 == strcmp("100MH", envstring)) {
+					ad_value |= 0x80;       /* set bit 7 */
+					control |= 0x2000; /* set bit 13 */
+				} else if (0 == strcmp("100MF", envstring)) {
+					ad_value |= 0x100;      /* set bit 8 */
+					control |= 0x2100; /* set bit 8, 13 */
+				} else if (0 == strcmp("1G", envstring)) {
+					ge_ad_value |= 0x300;   /* set bit 8, 9 */
+					control |= 0x40;        /* set bit 6 */
+					control &= 0xdfff;      /* clear bit 13 */
+				} else {
+
+					printf("macspeed must be set to 10MH, 10MF, 100MH, "
+						   "100MF, or 1G\n");
+					return -1;
+				}
+				
+				mdio_write(phy_by_index[index], 4, ad_value);    
+				mdio_write(phy_by_index[index], 9, ge_ad_value); 
+				mdio_write(phy_by_index[index], 0, control);     
+				break;
+			}
+			DELAY();
+			take_snapshot(port_by_index[index]);
         }
 	} else {
 	    /* do phy configuration for copper PHY */
@@ -1638,10 +1750,10 @@ initialize_task_io(struct eth_device *dev)
     }
 
     debug("Resetting device...");
-	if (0 != ncp_dev_reset()) {
+	/*if (0 != ncp_dev_reset()) {
 		printf("Device reset Failed\n");
 		return -1;
-	}
+	}*/
     debug("done\n");
 
     debug("Clearing NCA domain bundle...");
@@ -1683,7 +1795,7 @@ initialize_task_io(struct eth_device *dev)
 		}
 	debug("done\n");
 
-
+getc();
     debug("Configuring Uboot task io...");
     /* initialize task io */
 	NCP_CALL(ncp_task_uboot_config());
@@ -1804,7 +1916,7 @@ typedef struct
 void
 finalize_task_io(void)
 {
-#if 1
+#if 0
     int rc = 0;
 	unsigned value;
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
@@ -2063,7 +2175,8 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
         taskMetaData.pduSegSize0    = length;
         taskMetaData.ptrCnt         = 1;
         taskMetaData.pduSegAddr0    = (ncp_uint64_t)((unsigned long)taskAddr);
-        taskMetaData.params[0]   = port_by_index[i]; /* output port */
+        taskMetaData.params[0]   	= port_by_index[i]; /* output port */
+		printf("mb: %s(): Send over VP CPUtoEIOA output port %u\n", __func__,(unsigned int) taskMetaData.params[0]);
 /* HACK: Temporary invalidate until cache coherency is figured in uboot */
 #ifdef USE_CACHE_SYNC
 		flush_cache((unsigned long)&taskMetaData, sizeof(taskMetaData));

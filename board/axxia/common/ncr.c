@@ -1434,9 +1434,9 @@ int
 ncr_modify(ncp_uint32_t region, ncp_uint32_t address, int count,
 	   void *masks, void *values)
 {
-	command_data_register_0_t cdr0;
-	command_data_register_1_t cdr1;
-	command_data_register_2_t cdr2;
+	command_data_register_0_t cdr0 = {0};
+	command_data_register_1_t cdr1 = {0};
+	command_data_register_2_t cdr2 = {0};
 	void *data_word_base;
 	int wfc_timeout = WFC_TIMEOUT;
 
