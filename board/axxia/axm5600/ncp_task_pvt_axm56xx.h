@@ -62,7 +62,7 @@
  * These code modifications must be removed for the production hardware!
  */
 
-#define NCP_TASK_SW_WORKAROUNDS_FOR_V1_ASIC_HW_BUGS
+/*#define NCP_TASK_SW_WORKAROUNDS_FOR_V1_ASIC_HW_BUGS*/
 #ifdef NCP_TASK_SW_WORKAROUNDS_FOR_V1_ASIC_HW_BUGS
 
 /* 
@@ -96,7 +96,7 @@
 #define NCP_TASK_NCAV2_USES_WRAP_BIT 0  
 #else
 #define NCP_TASK_FORCE_OTASK_COPY 0 
-#define NCP_TASK_NCAV2_USES_WRAP_BIT 1
+#define NCP_TASK_NCAV2_USES_WRAP_BIT 0
 #endif  /* NCP_TASK_SW_WORKAROUNDS_FOR_V1_ASIC_HW_BUGS */
 
 /*
@@ -1550,11 +1550,12 @@ typedef struct ncp_task_ncaV2_pool_s{
         _pOPCQ->u.opcq_info.pOPCQentry = _pOPCQ->pPCQbase;                  \
     }                                                                       \
     else                                                                    \
-    {                                                                       \
+    {                                                                      \
         _pOPCQ->u.opcq_info.pOPCQentry++;                                   \
     }                                                                       \
     NCP_SYSMEM_BARRIER();  /* enforce write ordering */                     \
     *(_pOPCQ->pProducerIdx) = SWAP_16(_pIdx);                               \
+printf("*(_pOPCQ->pProducerIdx)  = SWAP_16(_pIdx) %hu\n", *(_pOPCQ->pProducerIdx));				\
     _pOPCQ->u.opcq_info.opcqProducerIdx = _pIdx;                            \
 }
 

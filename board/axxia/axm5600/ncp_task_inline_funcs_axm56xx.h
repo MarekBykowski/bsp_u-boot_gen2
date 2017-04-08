@@ -1284,6 +1284,7 @@ ncp_task_v2_put_task_deallocate(    ncp_pvt_task_hdl_t *myTaskHdl,
                                     myTaskHdl->poolID))     
         {                   
             /* Queue is FULL */
+			printf("mb: Queue is FULL\n");
             {
 #ifdef DBG_KMODE_INTS
                 pNcpNcaV2_TaskSwState->dbg_txQueueFull++;
@@ -1391,6 +1392,7 @@ ncp_task_v2_put_task_deallocate(    ncp_pvt_task_hdl_t *myTaskHdl,
         0,
         NULL,
         myTaskHdl->poolID);   
+	printf("mb: producerIdx %hu\n", (unsigned short) producerIdx);
     
 #if defined(NCP_NCA_ARM_L2_CACHE_HINTS) && defined(PROC_ARMA15)
 #if 1
@@ -1445,6 +1447,7 @@ ncp_task_v2_put_deallocate_immediate(ncp_pvt_task_hdl_t *myTaskHdl,
                                     myTaskHdl->poolID))      
         {
                    
+			printf("mb: oPCQ is full\n");
             /* Queue is FULL */
             {
 #ifdef DBG_KMODE_INTS
@@ -2175,7 +2178,6 @@ ncp_task_v2_put_tOutput(ncp_pvt_task_hdl_t *myTaskHdl,
 /*
  * WORKAROUND FOR HW BUG - Remove when fixed in production silicon!
  */    
-#undef NCP_TASK_BUFFSZ_BITS_REQ_FOR_SHARED_POOL_BUG
 #ifdef NCP_TASK_BUFFSZ_BITS_REQ_FOR_SHARED_POOL_BUG
     debug("ncp_task_v2_put_tOutput(): before NCP_TASK_IS_SHARED_POOL\n");
     if (NCP_TASK_IS_SHARED_POOL(myTaskHdl->poolID))

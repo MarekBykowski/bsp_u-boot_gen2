@@ -2234,12 +2234,11 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 
     	bytes_received = task->pduSegSize0;
 
-		unsigned char *pkt = (unsigned char *)task->pduSegAddr0;
+		unsigned char *pkt = (unsigned char *)/*le64_to_cpu*/(task->pduSegAddr0);
         /* copy the received packet to the up layer buffer */
     	if (0 == loopback && 0 == rxtest)
 			net_process_received_packet(pkt, bytes_received);
     }
-
     /* free the buffer */
     NCP_CALL(ncp_task_ncav2_free_rx_task(taskHdl, task));
  ncp_return:

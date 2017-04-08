@@ -114,7 +114,7 @@
  
 /*ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=3].physicalBaseAddress */
 #define POOL_2_SZ0_PA 4054464512 /*0xF1AA3800*/
-#define POOL_2_SZ0_VA dummy
+#define POOL_2_SZ0_VA 3444586496 /*0xCD503800*/
 
 /* ACP5.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].BlockEntry[id=3].size */
 #define POOL_2_SZ0_SIZE 163126016
@@ -368,9 +368,7 @@ ncp_task_v2_uboot_config_mme_for_tqs(ncp_int32_t tqsID)
                          
             /* 256B */           
             p64_VA++;                        
-#ifdef NCP_TASK_DEBUG_MME
             NCP_LOG(NCP_MSG_INFO, "256B readPtr @ %p\r\n",((void *)(ncp_raw_addr_t)p64_VA));             
-#endif      
 
             pTQS->mme[i].allocIF[0].queueValid 
                 = ((pPoolEntry->numBlocks[0] == 0)? FALSE : TRUE);  
@@ -386,11 +384,9 @@ ncp_task_v2_uboot_config_mme_for_tqs(ncp_int32_t tqsID)
                 = (ncp_uint64_t *)pTQS->mme[i].allocIF[0].readP_swVA + 127;
              
                 
-#if defined(NCP_TASK_DEBUG_MME) && !defined(NCP_KERNEL)                 
             NCP_LOG(NCP_MSG_INFO, "Contents:\r\n");
             /*ncp_r32((ncp_uint32_t *)pTQS->mme[i].allocIF[0].entries_baseVA, 256);*/
 			ncp_r64_swap(pTQS->mme[i].allocIF[3].entries_baseVA, 128);
-#endif            
 
            /*
             * Now enable the mPCQ allocation interface                     
@@ -399,14 +395,12 @@ ncp_task_v2_uboot_config_mme_for_tqs(ncp_int32_t tqsID)
             */
                                    
             p64_VA++;
-            
-#ifdef NCP_TASK_PRINT_BASE_ADDRESSES_AND_MAPPINGS
+             
            NCP_MSG(NCP_MSG_INFO, "initialized shared pool allocator (%d) @offset 0x%llx baseVA=%p, endVA=%p\r\n",
-                pTQS->mme[i].id,
+                (int) pTQS->mme[i].id,
                 pTQS->mme[i].cfgOffset,
                 (void *)pTQS->mme[i].baseVA,
                 (void *)p64_VA);
-#endif                
                
         }    
     }            
