@@ -24,7 +24,6 @@
 #define DEBUG
 #include <common.h>
 #define NCP_TASK_DBG_55XX_TASK_FLOW
-#define NCP_TASK_DEBUG_MME
 /*
  * =============================
  * old ncp_task_inline_funcs.c
@@ -1178,7 +1177,6 @@ ncp_task_v2_put_completion_plus_deallocate(ncp_pvt_task_hdl_t *myTaskHdl,
 /*
  * WORKAROUND FOR HW BUG - Remove when fixed in production silicon!
  */    
-#undef NCP_TASK_BUFFSZ_BITS_REQ_FOR_SHARED_POOL_BUG
 #ifdef NCP_TASK_BUFFSZ_BITS_REQ_FOR_SHARED_POOL_BUG
     if (NCP_TASK_IS_SHARED_POOL(myTaskHdl->poolID))
     {  

@@ -1750,10 +1750,10 @@ initialize_task_io(struct eth_device *dev)
     }
 
     debug("Resetting device...");
-	/*if (0 != ncp_dev_reset()) {
+	if (0 != ncp_dev_reset()) {
 		printf("Device reset Failed\n");
 		return -1;
-	}*/
+	}
     debug("done\n");
 
     debug("Clearing NCA domain bundle...");
@@ -1795,7 +1795,6 @@ initialize_task_io(struct eth_device *dev)
 		}
 	debug("done\n");
 
-getc();
     debug("Configuring Uboot task io...");
     /* initialize task io */
 	NCP_CALL(ncp_task_uboot_config());
@@ -1908,6 +1907,50 @@ typedef struct
 #endif
 } ncp_cfg_phy_ctrl2_r_t;
 
+typedef struct
+{
+#ifdef NCP_BIG_ENDIAN
+     unsigned      reserved0                                 :  2;
+     unsigned      synce1_clk_en                             :  2;
+     unsigned      reserved1                                 :  2;
+     unsigned      synce0_clk_en                             :  2;
+     unsigned      reserved2                                 :  2;
+     unsigned      auto_los_detect                           :  1;
+     unsigned      reserved3                                 :  3;
+     unsigned      tbi_clk_en                                :  2;
+     unsigned      tt_debug_lane_sel                         :  2;
+     unsigned      cr_clk_div_sel                            :  2;
+     unsigned      mdio_soft_rst                             :  1;
+     unsigned      serdes_reset_0                            :  1;
+     unsigned      phy_soft_rst_0                            :  1;
+     unsigned      reg_reset_0                               :  1;
+     unsigned      reserved4                                 :  2;
+     unsigned      lane_qsgmii                               :  2;
+     unsigned      reserved5                                 :  2;
+     unsigned      lane_xfi                                  :  2;
+#else    /* Little Endian */
+     unsigned      lane_xfi                                  :  2;
+     unsigned      reserved5                                 :  2;
+     unsigned      lane_qsgmii                               :  2;
+     unsigned      reserved4                                 :  2;
+     unsigned      reg_reset_0                               :  1;
+     unsigned      phy_soft_rst_0                            :  1;
+     unsigned      serdes_reset_0                            :  1;
+     unsigned      mdio_soft_rst                             :  1; 
+     unsigned      cr_clk_div_sel                            :  2;
+     unsigned      tt_debug_lane_sel                         :  2;
+     unsigned      tbi_clk_en                                :  2;
+     unsigned      reserved3                                 :  3;
+     unsigned      auto_los_detect                           :  1;
+     unsigned      reserved2                                 :  2;
+     unsigned      synce0_clk_en                             :  2;
+     unsigned      reserved1                                 :  2;
+     unsigned      synce1_clk_en                             :  2;
+     unsigned      reserved0                                 :  2;
+#endif
+} ncp_global_global_ctrl0_r_t;
+
+
 /*
   -------------------------------------------------------------------------------
   finalize_task_io
@@ -1916,9 +1959,9 @@ typedef struct
 void
 finalize_task_io(void)
 {
-#if 0
+#if 1
     int rc = 0;
-	unsigned value;
+	/*unsigned value;*/
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
 
     /* power down HSS0-4 lanes */
@@ -1926,27 +1969,17 @@ finalize_task_io(void)
         int hss = 0;
 
         /* loop through the HSS's and power them down */
-        for(hss = 0; hss <= 4; hss++)
+        for(hss = 0; hss < 4; hss++)
         {
             int lane = 0;
             
             debug("Powering down HSS%d\n", hss);
-            for(lane = 0; lane < 4; lane++)
+			/* disable the receiver data output */
+			/* disable NEMAC clocks */
+			/* assert rxX_reset. Resets the Rx datapath, state-machines, settings ? */
+            for(lane = 0; lane < 2; lane++)
             {
-                ncp_uint32_t val32 = 0;
-                ncp_cfg_phy_ctrl2_r_t *phy_ctrl2_reg = (ncp_cfg_phy_ctrl2_r_t *)&val32;
-
-                /* 
-                 * stagger the tx/rx lane power downs 
-                 */
-                ncr_read32(NCP_REGION_ID((0x110 + hss), 0), 0x8, &val32);                
-                phy_ctrl2_reg->rxpd |= 1 << lane;
-                phy_ctrl2_reg->tx_rxdetresetn |= 1 << lane;
-                ncr_write32(NCP_REGION_ID((0x110 + hss), 0), 0x8, val32);
-
-                ncr_read32(NCP_REGION_ID((0x110 + hss), 0), 0x8, &val32);
-                phy_ctrl2_reg->txpd |= 1 << lane;
-                ncr_write32(NCP_REGION_ID((0x110 + hss), 0), 0x8, val32);
+					/*ncp_dev_eioa_hss_56xx.c*/
             }
         }
     }
@@ -1966,54 +1999,21 @@ finalize_task_io(void)
 	ncr_modify32(NCP_REGION_ID(0x17, 0x12), 0x3c0, 0x0000000c, 0x0);
 	ncr_modify32(NCP_REGION_ID(0x17, 0x12), 0x480, 0x0000000c, 0x0);
 	ncr_modify32(NCP_REGION_ID(0x17, 0x12), 0x540, 0x0000000c, 0x0);
-    ncr_modify32(NCP_REGION_ID(0x28, 0x11), 0x300, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x28, 0x12), 0x300, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x29, 0x11), 0x300, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x29, 0x12), 0x300, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2a, 0x11), 0x300, 0x0000000c, 0x0);
-    ncr_modify32(NCP_REGION_ID(0x2a, 0x12), 0x300, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2b, 0x11), 0x300, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2b, 0x12), 0x300, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2c, 0x11), 0x300, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2c, 0x12), 0x300, 0x0000000c, 0x0);
-    ncr_modify32(NCP_REGION_ID(0x2d, 0x11), 0x300, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2d, 0x12), 0x300, 0x0000000c, 0x0);
 
     /* Disable EIOA xgmac NEMACs. */
+#define NOT_SUPPORTED
+#ifndef NOT_SUPPORTED
     ncr_modify32(NCP_REGION_ID(0x1f, 0x11), 0xc00, 0x0000000c, 0x0);
 	ncr_modify32(NCP_REGION_ID(0x1f, 0x12), 0xc00, 0x0000000c, 0x0);
     ncr_modify32(NCP_REGION_ID(0x17, 0x11), 0xc00, 0x0000000c, 0x0);
 	ncr_modify32(NCP_REGION_ID(0x17, 0x12), 0xc00, 0x0000000c, 0x0);
-    ncr_modify32(NCP_REGION_ID(0x28, 0x11), 0xc00, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x28, 0x12), 0xc00, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x29, 0x11), 0xc00, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x29, 0x12), 0xc00, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2a, 0x11), 0xc00, 0x0000000c, 0x0);
-    ncr_modify32(NCP_REGION_ID(0x2a, 0x12), 0xc00, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2b, 0x11), 0xc00, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2b, 0x12), 0xc00, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2c, 0x11), 0xc00, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2c, 0x12), 0xc00, 0x0000000c, 0x0);
-    ncr_modify32(NCP_REGION_ID(0x2d, 0x11), 0xc00, 0x0000000c, 0x0);
-	ncr_modify32(NCP_REGION_ID(0x2d, 0x12), 0xc00, 0x0000000c, 0x0);
+#endif
 
 	/* swreset gmac and xgmac nemacs */
     ncr_or(NCP_REGION_ID(0x1f, 0x11), 0x20, 0x10f);
 	ncr_or(NCP_REGION_ID(0x1f, 0x12), 0x20, 0x10f);
     ncr_or(NCP_REGION_ID(0x17, 0x11), 0x20, 0x10f);
 	ncr_or(NCP_REGION_ID(0x17, 0x12), 0x20, 0x10f);
-    ncr_or(NCP_REGION_ID(0x28, 0x11), 0x20, 0x10f);
-	ncr_or(NCP_REGION_ID(0x28, 0x12), 0x20, 0x10f);
-    ncr_or(NCP_REGION_ID(0x29, 0x11), 0x20, 0x10f);
-	ncr_or(NCP_REGION_ID(0x29, 0x12), 0x20, 0x10f);
-    ncr_or(NCP_REGION_ID(0x2a, 0x11), 0x20, 0x10f);
-	ncr_or(NCP_REGION_ID(0x2a, 0x12), 0x20, 0x10f);
-    ncr_or(NCP_REGION_ID(0x2b, 0x11), 0x20, 0x10f);
-	ncr_or(NCP_REGION_ID(0x2b, 0x12), 0x20, 0x10f);
-    ncr_or(NCP_REGION_ID(0x2c, 0x11), 0x20, 0x10f);
-	ncr_or(NCP_REGION_ID(0x2c, 0x12), 0x20, 0x10f);
-    ncr_or(NCP_REGION_ID(0x2d, 0x11), 0x20, 0x10f);
-	ncr_or(NCP_REGION_ID(0x2d, 0x12), 0x20, 0x10f);
 
 	/* Disable ports in EIOA Cores. */
     NCR_CALL(ncr_modify32(NCP_REGION_ID(0x1f, 0x10), 
@@ -2036,36 +2036,18 @@ finalize_task_io(void)
                 NCP_EIOA_GEN_CFG_REG_OFFSET(3), 0x00000003, 0x0));
     NCR_CALL(ncr_modify32(NCP_REGION_ID(0x17, 0x10), 
                 NCP_EIOA_GEN_CFG_REG_OFFSET(4), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x28, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(0), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x28, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(1), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x29, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(0), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x29, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(1), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x2a, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(0), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x2a, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(1), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x2b, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(0), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x2b, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(1), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x2c, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(0), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x2c, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(1), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x2d, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(0), 0x00000003, 0x0));
-    NCR_CALL(ncr_modify32(NCP_REGION_ID(0x2d, 0x10), 
-                NCP_EIOA_GEN_CFG_REG_OFFSET(1), 0x00000003, 0x0));
 
 	/* Disable iPCQ 0 (only queue 0 is used) */
-	/* Are you sure endiananess is right? */
-	value = readl(NCA + 0x11800 + (ncaQueueId * 0x10));
+	/* Are you sure endiananess is right? 
+	ncr_read32(NCP_REGION_ID(0x101,0), 0x11800 + (ncaQueueId * 0x10), &value); 
 	value &= ~0x00000400;
-	writel(value, (NCA + 0x11800 + (ncaQueueId * 0x10)));
+	ncr_write32(NCP_REGION_ID(0x101,0), 0x11800 + (ncaQueueId * 0x10), value);
+
+value = readl(NCA + 0x11800 + (ncaQueueId * 0x10));    
+value &= ~0x00000400;                                  
+writel(value, (NCA + 0x11800 + (ncaQueueId * 0x10)));  
+	*/
+
 
 	/*
 	  Shut down task lite.
@@ -2186,7 +2168,6 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 			printf("Send Failed on Port %d\n", port_by_index[i]);
 		} else {
 			printf("Send %d bytes on Port %d\n", length, port_by_index[i]);
-			getc();
 			bytes_sent = length;
 		}
 
@@ -2221,7 +2202,6 @@ lsi_eioa_eth_rx(struct eth_device *dev)
     /* receive the task */
     NCP_CALL(ncp_task_ncav2_recv(taskHdl, &recvQueueId, &vpHdl, &engineSeqId, 
                 &task, NULL, FALSE));
-	printf("mb: %s() after ncp_task_ncav2_recv()\n", __func__);
 
     if(dumprx) {
       axxia_dump_packet("LSI_EIOA RX", (void *)(task->pduSegAddr0), 
@@ -2258,7 +2238,6 @@ lsi_eioa_eth_rx(struct eth_device *dev)
         /* copy the received packet to the up layer buffer */
     	if (0 == loopback && 0 == rxtest)
 			net_process_received_packet(pkt, bytes_received);
-			//memcpy((void *)NetRxPackets[0], (void *)((unsigned)task->pduSegAddr0), bytes_received);
     }
 
     /* free the buffer */

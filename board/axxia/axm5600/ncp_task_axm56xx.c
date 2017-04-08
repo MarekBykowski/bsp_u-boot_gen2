@@ -23,7 +23,6 @@
 #define DEBUG
 #include <common.h>
 
-#define NCP_TASK_DEBUG_MME
 /* #include "ncp_dev_pvt.h" */
 #if 0 /* UBOOT */
 #include "ncp_dev.h"
@@ -2320,6 +2319,7 @@ ncp_task_ncav2_free_rx_task(
          * 55xx preproduction ASIC Only
          */
              
+		printf("NCP_TASK_DEALLOC_BUG workround in\n");
         NCP_CALL(ncp_task_free_task_with_dealloc_immediate(
                                              myTaskHdl,
                                              task));        

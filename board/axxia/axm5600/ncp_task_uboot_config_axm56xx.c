@@ -44,8 +44,6 @@
 #include "ncp_mpcq_reg_defines.h"
 
 
-#define NCP_TASK_DEBUG_MME
-
 /*
  * WARNING:
  * Certain XML changes may require changing the constants below!!!
