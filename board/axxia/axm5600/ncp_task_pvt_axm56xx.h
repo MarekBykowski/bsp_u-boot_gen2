@@ -19,6 +19,8 @@
 #ifndef __ncp_task_pvt_axm55xx_h__
 #define __ncp_task_pvt_axm55xx_h__
 
+#include "marek.h"
+
 #if 0 /* UBOOT */
 #include "ncp_sal.h"
 #endif
@@ -1528,25 +1530,7 @@ typedef struct ncp_task_ncaV2_pool_s{
     ++_pIdx;                                                                \
     if (0 == (_pIdx & _pOPCQ->nEntriesMinusOne))                            \
     {                                                                       \
-        if (NCP_TASK_NCAV2_USES_WRAP_BIT)                                   \
-        {                                                                   \
-            if (0 != _pOPCQ->pcqToggleBitVal)                               \
-            {                                                               \
-                _pIdx                                                       \
-                    = _pOPCQ->pcqToggleBitVal                               \
-                    = 0;                                                    \
-            }                                                               \
-            else                                                            \
-            {                                                               \
-                _pIdx                                                       \
-                    = _pOPCQ->pcqToggleBitVal                               \
-                    = NCP_TASK_NVAV2_PGIT_WRAP_BIT;                         \
-            }                                                               \
-        }                                                                   \
-        else                                                                \
-        {                                                                   \
-            _pIdx = 0;                                                      \
-        }                                                                   \
+        _pIdx = 0;                                                      \
         _pOPCQ->u.opcq_info.pOPCQentry = _pOPCQ->pPCQbase;                  \
     }                                                                       \
     else                                                                    \
@@ -1555,7 +1539,6 @@ typedef struct ncp_task_ncaV2_pool_s{
     }                                                                       \
     NCP_SYSMEM_BARRIER();  /* enforce write ordering */                     \
     *(_pOPCQ->pProducerIdx) = SWAP_16(_pIdx);                               \
-printf("*(_pOPCQ->pProducerIdx)  = SWAP_16(_pIdx) %hu\n", *(_pOPCQ->pProducerIdx));				\
     _pOPCQ->u.opcq_info.opcqProducerIdx = _pIdx;                            \
 }
 

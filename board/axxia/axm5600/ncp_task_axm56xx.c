@@ -955,8 +955,6 @@ ncp_task_ncav2_recv(
         NCP_CALL(NCP_ST_TASK_HANDLE_HEAD_NULL);
     }
     firstRecvQueue =  myRecvQueue;
-	printf("mb: %s() myTaskHdl->currRecvPtr->recvQueueId %d, myTaskHdl->currRecvPtr->ncaQueueId %d\n", 
-		__func__, (int) myTaskHdl->currRecvPtr->recvQueueId,(int) myTaskHdl->currRecvPtr->ncaQueueId);
 
     do {
 
@@ -983,7 +981,7 @@ ncp_recv_retry:
             ncp_bool_t dropTask = FALSE;
 #endif
 
-            printf("ncp_task_ncav2_recv(): received task!! task addr=0x%p\n", myTask);
+            debug("ncp_task_ncav2_recv(): received task!! task addr=0x%p\n", myTask);
             
             dbg_manage_rxstats=1;
 
@@ -1153,10 +1151,10 @@ ncp_recv_retry:
 
         /*
          * === No task recevied on this queue, so advance to next regardless of wrrCounter
-         */
 		printf("mb: %s() No task recevied on this queue, so advance to next regardless of wrrCounter\n",
 							__func__);
 
+         */
         myTaskHdl->currRecvPtr = myRecvQueue = myRecvQueue->next;
         myRecvQueue->wrrCounter = myRecvQueue->weight;
 
@@ -2302,17 +2300,30 @@ ncp_task_ncav2_free_rx_task(
 
     if (NCP_TASK_IS_SHARED_POOL(myTaskHdl->poolID))                           
     { 
+#if 0
 #if (NCP_TASK_NCAV2_SHPOOL_PTR_DEBUG) || defined(NCP_TASK_DBG_55XX_TASK_FLOW)
         NCP_LOG(NCP_MSG_INFO, 
                     "DEALLOC ptrCnt=%d, va0=%p\r\n",
                     task->ptrCnt,
                     ((void *)(ncp_raw_addr_t)task->pduSegAddr0));
 #endif     
+#endif
 
 #ifndef NCP_TASK_DEALLOC_BUG   
         /* VP Managed Pool,   let H/W free the tasks */   
-        NCP_NCA_LOWLEVEL_TASK_DEALLOC(myTaskHdl, 
-                (ncp_task_ncaV2_recv_buf_t *)task);            
+        /*NCP_NCA_LOWLEVEL_TASK_DEALLOC(myTaskHdl, */
+{
+		
+                    printf("DEALLOC IMMEDIATE ptrCnt=%d, va0=%p\r\n",
+                    task->ptrCnt,
+                    ((void *)task->pduSegAddr0));
+    	ncp_ncaV2_free_pdu_segments_t dealloc_immediate = {0};
+		dealloc_immediate.ptrCnt = task->ptrCnt;
+		dealloc_immediate.pduSegAddr0 = task->pduSegAddr0;
+		NCP_NCA_LOWLEVEL_DEALLOC_IMMEDIATE(myTaskHdl,
+						&dealloc_immediate,
+				TRUE);            
+}
 #else
         /*
          * SW Workaround

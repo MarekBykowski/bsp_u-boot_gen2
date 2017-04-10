@@ -1284,7 +1284,6 @@ ncp_task_v2_put_task_deallocate(    ncp_pvt_task_hdl_t *myTaskHdl,
                                     myTaskHdl->poolID))     
         {                   
             /* Queue is FULL */
-			printf("mb: Queue is FULL\n");
             {
 #ifdef DBG_KMODE_INTS
                 pNcpNcaV2_TaskSwState->dbg_txQueueFull++;
@@ -1384,6 +1383,13 @@ ncp_task_v2_put_task_deallocate(    ncp_pvt_task_hdl_t *myTaskHdl,
     wordsEntry[0] = SWAP_32(wordsEntry[0]);
     wordsEntry[1] = SWAP_32(wordsEntry[1]);    
     pOutputQueueEntry->taskAddr = SWAP_64(((ncp_raw_addr_t)taskAddr));
+
+#ifdef oPCQ_DBG
+	printf("pOutputQueueEntry %p\n", (void*)pOutputQueueEntry);
+	printf("dealoc task @ taskAddr %p\n", (void*)taskAddr);
+	printf(" ... port=%d, addr=%p, size=%d\n", 
+		taskAddr->params[0],(void*) taskAddr->pduSegAddr0, taskAddr->pduSegSize0);
+#endif
  
     NCP_TASK_55xx_UPDATE_OPCQ_PRODUCER_IDX(
         p_oPCQ,
@@ -1392,7 +1398,6 @@ ncp_task_v2_put_task_deallocate(    ncp_pvt_task_hdl_t *myTaskHdl,
         0,
         NULL,
         myTaskHdl->poolID);   
-	printf("mb: producerIdx %hu\n", (unsigned short) producerIdx);
     
 #if defined(NCP_NCA_ARM_L2_CACHE_HINTS) && defined(PROC_ARMA15)
 #if 1
@@ -1437,6 +1442,8 @@ ncp_task_v2_put_deallocate_immediate(ncp_pvt_task_hdl_t *myTaskHdl,
     ncp_uint32_t *wordsDeallocImmediate     
         = (ncp_uint32_t *)pDeallocImmediate;
     int producerIdx = p_oPCQ->u.opcq_info.opcqProducerIdx;
+	
+	printf("what queue dealloc immediate is out on %p\n",(void*) pOutputQueueEntry);
     
     while (1)
     {
@@ -2475,8 +2482,10 @@ ncp_task_v2_check_input_queue( ncp_pvt_task_hdl_t          *myTaskHdl,
         ncp_task_ncaV2_recv_buf_t  *pHdr;
         ncp_uint32_t              *wordsHdr;
 
-        printf("%s(): saw a task!!! addr=0x%llx", 
+#if 0
+        debug("%s(): saw a task!!! addr=0x%llx", 
                 __func__, pInputQueueEntry->taskAddr);
+#endif
         
         /* 
          * prevent speculative execution of following instructions.
@@ -2495,8 +2504,8 @@ ncp_task_v2_check_input_queue( ncp_pvt_task_hdl_t          *myTaskHdl,
          * and we do not use them anyway
          */
         
-		NCP_MSG(NCP_MSG_INFO, "RX Task, %p",pHdr);
-		ncp_r32((ncp_uint32_t *)pHdr,30);
+		/*NCP_MSG(NCP_MSG_INFO, "RX Task, %p",pHdr);
+		ncp_r32((ncp_uint32_t *)pHdr,30);*/
         
         /* byte swap task input header */
         wordsHdr = (ncp_uint32_t *)pHdr;
@@ -2593,6 +2602,7 @@ ncp_task_v2_check_input_queue( ncp_pvt_task_hdl_t          *myTaskHdl,
         }        
 
 
+#if 0
 #if (NCP_TASK_NCAV2_SHPOOL_PTR_DEBUG) || defined(NCP_TASK_DBG_55XX_TASK_FLOW)             
 
         NCP_MSG(NCP_MSG_INFO, 
@@ -2629,6 +2639,7 @@ ncp_task_v2_check_input_queue( ncp_pvt_task_hdl_t          *myTaskHdl,
                 break;           
         }                        
                     
+#endif                      
 #endif                      
 
         /* 

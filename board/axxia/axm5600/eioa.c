@@ -1505,6 +1505,7 @@ line_setup(int index, struct eth_device *dev)
 			}
 			DELAY();
 			take_snapshot(port_by_index[index]);
+			printf("after snapshot\n");
         }
 	} else {
 	    /* do phy configuration for copper PHY */
@@ -2189,6 +2190,7 @@ ncp_return:
   lsi_eioa_eth_rx
 */
 
+long int packets_received = 0;
 int
 lsi_eioa_eth_rx(struct eth_device *dev)
 {
@@ -2198,10 +2200,25 @@ lsi_eioa_eth_rx(struct eth_device *dev)
     ncp_vp_hdl_t vpHdl;
     ncp_uint8_t engineSeqId;
     ncp_uint8_t recvQueueId;
+	static short first = 1;
+	static void* shared_pool_start = NULL;
+	static unsigned long counter_shared_pool = 0;
 
     /* receive the task */
     NCP_CALL(ncp_task_ncav2_recv(taskHdl, &recvQueueId, &vpHdl, &engineSeqId, 
                 &task, NULL, FALSE));
+
+	if ((task != NULL) && (first == 1)) {
+		shared_pool_start = (void*) task;
+		first = 0;
+		printf("shared_pool_start %p task %p first %d", shared_pool_start, task, first);
+	}
+
+	if ( task != shared_pool_start ) {
+		counter_shared_pool++;
+	} else {
+		counter_shared_pool = 0;
+	}
 
     if(dumprx) {
       axxia_dump_packet("LSI_EIOA RX", (void *)(task->pduSegAddr0), 
@@ -2213,9 +2230,14 @@ lsi_eioa_eth_rx(struct eth_device *dev)
     invalidate_dcache_all();
 #endif
 
-    printf("lsi_eioa_eth_rx(): received task addr=0x%p, port=%d, size=%d\n", 
-                task, task->params[0], task->pduSegSize0);
+	/*if ( (packets_received%100) == 0 ) {*/
+    	debug("\nlsi_eioa_eth_rx(): received task: addr_first_task=0x%p addr=0x%p, port=%d, size=%d\n", 
+               shared_pool_start, task, task->params[0], task->pduSegSize0);
+		printf("  packets received to now %ld, counter_shared_pool %ld\n", 
+					packets_received, counter_shared_pool);
+	/*}*/
 
+	packets_received++;
     /* 
      * If receiving on any port or on the single configured port, handle the 
      * packet and give it to the up layer. Otherwise, free it and return.
@@ -2261,14 +2283,11 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 void
 lsi_eioa_receive_test(struct eth_device *dev)
 {
-	int packets_received = 0;
+	long int packets_received = 0;
 
-	printf("mb: %s()\n", __func__);
-    rxtest = 1;
 	eth_halt();
 
 	if (0 != eth_init()) {
-		printf("mb: %s() eth_init returned fail\n", __func__);
         rxtest = 0;
 		eth_halt();
 		return;
@@ -2276,7 +2295,6 @@ lsi_eioa_receive_test(struct eth_device *dev)
 
 	for (;;) {
         int packet_len = eth_rx();
-		printf("mb: %s() packet_len %d\n",__func__,  packet_len);
 		if (0 != packet_len) {
 			++packets_received;
         }
@@ -2287,7 +2305,7 @@ lsi_eioa_receive_test(struct eth_device *dev)
 
     rxtest = 0;
 	eth_halt();
-	printf("EIOA Receive Test Interrupted.  Received %d packets.\n",
+	printf("EIOA Receive Test Interrupted.  Received %ld packets.\n",
 	       packets_received);
 
 	return;
