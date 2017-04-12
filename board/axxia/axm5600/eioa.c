@@ -49,10 +49,13 @@
 #include "ncp_task.h"
 #include "ncp_nca_regs.h"
 #include "ncp_nodes.h"
+#include "eioa.h"
 #include "../common/ncp_nca_reg_defines.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
+extern int
+eioa_hss_synce_pll_refclk_select_set(ncp_uint32_t serdesId, ncp_uint32_t gmacId, ncp_eioa_serdes_ref_clk_range_t ref_clock);
 /*==============================================================================
   ==============================================================================
   Private Interface
@@ -78,10 +81,6 @@ static int rxtest = 0;
 extern int dumprx;
 extern int dumptx;
 
-#define NCP_EIOA_GEN_CFG_REG_OFFSET(portIndex)                                  \
-    0x100000 +                                                                  \
-    ((portIndex > 0) ? 0x10000 : 0) +                                           \
-    ((portIndex > 0) ? (0x1000 * (portIndex - 1)) : 0)
 
 static int port_by_index[] = 
     {  0,   1,  2,  3,  4,  /* eioa0 */
@@ -1796,7 +1795,16 @@ initialize_task_io(struct eth_device *dev)
 		}
 	debug("done\n");
 
+getc();
+{
+	int rc = 0;
+	rc = eioa_hss_synce_pll_refclk_select_set(1, 3, 
+			NCP_EIOA_SERDES_REF_CLK_052_1_TO_078_MHZ);
+	printf("%s() rc %d\n", __func__, rc);
+}
+
     debug("Configuring Uboot task io...");
+getc();
     /* initialize task io */
 	NCP_CALL(ncp_task_uboot_config());
     debug("done\n");

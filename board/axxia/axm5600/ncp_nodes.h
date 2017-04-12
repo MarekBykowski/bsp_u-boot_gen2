@@ -76,6 +76,23 @@
 #define NCP_NODE_PBM                 0x33
 
 #define NCP_NODE_PKA                 0x103
+
+#define NCP_NODE_EIOA_PHY0           0x110
+#define NCP_NODE_EIOA_PHY1           0x111
+#define NCP_NODE_EIOA_PHY2           0x112
+#define NCP_NODE_EIOA_PHY3           0x113
+#define NCP_NODE_EIOA_PHY4           0x114
+#define NCP_NODE_EIOA_PHY5           0x116
+#define NCP_NODE_EIOA_PHY6           0x117
+#define NCP_NODE_EIOA_PHY7           0x118
+#define NCP_NODE_EIOA_PHY8           0x119
+#define NCP_NODE_EIOA_PHY9           0x11a
+#define NCP_NODE_EIOA_PHY10          0x11b
+#define NCP_NODE_EIOA_PHY11          0x11c
+#define NCP_NODE_EIOA_PHY12          0x11d
+#define NCP_NODE_EIOA_PHY13          0x11e
+#define NCP_NODE_EIOA_PHY14          0x11f
+
 #define NCP_NODE_TRNG                0x121
 #define NCP_NODE_SSP                 0x142
 #define NCP_NODE_I2C_0               0x143
