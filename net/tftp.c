@@ -6,6 +6,8 @@
  *                Luca Ceresoli <luca.ceresoli@comelit.it>
  */
 
+#define DEBUG
+#include <config.h>
 #include <common.h>
 #include <command.h>
 #include <mapmem.h>
@@ -362,7 +364,7 @@ static void tftp_send(void)
 		strcpy((char *)pkt, "timeout");
 		pkt += 7 /*strlen("timeout")*/ + 1;
 		sprintf((char *)pkt, "%lu", timeout_ms / 1000);
-		debug("send option \"timeout %s\"\n", (char *)pkt);
+		debug("mb: writing arp... \"timeout %s\"\n", (char *)pkt);
 		pkt += strlen((char *)pkt) + 1;
 #ifdef CONFIG_TFTP_TSIZE
 		pkt += sprintf((char *)pkt, "tsize%c%u%c",
@@ -481,6 +483,8 @@ static void tftp_handler(uchar *pkt, unsigned dest, struct in_addr sip,
 	s = (__be16 *)pkt;
 	proto = *s++;
 	pkt = (uchar *)s;
+	printf("%s() mb: proto 0x%x ntohs(proto) 0x%x\n",
+			__func__, proto, ntohs(proto));
 	switch (ntohs(proto)) {
 	case TFTP_RRQ:
 		break;
@@ -717,6 +721,7 @@ void tftp_start(enum proto_t protocol)
 		timeout_ms = 1000;
 	}
 
+	/*mb:*/
 	debug("TFTP blocksize = %i, timeout = %ld ms\n",
 	      tftp_block_size_option, timeout_ms);
 

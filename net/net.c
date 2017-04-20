@@ -81,6 +81,8 @@
  */
 
 
+#define DEBUG
+#include <config.h>
 #include <common.h>
 #include <command.h>
 #include <environment.h>
@@ -437,6 +439,7 @@ restart:
 	 */
 	debug_cond(DEBUG_INT_STATE, "--- net_loop Init\n");
 	net_init_loop();
+	debug("mb: we use protocol %d (4-> DHCP)\n", protocol);
 
 	switch (net_check_prereq(protocol)) {
 	case 1:
@@ -560,6 +563,8 @@ restart:
 		 *	errors that may have happened.
 		 */
 		eth_rx();
+		/*printf("mb: after eth_rx() and before the timeout\n"
+			"	net_state %d\n", net_state);*/
 
 		/*
 		 *	Abort if ctrl-c was pressed.
@@ -815,7 +820,7 @@ int net_send_udp_packet(uchar *ether, struct in_addr dest, int dport, int sport,
 
 	/* if MAC address was not discovered yet, do an ARP request */
 	if (memcmp(ether, net_null_ethaddr, 6) == 0) {
-		debug_cond(DEBUG_DEV_PKT, "sending ARP for %pI4\n", &dest);
+		debug("sending ARP for %pI4\n", &dest);
 
 		/* save the ip and eth addr for the packet to send after arp */
 		net_arp_wait_packet_ip = dest;
@@ -830,7 +835,7 @@ int net_send_udp_packet(uchar *ether, struct in_addr dest, int dport, int sport,
 		arp_request();
 		return 1;	/* waiting */
 	} else {
-		debug_cond(DEBUG_DEV_PKT, "sending UDP to %pI4/%pM\n",
+		debug("sending UDP to %pI4/%pM\n",
 			   &dest, ether);
 		net_send_packet(net_tx_packet, pkt_hdr_size + payload_len);
 		return 0;	/* transmitted */
@@ -1056,8 +1061,11 @@ void net_process_received_packet(uchar *in_packet, int len)
 #endif
 	ushort cti = 0, vlanid = VLAN_NONE, myvlanid, mynvlanid;
 
-	debug_cond(DEBUG_NET_PKT, "packet received\n");
-
+	/*debug_cond(DEBUG_NET_PKT, "packet received\n");*/
+{
+		/*debug("mb: in_packet %p val 0x%x len %d\n",
+				(void*)in_packet, *(unsigned int*)in_packet, len);*/
+}
 	net_rx_packet = in_packet;
 	net_rx_packet_len = len;
 	et = (struct ethernet_hdr *)in_packet;
@@ -1100,6 +1108,8 @@ void net_process_received_packet(uchar *in_packet, int len)
 
 	} else if (eth_proto != PROT_VLAN) {	/* normal packet */
 		ip = (struct ip_udp_hdr *)(in_packet + ETHER_HDR_SIZE);
+		/*debug("mb: ip->ip_src %pI4 ip->ip_dst %pI4\n", 
+				&ip->ip_src, &ip->ip_dst);*/
 		len -= ETHER_HDR_SIZE;
 
 	} else {			/* VLAN packet */
@@ -1128,7 +1138,7 @@ void net_process_received_packet(uchar *in_packet, int len)
 		len -= VLAN_ETHER_HDR_SIZE;
 	}
 
-	debug_cond(DEBUG_NET_PKT, "Receive from protocol 0x%x\n", eth_proto);
+	/*debug("Receive from protocol 0x%x\n", eth_proto);*/
 
 #if defined(CONFIG_CMD_CDP)
 	if (iscdp) {
@@ -1156,7 +1166,7 @@ void net_process_received_packet(uchar *in_packet, int len)
 		break;
 #endif
 	case PROT_IP:
-		debug_cond(DEBUG_NET_PKT, "Got IP\n");
+		/*debug("Got IP\n");*/
 		/* Before we start poking the header, make sure it is there */
 		if (len < IP_UDP_HDR_SIZE) {
 			debug("len bad %d < %lu\n", len,
@@ -1169,29 +1179,46 @@ void net_process_received_packet(uchar *in_packet, int len)
 			return;
 		}
 		len = ntohs(ip->ip_len);
-		debug_cond(DEBUG_NET_PKT, "len=%d, v=%02x\n",
-			   len, ip->ip_hl_v & 0xff);
+		/*debug("len=%d, v=%02x\n",
+			   len, ip->ip_hl_v & 0xff);*/
 
 		/* Can't deal with anything except IPv4 */
-		if ((ip->ip_hl_v & 0xf0) != 0x40)
+		if ((ip->ip_hl_v & 0xf0) != 0x40) {
+			/*debug("Can't deal with anything except IPv4\n");*/
 			return;
+		}
 		/* Can't deal with IP options (headers != 20 bytes) */
 		if ((ip->ip_hl_v & 0x0f) > 0x05)
+		{
+			/*debug("Can't deal with IP options (headers != 20 bytes)\n");*/
 			return;
+		}
+
 		/* Check the Checksum of the header */
 		if (!ip_checksum_ok((uchar *)ip, IP_HDR_SIZE)) {
-			debug("checksum bad\n");
+			/*debug("checksum bad\n");*/
 			return;
 		}
 		/* If it is not for us, ignore it */
+		/*debug("mb: net_ip.s_addr %pI4\n",  &net_ip);*/
 		dst_ip = net_read_ip(&ip->ip_dst);
 		if (net_ip.s_addr && dst_ip.s_addr != net_ip.s_addr &&
 		    dst_ip.s_addr != 0xFFFFFFFF) {
+			/*debug("If it is not for us, ignore it\n");*/
 #ifdef CONFIG_MCAST_TFTP
 			if (net_mcast_addr != dst_ip)
 #endif
 				return;
 		}
+
+#if 0
+		if (dst_ip.s_addr == net_ip.s_addr) {
+			debug("mb: %s() ---- PROT_IP:\n", __func__);
+			debug("mb:  we got packet destined to us\n");
+			debug("mb: net_ip.s_addr %pI4 dst_ip.s_addr %pI4\n",  &net_ip, &dst_ip.s_addr);
+		}
+#endif
+
 		/* Read source IP address for later use */
 		src_ip = net_read_ip(&ip->ip_src);
 		/*
@@ -1200,8 +1227,10 @@ void net_process_received_packet(uchar *in_packet, int len)
 		 * it is a fragment (if !CONFIG_IP_DEFRAG, it returns NULL)
 		 */
 		ip = net_defragment(ip, &len);
-		if (!ip)
+		if (!ip) {
+			/*debug("it is a fragment (if !CONFIG_IP_DEFRAG, it returns NULL)\n");*/
 			return;
+		}
 		/*
 		 * watch for ICMP host redirects
 		 *
@@ -1227,12 +1256,13 @@ void net_process_received_packet(uchar *in_packet, int len)
 			receive_icmp(ip, len, src_ip, et);
 			return;
 		} else if (ip->ip_p != IPPROTO_UDP) {	/* Only UDP packets */
+			debug("Only UDP protocols\n");
 			return;
 		}
 
-		debug_cond(DEBUG_DEV_PKT,
-			   "received UDP (to=%pI4, from=%pI4, len=%d)\n",
-			   &dst_ip, &src_ip, len);
+		/*debug("mb: am I ever here\n");*/
+		/*debug("received UDP (to=%pI4, from=%pI4, len=%d)\n",
+			   &dst_ip, &src_ip, len);*/
 
 #ifdef CONFIG_UDP_CHECKSUM
 		if (ip->udp_xsum != 0) {
@@ -1286,6 +1316,8 @@ void net_process_received_packet(uchar *in_packet, int len)
 		/*
 		 * IP header OK.  Pass the packet to the current handler.
 		 */
+		/*printf("mb: %s() IP header OK. Pass the packet to the udp_packet_handler\n"
+				"-- we are done and successful\n\n", __func__);*/
 		(*udp_packet_handler)((uchar *)ip + IP_UDP_HDR_SIZE,
 				      ntohs(ip->udp_dst),
 				      src_ip,

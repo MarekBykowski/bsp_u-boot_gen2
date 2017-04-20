@@ -27,6 +27,9 @@
 # define ARP_TIMEOUT_COUNT	CONFIG_NET_RETRY_COUNT
 #endif
 
+#define DEBUG
+#include <config.h>
+
 struct in_addr net_arp_wait_packet_ip;
 static struct in_addr net_arp_wait_reply_ip;
 /* MAC address of waiting packet's destination */
@@ -49,6 +52,9 @@ void arp_init(void)
 	arp_tx_packet -= (ulong)arp_tx_packet % PKTALIGN;
 }
 
+extern void
+axxia_dump_packet(const char *header, void *packet, int length);
+
 void arp_raw_request(struct in_addr source_ip, const uchar *target_ethaddr,
 	struct in_addr target_ip)
 {
@@ -56,7 +62,7 @@ void arp_raw_request(struct in_addr source_ip, const uchar *target_ethaddr,
 	struct arp_hdr *arp;
 	int eth_hdr_size;
 
-	debug_cond(DEBUG_DEV_PKT, "ARP broadcast %d\n", arp_wait_try);
+	debug("mb: %s() ARP broadcast %d\n", __func__, arp_wait_try);
 
 	pkt = arp_tx_packet;
 
@@ -75,7 +81,8 @@ void arp_raw_request(struct in_addr source_ip, const uchar *target_ethaddr,
 	net_write_ip(&arp->ar_spa, source_ip);		/* source IP addr */
 	memcpy(&arp->ar_tha, target_ethaddr, ARP_HLEN);	/* target ET addr */
 	net_write_ip(&arp->ar_tpa, target_ip);		/* target IP addr */
-
+	
+    axxia_dump_packet("arp_raw_request", (void *)(arp_tx_packet), eth_hdr_size + ARP_HDR_SIZE);
 	net_send_packet(arp_tx_packet, eth_hdr_size + ARP_HDR_SIZE);
 }
 
@@ -120,12 +127,16 @@ void arp_timeout_check(void)
 	}
 }
 
+extern void
+axxia_dump_packet(const char *header, void *packet, int length);
+
 void arp_receive(struct ethernet_hdr *et, struct ip_udp_hdr *ip, int len)
 {
 	struct arp_hdr *arp;
 	struct in_addr reply_ip_addr;
 	uchar *pkt;
 	int eth_hdr_size;
+	struct in_addr ad;
 
 	/*
 	 * We have to deal with two types of ARP packets:
@@ -136,7 +147,7 @@ void arp_receive(struct ethernet_hdr *et, struct ip_udp_hdr *ip, int len)
 	 *   address; so if we receive such a packet, we set
 	 *   the server ethernet address
 	 */
-	debug_cond(DEBUG_NET_PKT, "Got ARP\n");
+	printf("mb: %s() ---- PROT_ARP:\n", __func__);
 
 	arp = (struct arp_hdr *)ip;
 	if (len < ARP_HDR_SIZE) {
@@ -154,9 +165,15 @@ void arp_receive(struct ethernet_hdr *et, struct ip_udp_hdr *ip, int len)
 
 	if (net_ip.s_addr == 0)
 		return;
-
+  	ad = net_read_ip(&arp->ar_tpa);
+	printf("%s() net_ip.s_addr(our IP) %pI4 dst_ip.s_addr(in packet) %pI4\n", 
+	 		__func__, &net_ip, &(ad));
+    axxia_dump_packet("arp_receive", (void *)(et), len);
 	if (net_read_ip(&arp->ar_tpa).s_addr != net_ip.s_addr)
 		return;
+	else {
+		debug("mb: %s() got arp to us\n", __func__);
+	}
 
 	switch (ntohs(arp->ar_op)) {
 	case ARPOP_REQUEST:

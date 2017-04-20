@@ -2101,6 +2101,8 @@ lsi_eioa_eth_rx(struct eth_device *dev)
     	bytes_received = task->pduSegSize0;
 
 		unsigned char *pkt = (unsigned char *)/*le64_to_cpu*/(task->pduSegAddr0);
+		debug("mb: task->pduSegAddr0 %p val 0x%x len %d\n",
+				(void*)task->pduSegAddr0, *(unsigned int*)task->pduSegAddr0, task->pduSegSize0);
         /* copy the received packet to the up layer buffer */
     	if (0 == loopback && 0 == rxtest)
 			net_process_received_packet(pkt, bytes_received);
