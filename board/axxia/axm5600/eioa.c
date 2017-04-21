@@ -215,7 +215,6 @@ typedef enum {
 	NCR_COMMAND_MODIFY,
 	NCR_COMMAND_USLEEP,
 	NCR_COMMAND_POLL,
-	NCR_COMMAND_FUNC
 } ncr_command_code_t;
 
 typedef int (*func_config_port)(int index);
@@ -223,10 +222,7 @@ typedef int (*func_config_port)(int index);
 typedef struct {
 	ncr_command_code_t command;
 	unsigned region;
-	union {
-		unsigned offset;
-		func_config_port func;
-	};
+	unsigned offset;
 	unsigned value;
 	unsigned mask;
 } ncr_command_t;
@@ -1039,13 +1035,6 @@ ncp_dev_configure(ncr_command_t *commands) {
 		case NCR_COMMAND_POLL:
 			rc = ncp_dev_do_poll(commands);
 			break;
-		case NCR_COMMAND_FUNC:                                                   
-			if(commands->offset) {                                               
-				func_config_port func_ptr = (func_config_port)commands->func;    
-				/* call the function in offset field with param in value field */
-				rc = func_ptr(commands->value);                                  
-			}                                                                    
-			break;                                                               
 		default:
 			printf("Unknown Command: 0x%x, startCmd=%p, curCmd=%p\n",
 			       (unsigned int)commands->command,
