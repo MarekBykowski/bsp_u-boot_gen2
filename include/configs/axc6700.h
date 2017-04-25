@@ -402,6 +402,11 @@
 #define CONFIG_AXXIA_PCI
 /*#define CONFIG_SPL_PCI_SUPPORT*/
 
+#define CONFIG_AXXIA_EIOA
+#ifdef CONFIG_AXXIA_EIOA
+#define EIOA_SYSTEM_MEMORY ((phys_size_t) 1 << 32)
+#endif
+
 /********** NEMAC PHY ADDRESS *************/
 #define CONFIG_AXXIA_PHY_ADDRESS 0x7
 
@@ -729,7 +734,7 @@ int axxia_gpio_set(axxia_gpio_t gpio, int pin, int value);
 #define AXI2SER5  (0x8003400000)
 #define AXI2SER6  (0x8003800000)
 #define AXI2SER7  (0x8003c00000)
-#define AXI2SER8  (0x8004000000)
+#define AXI2SER8  (0x8004000000ULL)
 #define AXI2SER9  (0x8004400000)
 #define AXI2SER10 (0x8004800000)
 
@@ -741,7 +746,7 @@ int axxia_gpio_set(axxia_gpio_t gpio, int pin, int value);
 #define SCB (IO + 0x96000)
 
 #define MME_POKE (IO + 0x10040000)
-#define NCA 0x8020000000
+#define NCA 0x8020000000ULL
 
 #define ELM0 0x8003c00000
 #define ELM1 0x8003c10000

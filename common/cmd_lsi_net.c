@@ -115,6 +115,51 @@ do_net(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return -1;
 }
 
+extern int __weak
+take_snapshot(int gmac);
+extern int
+initialize_task_io(void);
+extern int
+line_setup(int index);
+
+
+#define DEBUG
+#include <config.h>
+
+int
+do_trace(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+		printf("mb: %s()\n", __func__);
+		return initialize_task_io();
+}
+
+int
+do_mmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+		printf("mb: %s()\n", __func__);
+		unsigned int val = *(volatile unsigned int*)0x800400024c;
+		printf("mb: val 0x%x\n", val);
+		return 0;
+}
+
+int
+do_net_snapshot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	char* c = argv[1];
+	unsigned long no = -1;
+	if( 0 == strncmp( argv[1], "gmac", 4 ) ) {
+		c += 4;
+		no = simple_strtoul(c, NULL, 10);
+		printf("mb: %s() for gmac %lu\n", __func__, no);
+		line_setup(no);
+		take_snapshot(no);
+		return 0;
+	}
+
+	printf( "%s", cmdtp->usage );
+
+	return -1;
+}
 /*
   ======================================================================
   Command Definitions
@@ -132,4 +177,14 @@ U_BOOT_CMD(net, 3, 0, do_net,
 	   "dr toggle the \"dumprx\" flag\n"
 	   "dt toggle the \"dumptx\" flag\n");
 
+U_BOOT_CMD(trace, 1, 0, do_trace,
+	   "run trace for eioa\n",
+	   "");
+
+U_BOOT_CMD(snap, 2, 0, do_net_snapshot,
+	   "macstat gmac[no]\n",
+	   " run snapshot for a gmac[no]\n");
+U_BOOT_CMD(mmd, 2, 0, do_mmd,
+	   "\n",
+	   "\n");
 #endif /* CONFIG_SPL_BUILD */
