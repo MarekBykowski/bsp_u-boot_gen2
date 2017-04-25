@@ -115,6 +115,25 @@ do_net(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return -1;
 }
 
+extern int __weak
+take_snapshot(int gmac);
+
+int
+do_net_snapshot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	char* c = argv[1];
+	unsigned long no = -1;
+	if( 0 == strncmp( argv[1], "gmac", 4 ) ) {
+		c += 4;
+		no = simple_strtoul(c, NULL, 10);
+		take_snapshot(no);
+		return 0;
+	}
+
+	printf( "%s", cmdtp->usage );
+
+	return -1;
+}
 /*
   ======================================================================
   Command Definitions
@@ -132,4 +151,7 @@ U_BOOT_CMD(net, 3, 0, do_net,
 	   "dr toggle the \"dumprx\" flag\n"
 	   "dt toggle the \"dumptx\" flag\n");
 
+U_BOOT_CMD(net_snapshot, 2, 0, do_net_snapshot,
+	   "macstat gmac[no]\n",
+	   " run snapshot for a gmac[no]\n");
 #endif /* CONFIG_SPL_BUILD */
