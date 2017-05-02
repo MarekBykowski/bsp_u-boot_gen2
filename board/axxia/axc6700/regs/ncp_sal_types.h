@@ -1,0 +1,1 @@
+/workspace/sw/mlapajx/XLF/UBOOT/axxia_u-boot_private/board/axxia/axc6700/ncp_task_basetypes.h
