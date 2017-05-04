@@ -38,6 +38,7 @@
  */
 #define FALSE 0
 #define TRUE  1
+
 // LAPAJ START
 #ifdef __LP64__
 typedef ncp_uint64_t ncp_uintptr_t;
@@ -232,19 +233,6 @@ typedef struct {
 typedef ncp_uint32_t ncp_region_id_t;
 
 
-typedef struct ncp_task_ncaV2_domain_bundle_s
-{
-    ncp_uint64_t sharedPhysAddr;
-    ncp_int32_t  sharedSize;
-    void         *kernVA;
-    ncp_bool_t   isMapped;
-}ncp_task_ncaV2_domain_bundle_t;
-
-
-typedef struct ncp_dev_s {
-    ncp_task_ncaV2_domain_bundle_t myDomainBundle;
-} ncp_dev_t;
-
 /*
  * MISC SAL
  */
@@ -330,9 +318,6 @@ ncp_return:
  * Dummy versions of internal functions
  */
  
-#define ncp_task_v2_get_taskHdl(...)    (NCP_ST_SUCCESS)
-#define ncp_task_v2_store_taskHdl(...)  (NCP_ST_SUCCESS)
-#define ncp_task_v2_destroy_key(...)
 #define NCP_VP_VALIDATE_HANDLE(...)
 #define NCP_NCA_VALIDATE_NCP_HDL(...)
 #define ncp_vp_cpu_terminate_template_id_get(...)
@@ -340,8 +325,9 @@ ncp_return:
 #define ncp_vpm_task_param_encode(vpHdl, to, from)  \
     memcpy(to, from, 32)
 
-#define NCP_TASKIO_TRACEPOINT(...)
-#define NCP_TRACEPOINT(...)
+#define NCP_TRACEPOINT(...) debug("Trace")
+#define NCP_TASKIO_TRACEPOINT(a_,b_,c_,d_, ...) debug(#b_ "TR");  /*debug(d_, ## __VA_ARGS__ )*/
+
 #define ncp_comment(...)
 
 
@@ -389,8 +375,12 @@ ncp_return:
 #define NCP_TASK_CLAIM_LOCK(...) (NCP_ST_SUCCESS)
 #define NCP_CLEANUP_MUTEX_CALL(...)
 #define NCP_TASK_FREE_LOCK_HDL(...) (NCP_ST_SUCCESS)
-#define NCP_TASKIO_TRACEPOINT(...)
-#define NCP_TASKIO_CHECK(...)
+#ifndef NCP_CHECK_DISABLED
+#define NCP_TASKIO_CHECK(_condition, _err) NCP_ASSERT((_condition), (_err))
+#else
+#define NCP_TASKIO_CHECK(_condition, _err)
+#endif
+
 #define NCP_TASK_TQS_DISABLE(...)
 #define NCP_TASK_TQS_ENABLE(...)
 #define NCP_VALIDATE_NCP_HDL(...) (NCP_ST_SUCCESS)
@@ -410,19 +400,15 @@ ncp_return:
 
 #define NCP_TASK_PREFETCH_PCQ_ENTRY(_pQueueEntry)       arch_prefetch_data((void *)_pQueueEntry)
 
-
 #define NCP_TASK_MEM_UNMAP(_devNum, _addr, _len) \
 	if (_len) {} \
 	NCP_MEM_UNMAP((((ncp_dev_t *)_dev)->num), _addr)
 
 #define NCP_MEM_MAP(...) \
 	(void *) 0;
+
 #define NCP_TASK_MEM_MMAP(_dev, _startVA, _size, _physAddr) \
 	NCP_MEM_MAP(_dev,  _physAddr, _size)
-
-
-
-
 
 #define NCP_TASK_IRQ_WAIT(_dev, _type, _grp, _tqsRelId, _tqsID) \
 	ncp_dev_nca_wait_for_isr_wakeup(_dev, _type, _grp, _tqsRelId, _tqsID)
@@ -438,22 +424,13 @@ typedef struct
     ncp_uint32_t flags;
 } ncp_hwio_rw_t;
 
-
-
-
-
-//#define NCP_TASK_RXTASK_TBR_BUFFER_STATE_UPDATE_MREF(...)
-//#define NCP_TASKIO_VALIDATE_NCP_HDL(...) (NCP_ST_SUCCESS)
 typedef size_t    ncp_size_t;
 
 extern ncp_dev_hdl_t ncp_dev_hdls[NCP_MAX_DEVS];
-
 ncp_pid_t ncp_get_pid(void);
 ncp_st_t ncp_validate_handle(ncp_hdl_t ncpHdl);
 ncp_st_t ncp_dev_open(ncp_uint32_t devNum, ncp_uint32_t flags, ncp_dev_hdl_t *devHdl);
 ncp_st_t ncp_dev_close(ncp_dev_hdl_t *devHdl);
-
-
 ncp_st_t ncp_nvm_robust_realloc(void *origPtr, ncp_size_t size, void **ptr);
 ncp_st_t ncp_nvm_robust_malloc(ncp_size_t size, void **ptr, ncp_bool_t doMemset);
 ncp_st_t ncp_nvm_robust_free(void **pPtr);
@@ -467,29 +444,14 @@ void  ncp_free(void *ptr);
 void  ncp_hr_gettime_us(ncp_timespec_us_t *timespec);
 int   ncp_hr_time_compare(ncp_timespec_us_t *timespecStart_us, ncp_timespec_us_t *timespecEnd_us);
 void  ncp_hr_addtime_us(ncp_timespec_us_t *timespecStart_us, ncp_timespec_us_t *timespecEnd_us, ncp_uint64_t uSecs);
-
 ncp_st_t ncp_dev_nca_wait_for_isr_wakeup(ncp_dev_hdl_t dev, ncp_uint32_t intrType, ncp_uint8_t grp, ncp_uint32_t grpRelQueueId, ncp_uint8_t  tqsID);
-
 ncp_st_t ncp_block_write32(ncp_dev_hdl_t devHdl, ncp_region_id_t regionId, ncp_uint64_t offset, ncp_uint32_t *buffer, ncp_uint32_t count, ncp_uint32_t flags);
-
-
 ncp_st_t ncp_block_write64(ncp_dev_hdl_t devHdl, ncp_region_id_t regionId, ncp_uint64_t offset, ncp_uint64_t *buffer, ncp_uint32_t count, ncp_uint32_t flags);
-
-
-
 ncp_st_t ncp_block_read32(ncp_dev_hdl_t devHdl, ncp_region_id_t regionId, ncp_uint64_t offset, ncp_uint32_t *buffer, ncp_uint32_t count, ncp_uint32_t flags);
-
-
 ncp_st_t ncp_block_read64(ncp_dev_hdl_t devHdl, ncp_region_id_t regionId, ncp_uint64_t offset, ncp_uint64_t *buffer, ncp_uint32_t count, ncp_uint32_t flags);
-
-
 ncp_st_t ncp_dev_block_read32(ncp_dev_hdl_t devHdl, ncp_region_id_t regionId, ncp_uint64_t offset, ncp_uint32_t *buffer, ncp_uint32_t count, ncp_uint32_t flags);
-
 ncp_st_t ncp_dev_block_write32(ncp_dev_hdl_t devHdl, ncp_region_id_t regionId, ncp_uint64_t offset, ncp_uint32_t *buffer, ncp_uint32_t count, ncp_uint32_t flags);
-
-
 ncp_st_t ncp_dev_num_get(ncp_dev_hdl_t devHdl, ncp_uint32_t *devNum);
-
 #define NCP_S32       ncp_int32_t
 NCP_S32 ncp_bitmap_delete(ncp_bitmap_t *map);
 

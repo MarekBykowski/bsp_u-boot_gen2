@@ -4,6 +4,9 @@
  **                                                                       *
  **************************************************************************/
 
+
+#define DEBUG 1
+
 #define  NCP_TASK_NCA_GLOBALS
 #include "ncp_task_basetypes.h"
 #include "ncp_task_pvt.h"
