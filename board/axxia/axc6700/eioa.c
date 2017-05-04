@@ -27,8 +27,11 @@
 #include <asm/io.h>
 #include <net.h>
 #include <miiphy.h>
+#include "ncp_task_pvt.h"
 
 DECLARE_GLOBAL_DATA_PTR;
+
+
 
 #define DEBUG
 #include <config.h>
@@ -388,7 +391,6 @@ take_snapshot(int gmac)
 
 		offset_rx += 4;
 	}
-
 	return 0;
 }
 
@@ -462,6 +464,33 @@ initialize_task_io(void)
 		}
 	debug("done\n");
 
+	ncp_hdl_t ncpHdl = NULL;
+	ncp_uint32_t tqsId = 0;
+	ncp_task_tqs_usage_t params;
+	ncp_task_resource_name_t processName;
+	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
+	ncp_task_tqs_hdl_t tqsHdl = NULL;
+	ncp_task_tqs_bind(ncpHdl,tqsId,&params,&processName,&processName,tqsHdl);
+	ncp_st_t                 ncpStatus = NCP_ST_ERROR;
+	ncp_uint32_t             numRx;
+	ncp_task_header_t        *task;
+	ncpStatus = ncp_task_recv(tqsHdl, 1, &numRx, &task, FALSE);
+
+	ncp_task_send_meta_t    meta_data;
+	ncp_uint32_t numSent;
+	/* in addition to copying into the sub-buffer, send a CM  Tx task.*/
+	memset(&meta_data, 0x0, sizeof(ncp_task_send_meta_t));
+
+	/* Fill meta data fields */
+	meta_data.sendDoneFn = NULL;
+	meta_data.sendDoneArg = NULL;
+	meta_data.freeHeader = TRUE;
+	meta_data.freeDataPointers = FALSE;
+	meta_data.issueCompletion = FALSE;
+	meta_data.taskHeader = task;
+
+	ncp_task_send (tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
+	ncp_task_tqs_unbind(ncpHdl);
 
 	return 0;
 }

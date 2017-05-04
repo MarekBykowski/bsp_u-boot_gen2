@@ -25,8 +25,8 @@ ifndef CONFIG_SPL_BUILD
 
 ################################################################################
 ## Normal Build
-
-obj-y += eioa.o
+ccflags-y += -Wno-unused-but-set-variable -Wno-unused-variable -Wno-maybe-uninitialized
+obj-y += eioa.o ncp_task.o ncp_task_pvt.o ncp_task_stubs.o ncp_ncav3_config.o
 
 else
 
