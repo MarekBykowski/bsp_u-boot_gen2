@@ -117,6 +117,11 @@ do_net(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 extern int __weak
 take_snapshot(int gmac);
+extern int
+initialize_task_io(void);
+
+#define DEBUG
+#include <config.h>
 
 int
 do_net_snapshot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -126,6 +131,8 @@ do_net_snapshot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if( 0 == strncmp( argv[1], "gmac", 4 ) ) {
 		c += 4;
 		no = simple_strtoul(c, NULL, 10);
+		printf("snapshot for gmac %lu\n", no);
+		initialize_task_io();
 		take_snapshot(no);
 		return 0;
 	}

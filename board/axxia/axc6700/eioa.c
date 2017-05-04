@@ -109,10 +109,12 @@ ncp_dev_do_read(ncr_command_t *command, unsigned *value)
 static int
 ncp_dev_do_write(ncr_command_t *command)
 {
-	if (NCP_REGION_ID(0x200, 1) == command->region) {
- 		*(volatile unsigned*)(unsigned long)(command->offset) = (unsigned) command->value;
-		
+	switch (command->region) {
+	case NCP_REGION_ID(0x200, 1):
+	{
 		unsigned int read_back = *(volatile unsigned*)(unsigned long)command->offset;
+
+ 		*(volatile unsigned*)(unsigned long)(command->offset) = (unsigned) command->value;
 		if (read_back != command->value) {
 			printf("WRITE ERROR: n=0x%x t=0x%x o=0x%x "
 				"v=0x%x\n",
@@ -121,7 +123,9 @@ ncp_dev_do_write(ncr_command_t *command)
 				command->offset, command->value);
 			return -1;
 		}
-	} else {
+		break;
+	}
+	default:
 		if (0 != ncr_write32(command->region, command->offset,
 					 command->value)) {
 			printf("WRITE ERROR: n=0x%x t=0x%x o=0x%x "
@@ -132,6 +136,21 @@ ncp_dev_do_write(ncr_command_t *command)
 
 			return -1;
 		}
+#if 1
+		if (NCP_NODE_ID(command->region) == 0x168) {
+			unsigned int read_back = ncr_write32(command->region, command->offset,
+						 command->value);
+			if (read_back != command->value) {
+				printf("read_back != write: n=0x%x t=0x%x o=0x%x "
+					"v=0x%x\n",
+					NCP_NODE_ID(command->region),
+					NCP_TARGET_ID(command->region),
+					command->offset, command->value);
+				return -1;                                  
+			}
+		}
+#endif
+		break;
 	}
 	
 	return 0;
@@ -375,7 +394,7 @@ take_snapshot(int gmac)
 
 /*
   -------------------------------------------------------------------------------
-  initialize_task_io
+  ncp_task_uboot_domain_bundle_clear
 */
 
 void static
@@ -389,8 +408,13 @@ ncp_task_uboot_domain_bundle_clear(void)
   initialize_task_io
 */
 
-static int
+#if 0
+int
 initialize_task_io(struct eth_device *dev)
+#else 
+int
+initialize_task_io(void)
+#endif
 {
     debug("Resetting device...");
 	if (0 != ncp_dev_reset()) {
@@ -485,7 +509,7 @@ int
 lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
 {
 	if (0 == initialized)
-		if (0 != initialize_task_io(dev)) {
+		if (0 != initialize_task_io()) {
 			printf("Failed to Initialize TaskIO Lite!\n");
 			return -1;
 		}
