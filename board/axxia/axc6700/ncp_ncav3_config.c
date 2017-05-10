@@ -644,6 +644,10 @@ ncp_ncav3_supply_nca_buffers(
     ncp_bool_t useTxQueue;
     int i, j;
 
+
+
+	debug_task("inside");
+
     tqs = pvtTqsHdl->pTqs;
 
     NCP_ASSERT(tqs->pAppProfile != NULL,
@@ -718,8 +722,10 @@ ncp_ncav3_supply_nca_buffers(
 
     pool->u.cpu.ncaSupplyDone = TRUE;
 
+	debug_task("end");
 NCP_RETURN_LABEL
 
+	debug_task("exit. Return code: %d",ncpStatus);
     return ncpStatus;
 }
 
@@ -2114,6 +2120,8 @@ ncp_ncav3_get_app_profile_from_name(
     char  *name,
     ncp_ncav3_application_profile_t **appProfile)
 {
+
+	debug_task("begin");
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
     ncp_ncav3_hdl_t *nca;
     int i;
@@ -2126,8 +2134,11 @@ ncp_ncav3_get_app_profile_from_name(
 
     *appProfile = NULL;
 
+	debug_task("before for");
     for (i = 0; i < nca->configInfo.numProfiles; i++)
     {
+	    debug_task("in for i = %d",i);
+	    debug_task("profile = %p",(void *)&nca->configInfo.profiles[0]);
         char *profileName = nca->configInfo.profiles[i].baseProfile.name.name;
 
         if (strncmp(name, profileName, sizeof(ncp_task_resource_name_t)) == 0)
@@ -2137,13 +2148,15 @@ ncp_ncav3_get_app_profile_from_name(
         }
     }
 
+	debug_task("after");
     if (*appProfile == NULL)
     {
         ncpStatus = NCP_ST_ERROR;
     }
 
+	debug_task("end");
 NCP_RETURN_LABEL
-
+	debug_task("exit, return code %d",ncpStatus);
     return ncpStatus;
 }
 
@@ -2867,6 +2880,7 @@ ncp_ncav3_init_pcq_descriptor(
     ncp_uint32_t             physBase,
     ncp_uint8_t              upperBits)
 {
+	debug_task("begin");
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
     ncp_ncav3_hdl_t *nca = ncp->ncaHdl;
     ncp_ncav3_tqs_control_t *tqsControl;
@@ -2983,6 +2997,7 @@ ncp_ncav3_init_pcq_descriptor(
                                    NCP_MSG_ERROR,
                                    "[%s()] Invalid MPCQ queue ID (%d) specified!\n",
                                    __func__, queueId);
+					debug_task("invalid queue id");
                     NCP_CALL(NCP_ST_ERROR);
             }
             break;
@@ -2993,6 +3008,7 @@ ncp_ncav3_init_pcq_descriptor(
                            NCP_MSG_ERROR,
                            "[%s()] Unknown type (%d) specified!\n",
                            __func__, type);
+			debug_task("unknown type");
             NCP_CALL(NCP_ST_ERROR);
     }
 
@@ -3054,6 +3070,7 @@ ncp_ncav3_init_pcq_descriptor(
             r2.mpcq_num_bufs_per_req = 0x3;
         }
 
+		debug_task("before switch bufs_per_req");
 #if !(defined(NCP_DEV_FBRS)  || \
       defined(NCP_DEV_FBDEV) || \
       defined(NCP_DEV_SOCKET))
@@ -3086,6 +3103,7 @@ ncp_ncav3_init_pcq_descriptor(
         r2.q_vi_upper |= upperBits;
     }
 
+//	debug_task("check align %d", (vphysBaseAddr);
     if (type == IPCQ || type == OPCQ)
     {
         /* iPCQs and oPCQs must be 16B aligned. */
@@ -3097,6 +3115,7 @@ ncp_ncav3_init_pcq_descriptor(
         NCP_ASSERT(qDepth >= 4, NCP_ST_ERROR);
     }
 
+	debug_task("before write");
     NCP_DEV_NCA_WRITE_INDIRECT_REG32(dev,
             NCP_REGION_AXIS_AXI2SER8_A53_NCAP_NLINKS(ncapId),
             offset[0],
@@ -3118,8 +3137,9 @@ ncp_ncav3_init_pcq_descriptor(
             offset[1],
             (ncp_uint32_t *)&r1);
 
+	debug_task("exit");
 NCP_RETURN_LABEL
-
+	debug_task("return. error code %d",ncpStatus);
     return ncpStatus;
 }
 
@@ -3135,9 +3155,11 @@ ncp_ncav3_initialize_tqs_pcqs(
     ncp_uint32_t             physBase,
     ncp_uint8_t              upperBits)
 {
+	debug_task("begin");
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
     int queueId;
 
+	debug_task("nca level mPCQ config");
     /* NCA-level mPCQ configuration */
     NCP_CALL(ncp_ncav3_config_mtp_mpcq_lookup(
                 dev,
@@ -3146,11 +3168,13 @@ ncp_ncav3_initialize_tqs_pcqs(
                 pgitId,
                 profile));
 
+	debug_task("mtp dmm");
     NCP_CALL(ncp_ncav3_config_mtp_dmm_lookup(
                 dev,
                 pgitId,
                 profile));
 
+	debug_task("nca level ipcq");
     /* NCA-level iPCQ configuration */
     NCP_CALL(ncp_ncav3_init_ipd_ram(
         ncp,
@@ -3160,6 +3184,7 @@ ncp_ncav3_initialize_tqs_pcqs(
         pgitId,
         profile));
 
+	debug_task("nca level opcq");
     /* NCA-level oPCQ configuration */
     NCP_CALL(ncp_ncav3_config_otp_odts_ram_entry(
                 ncp,
@@ -3169,10 +3194,13 @@ ncp_ncav3_initialize_tqs_pcqs(
                 pgitId,
                 profile));
 
+	debug_task("otp otd ram entry");
     NCP_CALL(ncp_ncav3_config_otp_odtd_ram_entry(dev, pgitId));
 
+	debug_task("otp ctrl desctipcq");
     NCP_CALL(ncp_ncav3_config_otp_ctrl_destipcq(dev, pgitId));
 
+	debug_task("pcq descriptor");
     NCP_CALL(ncp_ncav3_init_pcq_descriptor(
                 ncp,
                 dev,
@@ -3185,6 +3213,7 @@ ncp_ncav3_initialize_tqs_pcqs(
                 physBase,
                 upperBits));
 
+	debug_task("pcq descriptor 2");
     for (queueId = 0; queueId < NCP_NCAV3_NUM_OPCQS_PER_TQS; queueId++)
     {
         NCP_CALL(ncp_ncav3_init_pcq_descriptor(
@@ -3200,6 +3229,7 @@ ncp_ncav3_initialize_tqs_pcqs(
                     upperBits));
     }
 
+	debug_task("pcq descriptor 3");
     for (queueId = 0; queueId < NCP_NCAV3_NUM_MPCQS_PER_TQS; queueId++)
     {
         NCP_CALL(ncp_ncav3_init_pcq_descriptor(
@@ -3215,8 +3245,9 @@ ncp_ncav3_initialize_tqs_pcqs(
                     upperBits));
     }
 
+	debug_task("end");
 NCP_RETURN_LABEL
-
+	debug_task("exit. return code %d",ncpStatus);
     return ncpStatus;
 }
 
@@ -3229,14 +3260,17 @@ ncp_ncav3_configure_tqs_hw(
     int                      relTqsId,
     ncp_ncav3_cpu_profile_t *profile)
 {
+	debug_task("begin");
     ncp_st_t ncpStatus;
     ncp_ncav3_hdl_t *nca;
     ncp_uint8_t pgitId;
 
     nca = ncp->ncaHdl;
 
+	debug_task("get group");
     NCP_CALL(ncp_ncav3_get_absolute_group_id(ncapId, relTqsId, &pgitId));
 
+	debug_task("initialize tqs pcqs");
     NCP_CALL(ncp_ncav3_initialize_tqs_pcqs(
                 ncp,
                 dev,
@@ -3247,12 +3281,16 @@ ncp_ncav3_configure_tqs_hw(
                 0xFFFFFFFF,
                 0));
 
+	debug_task("set timers");
     NCP_CALL(ncp_ncav3_set_pgit_timers(dev, ncapId, relTqsId));
 
+	debug_task("enable timers");
     NCP_CALL(ncp_ncav3_enable_pgit_timers(dev, ncapId, relTqsId));
+	debug_task("end");
 
 NCP_RETURN_LABEL
 
+	debug_task("exit. return code %d",ncpStatus);
     return ncpStatus;
 }
 
@@ -3886,6 +3924,7 @@ ncp_task_initialize_tqs_task_state(
     int ncapIdx;
     int tqsId;
 
+	debug_task("begin");
     ncp_ncav3_hdl_t *nca = ncp->ncaHdl;
 
     NCP_CALL(ncp_ncav3_get_ncap_id_list(
@@ -3893,14 +3932,17 @@ ncp_task_initialize_tqs_task_state(
        &numNCAPs,
        &ncapList));
 
+	debug_task("isInConfigPhawse");
     NCP_ASSERT(nca->inConfigurationPhase, NCP_ST_INTERNAL_ERROR);
 
+	debug_task("before for");
     for (ncapIdx = 0; ncapIdx < numNCAPs; ncapIdx++)
     {
         for (tqsId = 0; tqsId < 8; tqsId++)
         {
             ncp_uint8_t pgitId;
 
+			debug_task("ncap %d tqs %d",ncapIdx, tqsId);
             NCP_CALL(ncp_ncav3_get_absolute_group_id(
                         ncapList[ncapIdx],
                         tqsId,
@@ -3916,6 +3958,7 @@ ncp_task_initialize_tqs_task_state(
             }
             else if (ncp->domainIsInternal == FALSE)
             {
+				debug_task("error1");
                 NCP_TRACEPOINT(Intel_AXXIA_ncp_nca,
                                ncp_xlf_nca_cfg_task_initialize_tqs_task_state_errorNotInternalDomain,
                                NCP_MSG_ERROR,
@@ -3941,6 +3984,7 @@ ncp_task_initialize_tqs_task_state(
 
             /* Perform validation checks and do the hardware configuration in
              * the kernel. */
+			debug_task("tqs_configure");
             NCP_CALL(ncp_ncav3_tqs_configure(
                         myDevHdl,
                         pgitId,
@@ -3960,6 +4004,8 @@ ncp_task_initialize_tqs_task_state(
                 pgitId,
                 TRUE));
 
+			debug_task("before initialize tbr arrays");
+
             /* After initializing TQS state, perDomainPoolsMask may contain a
              * new pool, so re-run initalize TBR arrays in case. */
             NCP_TASK_INITIALIZE_TBR_ARRAYS();
@@ -3967,6 +4013,6 @@ ncp_task_initialize_tqs_task_state(
     }
 
 NCP_RETURN_LABEL
-
+	debug_task("end. exit code %d",ncpStatus);
     return ncpStatus;
 }

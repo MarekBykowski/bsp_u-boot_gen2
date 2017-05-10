@@ -1,0 +1,285 @@
+cscope.out: =ğpTqs->sh¬eC.
+cscope.out: =ğpTqs->sh¬eC.
+cscope.out: =ğpTqs->sh¬eC.
+ncp_ncav3_config.c:    profile = &tqsHdl->pTqs->pAppProfile->baseProfile;
+ncp_ncav3_config.c:        if (0 == (tqsHdl->pTqs->validPoolsMask & (1 << i)))
+ncp_ncav3_config_kernel.c:    ipcqInfo = &pTqs->rxQ.u.ipcq_info;
+ncp_ncav3_config_kernel.c:    NCP_ASSERT(pNcpTaskSwState->domainId == pTqs->domainId,
+ncp_ncav3_config_kernel.c:    NCP_ASSERT(pTqs->configured == TRUE, NCP_ST_TASK_TQS_NOT_CONFIGURED);
+ncp_ncav3_config_kernel.c:    ipcqInfo = &pTqs->rxQ.u.ipcq_info;
+ncp_ncav3_config_kernel.c:            tqsProfile = &pTqs->pAppProfile->baseProfile;
+ncp_ncav3_config_kernel.c:    if (pNcpTaskSwState->domainId != pTqs->domainId)
+ncp_ncav3_config_kernel.c:    if (FALSE == pTqs->configured)
+ncp_ncav3_config_kernel.c:    ipcqInfo = &pTqs->rxQ.u.ipcq_info;
+ncp_task.c:    if (FALSE == pTqs->configured)
+ncp_task.c:    if (pTqs->pAppProfile->baseProfile.uMode == pNcpTaskSwState->uMode)
+ncp_task.c:        memcpy(pStats, &pTqs->taskStats, bufferSize);
+ncp_task.c:    if (FALSE == pTqs->configured)
+ncp_task.c:    if (pTqs->pAppProfile->baseProfile.uMode == pNcpTaskSwState->uMode)
+ncp_task.c:        memset(&pTqs->taskStats, 0, sizeof(ncp_task_stats_t));
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
+ncp_task.c:    p_iPCQ = &pTqs->rxQ;
+ncp_task.c:        p_oPCQ = &pTqs->txQ0;
+ncp_task.c:        p_oPCQ = &pTqs->txQ1;
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
+ncp_task.c:        p_oPCQ = &pTqs->txQ0;
+ncp_task.c:        p_oPCQ = &pTqs->txQ1;
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
+ncp_task.c:    if (FALSE == pTqs->tqsEnabled)
+ncp_task.c:        p_oPCQ = &pTqs->txQ0;
+ncp_task.c:        p_oPCQ = &pTqs->txQ1;
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
+ncp_task.c:    p_iPCQ = &pTqs->rxQ;
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
+ncp_task.c:    p_iPCQ = &pTqs->rxQ; 
+ncp_task.c:    NCP_TASKIO_CHECK(FALSE == pvtTqsHdl->pTqs->rxQ.u.ipcq_info.autoCompletionMode,     
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
+ncp_task.c:        p_oPCQ = &pTqs->txQ0;
+ncp_task.c:        p_oPCQ = &pTqs->txQ1;
+ncp_task.c:    NCP_TASKIO_CHECK((0 != (pvtTqsHdl->pTqs->validPoolsMask & (1<<bufferPoolId))), 
+ncp_task.c:        NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:        NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
+ncp_task.c:        pAllocator = &pTqs->mmeAllocator[bufferPoolId];  
+ncp_task.c:    NCP_TASKIO_CHECK((0 != (pvtTqsHdl->pTqs->validPoolsMask & (1<<bufferPoolId))), 
+ncp_task.c:        NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:        NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
+ncp_task.c:            p_oPCQ = &pTqs->txQ0;
+ncp_task.c:            p_oPCQ = &pTqs->txQ1;
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
+ncp_task.c:        p_oPCQ = &pTqs->txQ0;
+ncp_task.c:        p_oPCQ = &pTqs->txQ1;
+ncp_task.c:    NCP_TASKIO_CHECK((0 != (pvtTqsHdl->pTqs->validPoolsMask & (1<<sharedPoolId))), 
+ncp_task.c:    NCP_TASKIO_CHECK((0 != (pvtTqsHdl->pTqs->validPoolsMask & (1<<sharedPoolId))),
+ncp_task.c:    NCP_TASKIO_CHECK((0 != (pvtTqsHdl->pTqs->validPoolsMask & (1<<bufferPoolId))), 
+ncp_task.c:    NCP_TASKIO_CHECK((0 != (pvtTqsHdl->pTqs->validPoolsMask & (1<<bufferPoolId))), 
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
+ncp_task.c:        p_oPCQ = &pTqs->txQ0;
+ncp_task.c:        p_oPCQ = &pTqs->txQ1;
+ncp_task.c:        && (pvtTqsHdl->pTqs->rxQ.u.ipcq_info.autoCompletionMode)),
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
+ncp_task.c:        p_oPCQ = &pTqs->txQ0;
+ncp_task.c:        p_oPCQ = &pTqs->txQ1;
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);
+ncp_task.c:        p_oPCQ = &pTqs->txQ0;
+ncp_task.c:        p_oPCQ = &pTqs->txQ1;
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);
+ncp_task.c:        p_oPCQ = &pTqs->txQ0;
+ncp_task.c:        p_oPCQ = &pTqs->txQ1;
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);
+ncp_task.c:        p_oPCQ = &pTqs->txQ0;
+ncp_task.c:        p_oPCQ = &pTqs->txQ1;
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
+ncp_task.c:    NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);
+ncp_task.c:        p_oPCQ = &pTqs->txQ0;
+ncp_task.c:        p_oPCQ = &pTqs->txQ1;
+ncp_task.c:    NCP_TASKIO_CHECK((0 != (pvtTqsHdl->pTqs->validPoolsMask & (1<<bufferPoolId))), 
+ncp_task.c:    NCP_TASKIO_CHECK((0 != (pvtTqsHdl->pTqs->validPoolsMask & (1<<bufferPoolId))), 
+ncp_task.c:    NCP_TASKIO_CHECK((0 != (pvtTqsHdl->pTqs->validPoolsMask & (1<<bufferPoolId))), 
+ncp_task.c:    profile = &pvtTqsHdl->pTqs->pAppProfile->baseProfile;
+ncp_task.c:    profile = &pvtTqsHdl->pTqs->pAppProfile->baseProfile;
+ncp_task.c:    profile = &pvtTqsHdl->pTqs->pAppProfile->baseProfile;
+ncp_task.c:    profile = &pvtTqsHdl->pTqs->pAppProfile->baseProfile;
+ncp_task.c:    if (pvtTqsHdl->pTqs->rxQ.u.ipcq_info.autoCompletionMode)
+ncp_task.c:    if (pvtTqsHdl->pTqs->rxQ.u.ipcq_info.autoConsumptionMode)
+ncp_task.c:    NCP_CHECK(pTqs->configured == TRUE, NCP_ST_TASK_TQS_NOT_CONFIGURED);
+ncp_task.c:    NCP_CHECK(pTqs->configured == TRUE, NCP_ST_TASK_TQS_NOT_CONFIGURED);
+ncp_task.c:                if (pTqs->cpuPoolId == poolID)
+ncp_task.c:                    if (NCP_MUTEX_PROCESS_PRIVATE != pTqs->mtxAttr.attr ||
+ncp_task.c:                        myPid != pTqs->mtxAttr.pid)
+ncp_task.c:    mtxAttr = &pTqs->mtxAttr;
+ncp_task.c:    if (0 == pTqs->tqsUseCnt)
+ncp_task.c:    else if (1 == pTqs->tqsUseCnt)
+ncp_task.c:        /* pTqs->tqsUseCnt equals 1 =  verify that current process and thread
+ncp_task.c:        pvtTqsHdl = pTqs->clientTqsHdls;
+ncp_task.c:        if (0 != pTqs->cpuPoolId)
+ncp_task.c:            pPoolEntry = &pNcpTaskSwState->taskPools[pTqs->cpuPoolId];
+ncp_task_hw.h:    if (_pvtTqsHdl->pTqs->tqsEnabled)                                                                   \
+ncp_task_inline_funcs.h:        NCP_TASKIO_CHECK((FALSE == pvtTqsHdl->pTqs->rxQ.u.ipcq_info.autoCompletionMode),
+ncp_task_inline_funcs.h:        NCP_TASKIO_CHECK((FALSE == pvtTqsHdl->pTqs->rxQ.u.ipcq_info.autoCompletionMode),
+ncp_task_pvt.c:            if (0 == pTqs->cpuPoolId)
+ncp_task_pvt.c:            NCP_TASK_TQS_ENABLE(pTqs->tqsId);
+ncp_task_pvt.c:            pTqs = pTqs->pNextCpuPoolTqs;
+ncp_task_pvt.c:            if (0 == pTqs->cpuPoolId)
+ncp_task_pvt.c:            NCP_TASK_TQS_DISABLE(pTqs->tqsId);
+ncp_task_pvt.c:            pTqs = pTqs->pNextCpuPoolTqs;
+ncp_task_pvt.c:        pvtTqsHdl = (ncp_task_pvt_tqsHdl_data_t *)pTqs->clientTqsHdls;
+ncp_task_pvt.c:            pTqs->inTqsRecovery = TRUE;
+ncp_task_pvt.c:            if (pTqs->cpuPoolId)
+ncp_task_pvt.c:                NCP_CALL(ncp_task_disble_tqsets_by_poolId(pTqs->cpuPoolId));
+ncp_task_pvt.c:                NCP_TASK_TQS_DISABLE(pTqs->tqsId);
+ncp_task_pvt.c:            pvtTqsHdl = (ncp_task_pvt_tqsHdl_data_t *)pTqs->clientTqsHdls;
+ncp_task_pvt.c:                    p_oPCQ = &pvtTqsHdl->pTqs->txQ0;                 
+ncp_task_pvt.c:                    p_oPCQ = &pvtTqsHdl->pTqs->txQ1;                    
+ncp_task_pvt.c:           refillsOwed[0] += pTqs->tqsRefillsOwed[0];
+ncp_task_pvt.c:           refillsOwed[1] += pTqs->tqsRefillsOwed[1];
+ncp_task_pvt.c:           refillsOwed[2] += pTqs->tqsRefillsOwed[2];
+ncp_task_pvt.c:           refillsOwed[3] += pTqs->tqsRefillsOwed[3];
+ncp_task_pvt.c:           pTqs->tqsRefillsOwed[0] = 0;
+ncp_task_pvt.c:           pTqs->tqsRefillsOwed[1] = 0;
+ncp_task_pvt.c:           pTqs->tqsRefillsOwed[2] = 0;
+ncp_task_pvt.c:           pTqs->tqsRefillsOwed[3] = 0;     
+ncp_task_pvt.c:        } while (NULL != (pTqs = pTqs->pNextCpuPoolTqs));                                       
+ncp_task_pvt.c:    p_oPCQ = &pTqs->txQ0; /* Guaranteed available during recovery */
+ncp_task_pvt.c:        pTqs->tqsRefillsOwed[0] += (pvtTqsHdl->perHdlRefillsOwed[0] - (pvtTqsHdl->perHdlRefillsIssued[NCP_TASK_TXQ_0][0] + pvtTqsHdl->perHdlRefillsIssued[NCP_TASK_TXQ_1][0]));    
+ncp_task_pvt.c:        pTqs->tqsRefillsOwed[1] += (pvtTqsHdl->perHdlRefillsOwed[1] - (pvtTqsHdl->perHdlRefillsIssued[NCP_TASK_TXQ_0][1] + pvtTqsHdl->perHdlRefillsIssued[NCP_TASK_TXQ_1][1]));                            
+ncp_task_pvt.c:        pTqs->tqsRefillsOwed[2] += (pvtTqsHdl->perHdlRefillsOwed[2] - (pvtTqsHdl->perHdlRefillsIssued[NCP_TASK_TXQ_0][2] + pvtTqsHdl->perHdlRefillsIssued[NCP_TASK_TXQ_1][2]));                       
+ncp_task_pvt.c:        pTqs->tqsRefillsOwed[3] += (pvtTqsHdl->perHdlRefillsOwed[3] - (pvtTqsHdl->perHdlRefillsIssued[NCP_TASK_TXQ_0][3] + pvtTqsHdl->perHdlRefillsIssued[NCP_TASK_TXQ_1][3]));    
+ncp_task_pvt.c:                                 &pvtTqsHdl->pTqs->txQ0,         /* use any txq while in recovery */
+ncp_task_pvt.c:            tqsId = pvtTqsHdl->pTqs->tqsId;
+ncp_task_pvt.c:            mtxAttr = &pvtTqsHdl->pTqs->mtxAttr;
+ncp_task_pvt.c:                                                &pvtTqsHdl->pTqs->txQ0, /* p_oPCQ */
+ncp_task_pvt.c:    ncp_uint32_t validPoolsMask = pvtTqsHdl->pTqs->validPoolsMask;
+ncp_task_pvt.c:    if (pTqs->shareCtl.shareFlags.sharedRxQueue)
+ncp_task_pvt.c:        pTqs->rxQ.shared = TRUE;
+ncp_task_pvt.c:        NCP_CALL(ncp_task_v3_create_lock(&pTqs->rxQ.qLock, mtxAttr));
+ncp_task_pvt.c:    if (pTqs->shareCtl.shareFlags.sharedTxQueue0)
+ncp_task_pvt.c:        pTqs->txQ0.shared = TRUE;
+ncp_task_pvt.c:        NCP_CALL(ncp_task_v3_create_lock(&pTqs->txQ0.qLock, mtxAttr));
+ncp_task_pvt.c:    if (pTqs->shareCtl.shareFlags.sharedTxQueue1)
+ncp_task_pvt.c:        pTqs->txQ1.shared = TRUE;
+ncp_task_pvt.c:        NCP_CALL(ncp_task_v3_create_lock(&pTqs->txQ1.qLock, mtxAttr));
+ncp_task_pvt.c:        ncp_task_mme_allocator_t *pAllocator = &pTqs->mmeAllocator[poolId];
+ncp_task_pvt.c:        if (pTqs->shareCtl.shareFlags.sharedAllocator[poolId])
+ncp_task_pvt.c:    mtxAttr = &pTqs->mtxAttr;
+ncp_task_pvt.c:                &pTqs->rxQ));
+ncp_task_pvt.c:    pTqs->rxQ.nEntriesMinusOne  = pTqs->rxQ.nEntries - 1;    
+ncp_task_pvt.c:    pTqs->rxQ.nEntriesMinusTwo  = pTqs->rxQ.nEntries - 2;    
+ncp_task_pvt.c:    pTqs->rxQ.nEntriesDiv2      = pTqs->rxQ.nEntries / 2;
+ncp_task_pvt.c:    pTqs->rxQ.cookie = NCP_TASK_PCQ_COOKIE;
+ncp_task_pvt.c:    pTqs->rxQ.u.ipcq_info.pIPCQentry = pTqs->rxQ.pPCQbase;
+ncp_task_pvt.c:    pTqs->rxQ.u.ipcq_info.pPrefetchEntry1 = pTqs->rxQ.u.ipcq_info.pIPCQentry + 1;
+ncp_task_pvt.c:    pTqs->rxQ.u.ipcq_info.pPrefetchEntry2 = pTqs->rxQ.u.ipcq_info.pIPCQentry + 2;    
+ncp_task_pvt.c:    pTqs->rxQ.u.ipcq_info.pLastEntry = pTqs->rxQ.u.ipcq_info.pIPCQentry + pTqs->rxQ.nEntries - 1;
+ncp_task_pvt.c:    pTqs->rxQ.hwProducerVal = 0;
+ncp_task_pvt.c:    pTqs->rxQ.hwConsumerVal = 0;
+ncp_task_pvt.c:    pTqs->rxQ.toggleBit = 0;
+ncp_task_pvt.c:    pTqs->rxQ.u.ipcq_info.appConsumerVal = 0;
+ncp_task_pvt.c:    pTqs->rxQ.u.ipcq_info.appToggleBit = 0;
+ncp_task_pvt.c:    if (pTqs->shareCtl.shareFlags.sharedRxQueue)
+ncp_task_pvt.c:        pTqs->rxQ.shared = TRUE;
+ncp_task_pvt.c:        NCP_CALL(ncp_task_v3_create_lock(&pTqs->rxQ.qLock, mtxAttr));
+ncp_task_pvt.c:    tmp = (ncp_uintptr_t)(((ncp_uintptr_t)pTqs->rxQ.pProducerIdx) & NCP_TASK_A53_CACHE_LINE_MASK);
+ncp_task_pvt.c:    pTqs->pNcaPgit = (void *)tmp;
+ncp_task_pvt.c:    tmp = (ncp_uintptr_t)(((ncp_uintptr_t)pTqs->rxQ.pConsumerIdx) & NCP_TASK_A53_CACHE_LINE_MASK);
+ncp_task_pvt.c:    pTqs->pCpuPgit = (void *)tmp;
+ncp_task_pvt.c:    memset(&pTqs->txQ0, 0, sizeof(ncp_pcq_info_t));
+ncp_task_pvt.c:                &pTqs->txQ0));
+ncp_task_pvt.c:    pTqs->txQ0.nEntriesMinusOne = pTqs->txQ0.nEntries - 1;
+ncp_task_pvt.c:    pTqs->txQ0.nEntriesMinusTwo = pTqs->txQ0.nEntries - 2;    
+ncp_task_pvt.c:    pTqs->txQ0.nEntriesDiv2     = pTqs->txQ0.nEntries / 2;        
+ncp_task_pvt.c:    pTqs->txQ0.cookie = NCP_TASK_PCQ_COOKIE; 
+ncp_task_pvt.c:    pTqs->txQ0.u.opcq_info.pOPCQentry = pTqs->txQ0.pPCQbase; 
+ncp_task_pvt.c:    pTqs->txQ0.u.opcq_info.pPrefetchEntry = pTqs->txQ0.u.opcq_info.pOPCQentry + 1;
+ncp_task_pvt.c:    pTqs->txQ0.u.opcq_info.pLastEntry = pTqs->txQ0.u.opcq_info.pOPCQentry + pTqs->txQ0.nEntries - 1;           
+ncp_task_pvt.c:    pTqs->txQ0.u.opcq_info.relId = NCP_TASK_TXQ_0;  
+ncp_task_pvt.c:    pTqs->txQ0.hwProducerVal = 0;
+ncp_task_pvt.c:    pTqs->txQ0.hwConsumerVal = 0;
+ncp_task_pvt.c:    pTqs->txQ0.toggleBit = 0;
+ncp_task_pvt.c:    if (pTqs->shareCtl.shareFlags.sharedTxQueue0)
+ncp_task_pvt.c:        pTqs->txQ0.shared = TRUE;
+ncp_task_pvt.c:        NCP_CALL(ncp_task_v3_create_lock(&pTqs->txQ0.qLock, mtxAttr));
+ncp_task_pvt.c:                pTqs->txQ0.nEntries * sizeof(ncp_task_per_oPCQ_aux_data_t), 
+ncp_task_pvt.c:                (void **)&pTqs->txQ0.u.opcq_info.pBaseAuxEntry,
+ncp_task_pvt.c:    pTqs->txQ0.u.opcq_info.pAuxWriteEntry 
+ncp_task_pvt.c:        = pTqs->txQ0.u.opcq_info.pAuxReadEntry      
+ncp_task_pvt.c:        = pTqs->txQ0.u.opcq_info.pBaseAuxEntry;
+ncp_task_pvt.c:    pTqs->txQ0.u.opcq_info.pLastAuxEntry  
+ncp_task_pvt.c:        = pTqs->txQ0.u.opcq_info.pBaseAuxEntry + pTqs->txQ0.nEntries;   
+ncp_task_pvt.c:    memset(&pTqs->txQ1, 0, sizeof(ncp_pcq_info_t));
+ncp_task_pvt.c:                &pTqs->txQ1));
+ncp_task_pvt.c:    pTqs->txQ1.nEntriesMinusOne = pTqs->txQ1.nEntries - 1;
+ncp_task_pvt.c:    pTqs->txQ1.nEntriesMinusTwo = pTqs->txQ1.nEntries - 2;    
+ncp_task_pvt.c:    pTqs->txQ1.nEntriesDiv2     = pTqs->txQ1.nEntries / 2;         
+ncp_task_pvt.c:    pTqs->txQ1.cookie = NCP_TASK_PCQ_COOKIE;
+ncp_task_pvt.c:    pTqs->txQ1.u.opcq_info.pOPCQentry = pTqs->txQ1.pPCQbase;
+ncp_task_pvt.c:    pTqs->txQ1.u.opcq_info.pPrefetchEntry = pTqs->txQ1.u.opcq_info.pOPCQentry + 1;
+ncp_task_pvt.c:    pTqs->txQ1.u.opcq_info.pLastEntry = pTqs->txQ1.u.opcq_info.pOPCQentry + pTqs->txQ1.nEntries - 1;                        
+ncp_task_pvt.c:    pTqs->txQ1.u.opcq_info.relId = NCP_TASK_TXQ_1;    
+ncp_task_pvt.c:    pTqs->txQ1.hwProducerVal = 0;
+ncp_task_pvt.c:    pTqs->txQ1.hwConsumerVal = 0;
+ncp_task_pvt.c:    pTqs->txQ1.toggleBit = 0;
+ncp_task_pvt.c:    if (pTqs->shareCtl.shareFlags.sharedTxQueue1)
+ncp_task_pvt.c:        pTqs->txQ1.shared = TRUE;
+ncp_task_pvt.c:        NCP_CALL(ncp_task_v3_create_lock(&pTqs->txQ1.qLock, mtxAttr));
+ncp_task_pvt.c:                pTqs->txQ1.nEntries * sizeof(ncp_task_per_oPCQ_aux_data_t), 
+ncp_task_pvt.c:                (void **)&pTqs->txQ1.u.opcq_info.pBaseAuxEntry,
+ncp_task_pvt.c:    pTqs->txQ1.u.opcq_info.pAuxWriteEntry 
+ncp_task_pvt.c:        = pTqs->txQ1.u.opcq_info.pAuxReadEntry      
+ncp_task_pvt.c:        = pTqs->txQ1.u.opcq_info.pBaseAuxEntry;
+ncp_task_pvt.c:    pTqs->txQ1.u.opcq_info.pLastAuxEntry  
+ncp_task_pvt.c:        = pTqs->txQ1.u.opcq_info.pBaseAuxEntry + pTqs->txQ1.nEntries;   
+ncp_task_pvt.c:    pNcpTaskSwState->perDomainPoolsMask |= pTqs->validPoolsMask;
+ncp_task_pvt.c:    pTqs->cpuPoolId = 0;
+ncp_task_pvt.c:    if (pTqs->validPoolsMask & (1<<NCP_TASK_CPU_POOL_ALIAS))
+ncp_task_pvt.c:            if (1 == ((pTqs->validPoolsMask >> poolId) & 0x1))
+ncp_task_pvt.c:                pTqs->cpuPoolId = poolId;
+ncp_task_pvt.c:            pAllocator = &pTqs->mmeAllocator[poolId];
+ncp_task_pvt.c:            if (0 == (pTqs->validPoolsMask & (1<<poolId)))            
+ncp_task_pvt.c:                if (pTqs->shareCtl.shareFlags.sharedAllocator[poolId])
+ncp_task_pvt.c:    pTqs->cookie    = NCP_TASK_TQS_SWSTATE_COOKIE;
+ncp_task_pvt.c:    pTqs->tqsUseCnt = 0;
+ncp_task_pvt.c:    pTqs->tqsId     = tqsId;
+ncp_task_pvt.c:            if (0 == (pTqs->validPoolsMask & (1<<poolId)))
+ncp_task_pvt.c:    pAppProfile = pTqs->pAppProfile;
+ncp_task_pvt.c:            if (0 == (pTqs->validPoolsMask & (1<<poolId)))
+ncp_task_pvt.c:        if (((pTqs->shareCtl.rxQ_useCnt + 1) > 1) && (FALSE == pTqs->shareCtl.shareFlags.sharedRxQueue))
+ncp_task_pvt.c:        if (((pTqs->shareCtl.txQ0_useCnt + 1) > 1) && (FALSE == pTqs->shareCtl.shareFlags.sharedTxQueue0))
+ncp_task_pvt.c:        if (((pTqs->shareCtl.txQ1_useCnt + 1) > 1) && (FALSE == pTqs->shareCtl.shareFlags.sharedTxQueue1))        
+ncp_task_pvt.c:      && (FALSE == pTqs->rxQ.u.ipcq_info.autoCompletionMode)
+ncp_task_pvt.c:            if (0 == (pTqs->validPoolsMask & (1<<poolId)))
+ncp_task_pvt.c:            if (((pTqs->shareCtl.allocatorUseCnt[poolId] + 1) > 1) 
+ncp_task_pvt.c:                && (FALSE == pTqs->shareCtl.shareFlags.sharedAllocator[poolId]))
+ncp_task_pvt.c:    if (0 != (pvtTqsHdl->cpuPoolId = pTqs->cpuPoolId))
+ncp_task_pvt.c:        pvtTqsHdl->cpuPoolHdl = &pNcpTaskSwState->taskPools[pTqs->cpuPoolId];
+ncp_task_pvt.c:        pTqs->shareCtl.rxQ_useCnt++; 
+ncp_task_pvt.c:        pTqs->shareCtl.txQ0_useCnt++;
+ncp_task_pvt.c:        pTqs->shareCtl.txQ1_useCnt++;
+ncp_task_pvt.c:            pTqs->shareCtl.allocatorUseCnt[poolId]++;
+ncp_task_pvt.c:    pvtTqsHdl->pProcess->poolsMask |= pTqs->validPoolsMask;
+ncp_task_pvt.c:        &pvtTqsHdl->pTqs->pAppProfile->baseProfile));
+ncp_task_pvt.c:    if (0 == pvtTqsHdl->pTqs->tqsUseCnt)
+ncp_task_pvt.c:    pvtTqsHdl->nextClientTqsHdl = pTqs->clientTqsHdls;
+ncp_task_pvt.c:    pTqs->clientTqsHdls = pvtTqsHdl;
+ncp_task_pvt.c:    pTqs->tqsUseCnt++;
+ncp_task_pvt.c:                          pvtTqsHdl, pTqs->tqsId, pTqs->tqsUseCnt,
+ncp_task_pvt.c:                          pTqs->clientTqsHdls);
+ncp_task_pvt.c:        pTqs->shareCtl.rxQ_useCnt--;          
+ncp_task_pvt.c:        pTqs->shareCtl.txQ0_useCnt--;
+ncp_task_pvt.c:        pTqs->shareCtl.txQ1_useCnt--;
+ncp_task_pvt.c:    pTqs->tqsUseCnt--;
+ncp_task_pvt.c:    if (pvtTqsHdl == pTqs->clientTqsHdls)
+ncp_task_pvt.c:        pTqs->clientTqsHdls = pvtTqsHdl->nextClientTqsHdl;
+ncp_task_pvt.c:                              pvtTqsHdl, pTqs->tqsId, pTqs->tqsUseCnt,
+ncp_task_pvt.c:                              pTqs->clientTqsHdls);
+ncp_task_pvt.c:        tmpTqsHdl = (ncp_task_pvt_tqsHdl_data_t *)pTqs->clientTqsHdls;    
+ncp_task_pvt.c:                                      pvtTqsHdl, pTqs->tqsId, pTqs->tqsUseCnt,
+ncp_task_pvt.c:                                      pTqs->clientTqsHdls);
+ncp_task_pvt.c:    if (0 == pTqs->tqsUseCnt)
+ncp_task_pvt.c:            pTqs->shareCtl.allocatorUseCnt[poolId]--;
+ncp_task_pvt.c:                NCP_TASKIO_CHECK((FALSE == pvtTqsHdl->pTqs->rxQ.u.ipcq_info.autoCompletionMode),
+ncp_task_pvt.c:            NCP_TASKIO_CHECK((FALSE == pvtTqsHdl->pTqs->rxQ.u.ipcq_info.autoCompletionMode),
+ncp_task_pvt.c:                NCP_TASKIO_CHECK((FALSE == pvtTqsHdl->pTqs->rxQ.u.ipcq_info.autoCompletionMode),
+ncp_task_pvt.c:        if (pTqs->validPoolsMask & (1<<poolId))
+ncp_task_pvt.c:        if (pTqs->validPoolsMask & (1<<poolId))
+ncp_task_pvt.c:            if ((0xFF == pTqs->tqsId)  /* unused ? */
+ncp_task_pvt.c:             || (pTqs->domainId != pNcpTaskSwState->domainId)   /* different domain */
+ncp_task_pvt.c:             || (FALSE == pTqs->configured)                     /* not configured   */
+ncp_task_pvt.c:             || (FALSE == pTqs->pAppProfile->baseProfile.uMode) /* not user mode    */
+ncp_task_pvt.c:             || (FALSE == pTqs->tqsEnabled))                    /* already disabled */
+ncp_task_pvt.h:    if (_pTqs->inTqsRecovery)                   \
+ncp_task_pvt.h:        NCP_TASK_TQS_ENABLE(_pTqs->tqsId);      \
+ncp_task_pvt.h:        _pTqs->inTqsRecovery = FALSE;           \
+ncp_task_pvt.h:    _pTqs->pNextCpuPoolTqs = _pPool->u.cpu.pCpuPoolTQSets;      \
+ncp_task_pvt.h:            { (_pTqsHdl)->pTqs->taskStats.stat_##_thisStat ++; }\

@@ -25,8 +25,8 @@ ifndef CONFIG_SPL_BUILD
 
 ################################################################################
 ## Normal Build
-ccflags-y += -Wno-unused-but-set-variable -Wno-unused-variable -Wno-maybe-uninitialized
-obj-y += eioa.o ncp_task.o ncp_task_pvt.o ncp_task_stubs.o ncp_ncav3_config.o
+ccflags-y += -Wno-unused-but-set-variable -Wno-unused-variable -Wno-maybe-uninitialized -Wno-error=int-conversion
+obj-y += eioa.o ncp_task.o ncp_task_pvt.o ncp_task_stubs.o ncp_ncav3_config.o ncp_ncav3_config_uboot.o
 
 else
 

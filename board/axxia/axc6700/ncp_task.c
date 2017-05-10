@@ -937,12 +937,14 @@ ncp_task_tqs_bind(
                    ((processName) ? (processName->name) : "(null)"),
                    ((threadName) ? (threadName->name) : "(null)"),
                    pTqsHdl);
+	debug_task("before check");
     NCP_CHECK((NULL != pNcpTaskSwState), NCP_ST_TASK_NO_GSM);
     NCP_CALL(NCP_VALIDATE_NCP_HDL(ncpHdl));
     NCP_CHECK(tqsId < NCP_NCAV3_NUM_CPU_TQSETS, NCP_ST_INVALID_PARAMETER);
     NCP_CHECK((NULL != pParams), NCP_ST_INVALID_PARAMETER);
     NCP_CHECK((NULL != pTqsHdl), NCP_ST_INVALID_PARAMETER);
 
+	debug_task("before validate");
     /* Validate supplied name */
     NCP_TASK_VALIDATE_RESOURCE_NAME(processName, NCP_ST_TASK_BAD_RESOURCE_NAME);
     NCP_TASK_VALIDATE_RESOURCE_NAME(threadName, NCP_ST_TASK_BAD_RESOURCE_NAME);
@@ -951,12 +953,14 @@ ncp_task_tqs_bind(
 
     NCP_CALL(NCP_TASK_CLAIM_LOCK(pNcpTaskSwState->taskIoResourceLock, flags, &unlockRequired));
 
+	debug_task("before domain");
     if (pNcpTaskSwState->domainId !=
         pNcpTaskSwState->tqsSwState[tqsId].domainId)
     {
         NCP_CALL(NCP_ST_TASK_QUESET_NOT_IN_LOCAL_DOMAIN);
     }
 
+	debug_task("after domainId check");
     /* If configured is true, the other tqsSwState variables are valid for
      * the caller's mode. */
     if (FALSE == pNcpTaskSwState->tqsSwState[tqsId].configured)
@@ -964,6 +968,7 @@ ncp_task_tqs_bind(
         NCP_CALL(NCP_ST_TASK_TQS_NOT_CONFIGURED);
     }
 
+	debug_task("after configured check");
     if (pNcpTaskSwState->uMode !=
         pNcpTaskSwState->tqsSwState[tqsId].pAppProfile->baseProfile.uMode)
     {
@@ -975,6 +980,7 @@ ncp_task_tqs_bind(
         NCP_CALL(NCP_ST_TASK_TQS_DISABLED);
     }
 
+	debug_task("after tqs disabled check");
     if (NCP_MUTEX_PROCESS_PRIVATE == pNcpTaskSwState->tqsSwState[tqsId].mtxAttr.attr &&
         pNcpTaskSwState->tqsSwState[tqsId].mtxAttr.pid != myPid)
     {
@@ -991,15 +997,21 @@ ncp_task_tqs_bind(
 
     NCP_NCA_INC_CRITICAL_SECTION(pvtTqsHdl, critSecFlag);
 
+	debug_task("after malloc");
     NCP_CALL(ncp_task_add_thread(pvtTqsHdl, processName, threadName, tqsId, &pProcess));
     pidInitDone = TRUE;
 
+	debug_task("ncp_task: after add thread\n");
     /* Bind to tqs, validating shared flags and usage */
 
     NCP_CALL(ncp_task_attach_tqs(ncpHdl, pvtTqsHdl, tqsId, pParams));
     tqsAttachDone = TRUE;
 
+	debug_task("after attach tqs");
+
     NCP_CALL(ncp_task_init_wait_profile(pvtTqsHdl));
+
+	debug_task("after wait profile");
 
     /*
      * TASK SEND 
@@ -1043,6 +1055,7 @@ ncp_task_tqs_bind(
     pvtTqsHdl->taskCompleteDefaultCmdBits.u.opcqEntry.interruptEn = 1;
     /* pvtTqsHdl->taskCompleteDefaultCmdBits.u.opcqEntry.flowControlDisabled = 0; */ /* already zero */
     
+	debug_task("after structures fill");
      
     /* Supply NCA buffers if this is the first user of a CPU pool. */
     if (pNcpTaskSwState->tqsSwState[tqsId].tqsUseCnt == 1)
@@ -1050,7 +1063,9 @@ ncp_task_tqs_bind(
         NCP_CALL(ncp_ncav3_supply_nca_buffers((ncp_t *) ncpHdl, pvtTqsHdl));
     }
 
+	debug_task("after supply nca buffers");
 NCP_RETURN_LABEL
+	debug_task("exit. return code: %d", ncpStatus);
     if (NCP_ST_SUCCESS == ncpStatus)
     {
         /* Add to list of active tqs handles */
@@ -1246,6 +1261,7 @@ ncp_task_tqs_unbind(
     NCP_MUTEX_LOCKED_FLAG_DECL(unlockRequired);
     NCP_NCA_CRITICAL_SECTION_FLAG_DECL(critSecFlag)
     NCP_TASK_LOCK_FLAGS(flags);
+	debug_task("begin");
 
     NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                    ncp_xlf_task_tqs_unbind_entry,
@@ -1266,23 +1282,29 @@ ncp_task_tqs_unbind(
      * App must free buffers in order to avoid a memmory leak.
      */
 
+	debug_task("before flush TXQ0");
     if (pvtTqsHdl->useFlags.useTxQueue[0])
     {
+	    debug_task("flush TXQ0");
         NCP_CALL(ncp_task_tx_queue_flush(tqsHdl, 0));
     }
 
+	debug_task("before flush TXQ1");
     if (pvtTqsHdl->useFlags.useTxQueue[1])
     {
+	    debug_task("flush TXQ1");
         NCP_CALL(ncp_task_tx_queue_flush(tqsHdl, 1));
     }
 
     /* Unbind. Clean up TQS software state if tqsUseCnt is 0. */
+	debug_task("unbind");
     NCP_CALL(ncp_task_internal_tqs_unbind(pvtTqsHdl,
                                           FALSE, /* NOT in recovery */
                                           TRUE));
 
 NCP_RETURN_LABEL
 
+	debug_task("exit. return val %d",ncpStatus);
     if (NCP_ST_SUCCESS == ncpStatus)
     {
 
@@ -2316,6 +2338,7 @@ ncp_task_recv(
 #ifdef NCP_DEV_SOCKET
     return(ncpStatus);
 #else
+	debug_task("enter");
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
     ncp_task_pcq_t *p_iPCQ = NULL;
     ncp_ipcq_entry_t *pInputQueueEntry = NULL;    
@@ -2345,10 +2368,12 @@ ncp_task_recv(
     NCP_TASKIO_CHECK((TRUE == pvtTqsHdl->useFlags.useRxQueue), 
               NCP_ST_TASK_TQS_SHARING_VIOLATION);
 
+	debug_task("after checks");
     pTqs = pvtTqsHdl->pTqs;
     NCP_TASK_PREFETCH_PGIT_FOR_WRITE(pTqs->pCpuPgit);
     NCP_TASK_PREFETCH_PGIT(pTqs->pNcaPgit);    
     
+	debug_task("after prefetch");
     p_iPCQ = &pTqs->rxQ;
     if (p_iPCQ->shared == TRUE)
     {
@@ -2359,8 +2384,10 @@ ncp_task_recv(
     NCP_TASK_PREFETCH_PCQ_ENTRY((pInputQueueEntry));
     NCP_TASK_PREFETCH_TASK_HEADER(pInputQueueEntry);
         
+	debug_task("check consumption");
     if (p_iPCQ->u.ipcq_info.autoConsumptionMode)
     {
+		debug_task("consumption");
         NCP_TASKIO_CHECK(0 != numTasks, NCP_ST_INVALID_PARAMETER);
         if (NCP_ST_SUCCESS != (ncpStatus = ncp_task_recv_normal(pvtTqsHdl,
                                       p_iPCQ,
@@ -2369,13 +2396,15 @@ ncp_task_recv(
                                       pNumReceived, 
                                       pTasks,
                                       wait)))
-        {                             
+        {
+			debug_task("check1");
             if (NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
             {    
                 NCP_JUMP_RETURN(); /* silent return */
             }
             else 
             {
+				debug_task("check2");
                 NCP_CALL(ncpStatus);
             }        
         }    
@@ -2386,6 +2415,7 @@ ncp_task_recv(
          * We allow caller to specify zero.   
          * Can be used to complete all outstanding without receiving more. 
          */
+		debug_task("deferred");
         if (NCP_ST_SUCCESS != (ncpStatus = ncp_task_recv_deferred(pvtTqsHdl,
                                         p_iPCQ,
                                         pInputQueueEntry,                                        
@@ -2394,8 +2424,10 @@ ncp_task_recv(
                                         pTasks,
                                         wait))) 
         {                             
+		     debug_task("deferred else");
             if (NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
             {    
+				debug_task("jump return");
                 NCP_JUMP_RETURN(); /* silent return */
             }
             else 
@@ -2405,8 +2437,9 @@ ncp_task_recv(
         }                                                 
     }                
     
+	debug_task("exit");
 NCP_RETURN_LABEL
-
+	debug_task("return. exit code %d",ncpStatus);
     if (NCP_ST_SUCCESS == ncpStatus)
     {
         NCP_TASK_INC_STAT(pvtTqsHdl->pTqs, api_task_recv_ok);

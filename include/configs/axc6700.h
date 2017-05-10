@@ -6,6 +6,7 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
@@ -201,8 +202,7 @@
 
 #define CONFIG_AXXIA_MDIO
 #define CONFIG_AXXIA_NEMAC
-/*#define CONFIG_AXXIA_EIOA*/
-
+#define CONFIG_AXXIA_EIOA
 #define CONFIG_SYS_CNTR_FREQ 62500000
 
 #define CONFIG_EXTRA_ENV_SETTINGS		\
@@ -229,8 +229,8 @@
 /*#define CONFIG_AXXIA_PCI*/
 /*#define CONFIG_SPL_PCI_SUPPORT*/
 
-/*#define CONFIG_AXXIA_FEMAC*/
-/*#define CONFIG_AXXIA_EIOA*/
+#define CONFIG_AXXIA_FEMAC
+#define CONFIG_AXXIA_EIOA
 
 #define CONFIG_CMD_SBB
 
@@ -297,7 +297,7 @@
 
 #define CONFIG_AXXIA_MDIO
 #define CONFIG_AXXIA_NEMAC
-/*#define CONFIG_AXXIA_EIOA*/
+#define CONFIG_AXXIA_EIOA
 
 #define CONFIG_BOOTDELAY 3
 
@@ -407,6 +407,7 @@
 
 #define CONFIG_AXXIA_MDIO
 #define CONFIG_AXXIA_NEMAC
+#define CONFIG_AXXIA_EIOA
 
 #define CONFIG_BOOTDELAY 3
 

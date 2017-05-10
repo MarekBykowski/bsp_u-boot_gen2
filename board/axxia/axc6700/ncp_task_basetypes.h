@@ -24,6 +24,9 @@
 #include <asm/string.h>
 #include <ubi_uboot.h>
 
+#define debug_task(fmt, args...) printf("[%s:%s()]:%i: " fmt "\n",__FILE__,__func__ , __LINE__, ##args)
+
+
 #define NCP_API extern
 #define NCP_EXPORT_SYMBOL(sym) EXPORT_SYMBOL(sym)
 
@@ -276,6 +279,7 @@ typedef ncp_uint32_t ncp_region_id_t;
  * API parameter checking can be disabled by defining NCP_CHECK_DISABLED.   Time-critical APIs
  * may be converted to use this new macro.
  */
+#define NCP_CHECK_DISABLED
 
 #ifndef NCP_CHECK_DISABLED
 #define NCP_CHECK(_condition, _err) NCP_ASSERT((_condition), (_err))
@@ -325,8 +329,8 @@ ncp_return:
 #define ncp_vpm_task_param_encode(vpHdl, to, from)  \
     memcpy(to, from, 32)
 
-#define NCP_TRACEPOINT(...) debug("Trace")
-#define NCP_TASKIO_TRACEPOINT(a_,b_,c_,d_, ...) debug(#b_ "TR");  /*debug(d_, ## __VA_ARGS__ )*/
+#define NCP_TRACEPOINT(...) /*debug("Trace")*/
+#define NCP_TASKIO_TRACEPOINT(a_,b_,c_,d_, ...) /* debug(#b_ "TR"); */ /*debug(d_, ## __VA_ARGS__ )*/
 
 #define ncp_comment(...)
 
@@ -407,8 +411,10 @@ ncp_return:
 #define NCP_MEM_MAP(...) \
 	(void *) 0;
 
+
+
 #define NCP_TASK_MEM_MMAP(_dev, _startVA, _size, _physAddr) \
-	NCP_MEM_MAP(_dev,  _physAddr, _size)
+	mmap_stub((void *) _startVA,_size,(void *) _physAddr)
 
 #define NCP_TASK_IRQ_WAIT(_dev, _type, _grp, _tqsRelId, _tqsID) \
 	ncp_dev_nca_wait_for_isr_wakeup(_dev, _type, _grp, _tqsRelId, _tqsID)
@@ -454,6 +460,10 @@ ncp_st_t ncp_dev_block_write32(ncp_dev_hdl_t devHdl, ncp_region_id_t regionId, n
 ncp_st_t ncp_dev_num_get(ncp_dev_hdl_t devHdl, ncp_uint32_t *devNum);
 #define NCP_S32       ncp_int32_t
 NCP_S32 ncp_bitmap_delete(ncp_bitmap_t *map);
+void *mmap_stub(void *start, size_t length, void *physAddr);
+ncp_st_t ncp_ncav3_config_uboot(ncp_hdl_t *oncpHdl);
+
+
 
 
 #endif /* NCP_STATUS_H */

@@ -20,7 +20,7 @@
  * MA 02111-1307 USA
  */
 
-/*#define DEBUG*/
+#define DEBUG
 #include <config.h>
 #include <common.h>
 #include <malloc.h>
@@ -449,48 +449,20 @@ initialize_task_io(void)
 				return -1;
 		}
 	debug("done\n");
-
+/* ML: skip this for now
 	debug("Configuring NCA...");
 		if (0 != ncp_dev_configure(nca)) {
 				printf("NCA Configuration Failed\n");
 				return -1;
 		}
 	debug("done\n");
-
+*/
 	debug("Configuring EIOA...");
 		if (0 != ncp_dev_configure(eioa)) {
 				printf("EIOA Configuration Failed\n");
 				return -1;
 		}
 	debug("done\n");
-
-	ncp_hdl_t ncpHdl = NULL;
-	ncp_uint32_t tqsId = 0;
-	ncp_task_tqs_usage_t params;
-	ncp_task_resource_name_t processName;
-	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
-	ncp_task_tqs_hdl_t tqsHdl = NULL;
-	ncp_task_tqs_bind(ncpHdl,tqsId,&params,&processName,&processName,tqsHdl);
-	ncp_st_t                 ncpStatus = NCP_ST_ERROR;
-	ncp_uint32_t             numRx;
-	ncp_task_header_t        *task;
-	ncpStatus = ncp_task_recv(tqsHdl, 1, &numRx, &task, FALSE);
-
-	ncp_task_send_meta_t    meta_data;
-	ncp_uint32_t numSent;
-	/* in addition to copying into the sub-buffer, send a CM  Tx task.*/
-	memset(&meta_data, 0x0, sizeof(ncp_task_send_meta_t));
-
-	/* Fill meta data fields */
-	meta_data.sendDoneFn = NULL;
-	meta_data.sendDoneArg = NULL;
-	meta_data.freeHeader = TRUE;
-	meta_data.freeDataPointers = FALSE;
-	meta_data.issueCompletion = FALSE;
-	meta_data.taskHeader = task;
-
-	ncp_task_send (tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
-	ncp_task_tqs_unbind(ncpHdl);
 
 	return 0;
 }
@@ -503,6 +475,52 @@ initialize_task_io(void)
 static int
 finalize_task_io(void)
 {
+	debug_task("finalize");
+	ncp_hdl_t ncpHdl;
+	ncp_uint32_t tqsId = 0;
+	ncp_task_resource_name_t processName;
+	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
+	ncp_task_tqs_hdl_t tqsHdl = NULL;
+
+	ncp_ncav3_config_uboot(&ncpHdl);
+	ncp_task_tqs_usage_t params;
+
+	params.useRxQueue  = TRUE;
+	params.useTxQueue0 = TRUE;
+	params.useTxQueue1 = TRUE;
+	int i;
+	for (i = 0; i < 8; i++)
+		params.useAllocator[i] = FALSE;
+#define SHARED_BUFFER_POOL2   2
+	params.useAllocator[SHARED_BUFFER_POOL2] = TRUE;
+	ncp_task_tqs_bind(ncpHdl,tqsId,&params,&processName,&processName,tqsHdl);
+
+	ncp_st_t                 ncpStatus = NCP_ST_ERROR;
+	ncp_uint32_t             numRx;
+	ncp_task_header_t        *task;
+	ncpStatus = ncp_task_recv(tqsHdl, 1, &numRx, &task, FALSE);
+/*
+	ncp_task_send_meta_t    meta_data;
+	ncp_uint32_t numSent;
+	// in addition to copying into the sub-buffer, send a CM  Tx task.
+	memset(&meta_data, 0x0, sizeof(ncp_task_send_meta_t));
+
+	// Fill meta data fields 
+	meta_data.sendDoneFn = NULL;
+	meta_data.sendDoneArg = NULL;
+	meta_data.freeHeader = TRUE;
+	meta_data.freeDataPointers = FALSE;
+	meta_data.issueCompletion = FALSE;
+	meta_data.taskHeader = task;
+
+	ncp_task_send (tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
+*/
+	ncp_task_tqs_unbind(ncpHdl);
+
+
+
+
+
 	return 0;
 }
  
@@ -544,6 +562,7 @@ lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
 		}
 
 	initialized = 1;
+	debug_task("initialize");
 	return 0;
 }
 

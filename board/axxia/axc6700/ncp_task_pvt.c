@@ -1131,6 +1131,7 @@ ncp_task_add_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
     int i;
 
+	debug_task("enter");
     ncp_task_thread_info_t  *pThread=NULL;
     ncp_task_process_info_t *pProcess=NULL;    
 
@@ -1146,13 +1147,14 @@ ncp_task_add_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
 
     NCP_CALL(ncp_task_process_name_validate(processName, threadName, tqsId, &pProcess));
 
+	debug_task("after validate");
     /*
      * If process name did not already exist,   then add it
      */
 
     if (NULL == pProcess)
     {
-    
+		debug_task("pProcess == null");
         /* 
          * Do we need to grow the pidArray?
          * Account for "NCP_TASK_TBR_FIRST_APPLICATION_PID" reserved entries (0,1) when checking for full 
@@ -1160,6 +1162,7 @@ ncp_task_add_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
         if (pNcpTaskSwState->currPidArrayEntries 
             == (pNcpTaskSwState->numActivePids + NCP_TASK_TBR_FIRST_APPLICATION_PID))
         {
+		    debug_task("realloc");
             ncp_task_process_info_t **newProcessNamesPtr;
             
             NCP_CALL(ncp_nvm_robust_realloc( pNcpTaskSwState->pidArray, 
@@ -1176,10 +1179,12 @@ ncp_task_add_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
         /* 
          * Now find a free slot in pidArray - this is a new uniqueue client process 
          */
+		debug_task("find free slot");
         for (i = NCP_TASK_TBR_FIRST_APPLICATION_PID; 
              i < pNcpTaskSwState->currPidArrayEntries; 
              i++)
         {
+		    debug_task("pidArray %d",i);
             if (NULL == pNcpTaskSwState->pidArray[i])
             {
                 /*
@@ -1213,6 +1218,7 @@ ncp_task_add_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
             }         
         }
     
+		debug_task("after find free slot");
         if (i == pNcpTaskSwState->currPidArrayEntries)
         {
             NCP_CALL(NCP_ST_TASK_OUT_OF_PIDS);
@@ -1222,6 +1228,7 @@ ncp_task_add_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
     else
     {
         /* save pointer to process struct in tqs handle */
+		debug_task("save pointer");
         pvtTqsHdl->pProcess = pProcess;
     }
  
@@ -1236,6 +1243,7 @@ ncp_task_add_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
     /* 
      * check for thread name uniqueness
      */                              
+    debug_task("check thread name");
     pThread = pProcess->activeThreads;
     while (NULL != pThread)
     { 
@@ -1249,6 +1257,7 @@ ncp_task_add_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
     }
 
     /* Add thread struct to process-local linked list */            
+    debug_task("add thread to local linked list");
     pThread = &pvtTqsHdl->thisThread;
     pThread->recoveryTqsHdl = pvtTqsHdl;    /* used for TBR recovery */
     pThread->pNextThread = pProcess->activeThreads;
@@ -1274,6 +1283,7 @@ ncp_task_add_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
     /* TODO - need linked list of all threads sharing this tqs? */
         
     /* If this is a new process,   hook it */
+    debug_task("hook");
     if (1 == pProcess->numThreads)
     {
         pProcess->pNextProcess = pNcpTaskSwState->activeProcesses;          
@@ -1281,7 +1291,7 @@ ncp_task_add_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
     }        
     
 NCP_RETURN_LABEL
-
+	debug_task("exit retval %d",ncpStatus);
     *ppProcess = pProcess;  /* Return result to caller,   even if failed due to restart required */
     return(ncpStatus);
 }   
@@ -1335,6 +1345,7 @@ ncp_task_delete_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
     runtime_mutex_attr_state_t *mtxAttr = NULL;
     ncp_int32_t tqsId;
 
+     debug_task("begin");
 #if 0
     NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                           ncp_xlf_task_delete_thread_entry, NCP_MSG_INFO,
@@ -1346,6 +1357,7 @@ ncp_task_delete_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
 
     /* first delete threadName from active threads list  */
     
+    debug_task("get pthread");
     pThread =  pvtTqsHdl->pProcess->activeThreads;
     while (NULL != pThread)
     {
@@ -1367,6 +1379,7 @@ ncp_task_delete_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
         pThread = pThread->pNextThread;       
     }        
     
+    debug_task("check pThread null");
     if (NULL == pThread)
     {
         NCP_CALL(NCP_ST_INTERNAL_ERROR);
@@ -1374,6 +1387,7 @@ ncp_task_delete_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
             
     /* Now delete process if use count falls to zero */
         
+    debug_task("before delete");
     if (0 == pvtTqsHdl->pProcess->numThreads)
     {
 #if 0
@@ -1389,6 +1403,7 @@ ncp_task_delete_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
         /*
          * Remove process struct from active processes list
          */    
+        debug_task("remove process struct");
         pProcess =  pNcpTaskSwState->activeProcesses;
         while (NULL != pProcess)
         {
@@ -1415,6 +1430,7 @@ ncp_task_delete_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
         }
 
         /* TQS lock update */
+        debug_task("tqs lock update");
         if (pvtTqsHdl->pTqs)
         {
             tqsId = pvtTqsHdl->pTqs->tqsId;
@@ -1435,6 +1451,7 @@ ncp_task_delete_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
                                   pvtTqsHdl);
         }
         /* Pool lock update */
+        debug_task("pool lock update");
         if (NCP_NCAV3_FIRST_CPU_POOL_ID <= pvtTqsHdl->cpuPoolId &&
             NCP_NCAV3_LAST_CPU_POOL_ID > pvtTqsHdl->cpuPoolId)
         {
@@ -1471,6 +1488,7 @@ ncp_task_delete_thread(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
 
 
 NCP_RETURN_LABEL
+    debug_task("exit. return code %d",ncpStatus);
     return(ncpStatus);
 }  
  
@@ -1484,6 +1502,8 @@ ncp_task_internal_tqs_unbind(
     ncp_task_pvt_tqsHdl_data_t *prev;
     ncp_task_pvt_tqsHdl_data_t *curr;
 
+	debug_task("begin");
+
     /*
      * Non-recovery path:
      * Do not allow thread to unbind if it still owes task completions
@@ -1495,8 +1515,10 @@ ncp_task_internal_tqs_unbind(
     if (pvtTqsHdl->completionsOwed !=
         (pvtTqsHdl->completionsIssued[NCP_TASK_TXQ_0] + pvtTqsHdl->completionsIssued[NCP_TASK_TXQ_1]))
     {
+	    debug_task("before recovery");
         if (!inRecovery)
         {
+	        debug_task("in non recovey");
             NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                                   ncp_xlf_task_internal_tqs_unbind_taskCompletionsOwed,
                                   NCP_MSG_ERROR,
@@ -1508,6 +1530,7 @@ ncp_task_internal_tqs_unbind(
         }
         else
         {
+	        debug_task("in recovery");
             ncp_uint32_t numCompleted=0;
             /*
              * Issue the owed completions.
@@ -1536,12 +1559,15 @@ ncp_task_internal_tqs_unbind(
 
     /* If deleteThread is true, we didn't call ncp_task_add_thread() and so
      * pProcess is NULL. */
+	debug_task("before delete thread");
     if (deleteThread)
     {
+	    debug_task("in delete thread");
         if (1 == pvtTqsHdl->pProcess->numThreads)
         {
             if (!inRecovery)
             {
+	            debug_task("leak check");
                 ncpStatus = NCP_TASK_TBR_LEAK_CHECK(pvtTqsHdl, pvtTqsHdl->pProcess->pid);
                 if (NCP_ST_SUCCESS != ncpStatus)
                 {
@@ -1550,6 +1576,7 @@ ncp_task_internal_tqs_unbind(
             }
             else
             {
+	            debug_task("buffers recover");
                 ncpStatus = NCP_TASK_TBR_BUFFERS_RECOVER(pvtTqsHdl, pvtTqsHdl->pProcess->pid);
                 if (NCP_ST_SUCCESS != ncpStatus)
                 {
@@ -1559,18 +1586,22 @@ ncp_task_internal_tqs_unbind(
         }
     }
 
+	debug_task("before cpuPoolHdl");
     if (pvtTqsHdl->cpuPoolHdl)
     {
 
+     	debug_task("cpoPoolHdl in recovery check");
         if (!inRecovery)
         {
             /*
              * This check can be enabled *only* for environments where refills are always performed by
              * the same thread that received the task.
              */
+     	    debug_task("rx refill check");
             NCP_CALL(NCP_TASK_TBR_THREAD_RX_REFILL_CHECK(pvtTqsHdl));
         }
 
+     	debug_task("cpupool refil count update");
         NCP_TASK_TBR_CPUPOOL_REFILL_COUNT_UPDATE(pvtTqsHdl);
     }
 
@@ -1581,33 +1612,42 @@ ncp_task_internal_tqs_unbind(
      * before freeing tqs handle
      */
 
+     debug_task("detach tqs");
     NCP_CALL(ncp_task_detach_tqs(pvtTqsHdl));
 
+     debug_task("before delete thread");
     if (deleteThread)
     {
+        debug_task("delete thread");
         NCP_CALL(ncp_task_delete_thread(pvtTqsHdl, &pvtTqsHdl->thisThread.clientThread));
     }
 
     /* Remove from list of active tqs handles */
 
+    debug_task("before remove active tqs");
     prev = NULL;
     curr = pNcpTaskSwState->activeTqsHdls;
     while(curr)
     {
+        debug_task("while curr");
         if (curr == pvtTqsHdl)
         {
+            debug_task("curr == pvtTqsHdl");
             if (NULL == prev)
             {
+				debug_task("null");
                 pNcpTaskSwState->activeTqsHdls = curr->nextTqsHdl;
             }
             else
             {
+				debug_task("nextTqsHdl");
                 prev->nextTqsHdl = curr->nextTqsHdl;
             }
             break;
         }
         prev = curr;
         curr = curr->nextTqsHdl;
+        debug_task("while curr end");
     }
     if (NULL == curr)
     {
@@ -1617,6 +1657,7 @@ ncp_task_internal_tqs_unbind(
 
 NCP_RETURN_LABEL
 
+    debug_task("exit. return code %d",ncpStatus);
     return(ncpStatus);
 }
  
@@ -3190,6 +3231,7 @@ ncp_st_t ncp_task_map_pools(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
     int poolId;
     void *mmapResult;
 
+	debug_task("enter");
 
     pTqs = &pNcpTaskSwState->tqsSwState[tqsId];
     pAppProfile = pTqs->pAppProfile;
@@ -3207,34 +3249,41 @@ ncp_st_t ncp_task_map_pools(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
      
     for (poolId = 0; poolId < NCP_NCAV3_MAX_SHARED_POOLS; poolId++) 
     {
+	     debug_task("poolId %d",poolId);
         int mapCntIdx = poolId;
 
         if (0 == poolId)
         {        
+	         debug_task("pool0 case");
             if (0 != pvtTqsHdl->cpuPoolId)
             {
                 pPool = &pNcpTaskSwState->taskPools[pvtTqsHdl->cpuPoolId]; 
-
                 mapCntIdx = pvtTqsHdl->cpuPoolId;
             }        
             else
             {
+	           debug_task("continue1");
                 continue;
             }    
         }         
         else if (1 == poolId)
         {
+	        debug_task("pool1 case");
+			debug_task("continue2");
             continue;
         }
         else
         {
+	         debug_task("pool>1 case %d",poolId);
             if (0 == (pTqs->validPoolsMask & (1<<poolId)))
             {    
+	           debug_task("continue3");
                 continue;
             } 
             pPool = &pNcpTaskSwState->taskPools[poolId];    
         }                
      
+	    debug_task("before ncpTaskPoolMapCnt for poolId %d",poolId);
         if (0 == ncpTaskPoolMapCnt[mapCntIdx])
         {    
             mmapResult
@@ -3248,6 +3297,10 @@ ncp_st_t ncp_task_map_pools(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
                     NCP_ST_TASK_MMAP_FAILED);
 
         }
+		else
+		{
+			debug_task("task pool already mapped, skipping mmap %d",poolId);
+		}
         pvtTqsHdl->mappedPools |= (1<<poolId);
         ncpTaskPoolMapCnt[mapCntIdx]++;
     } /* for */ 
@@ -3265,8 +3318,10 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
     
     /* First validate permissions/usage */
     
+	debug_task("begin\n");
     if (pParams->useRxQueue)
     {
+		debug_task("check use RX queue");
         if (((pTqs->shareCtl.rxQ_useCnt + 1) > 1) && (FALSE == pTqs->shareCtl.shareFlags.sharedRxQueue))
         {
             NCP_CALL(NCP_ST_TASK_TQS_SHARING_VIOLATION);
@@ -3274,6 +3329,7 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
     }          
     if (pParams->useTxQueue0)
     {
+		debug_task("check use TX queue 0");
         if (((pTqs->shareCtl.txQ0_useCnt + 1) > 1) && (FALSE == pTqs->shareCtl.shareFlags.sharedTxQueue0))
         {
             NCP_CALL(NCP_ST_TASK_TQS_SHARING_VIOLATION);
@@ -3281,6 +3337,7 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
     }  
     if (pParams->useTxQueue1)
     {
+		debug_task("check use TX queue 1");
         if (((pTqs->shareCtl.txQ1_useCnt + 1) > 1) && (FALSE == pTqs->shareCtl.shareFlags.sharedTxQueue1))        
         {
             NCP_CALL(NCP_ST_TASK_TQS_SHARING_VIOLATION);
@@ -3294,11 +3351,13 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
         NCP_CALL(NCP_ST_TASK_MANUAL_COMPLETION_REQUIRES_TXQ);
     }
            
+	debug_task("before allocator usage validate");
     /* Valildate allocator usage */
     for (poolId = NCP_NCAV3_FIRST_SHARED_POOL_ID; 
          poolId < NCP_NCAV3_MAX_SHARED_POOLS; 
          poolId++)
     {
+		debug_task("use allocator for poolId %d\n",poolId);
         if (pParams->useAllocator[poolId])
         {
             if (0 == (pTqs->validPoolsMask & (1<<poolId)))
@@ -3315,6 +3374,7 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
 
     /* Queue access/permission validated,   save some state info and move on to mapping the memory pools */
             
+	debug_task("save some state");
     pvtTqsHdl->pTqs = pTqs;
     if (0 != (pvtTqsHdl->cpuPoolId = pTqs->cpuPoolId))
     {
@@ -3323,10 +3383,12 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
     pvtTqsHdl->tqsId  = tqsId;
         
     
+	debug_task("map pools");
     NCP_CALL(ncp_task_map_pools(pvtTqsHdl,  
                                 tqsId)); 
 
 
+	debug_task("map unscheduled queues");
     NCP_CALL(ncp_ncav3_map_unscheduled_queues());
 
     /*
@@ -3334,6 +3396,7 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
      */
      
      /* TXQ0 sendone */
+	debug_task("TXQ0 senddone");
     memset(&pvtTqsHdl->sendDoneInfo[0], 0, sizeof(ncp_task_pvt_sendDone_ctl_t));
     pvtTqsHdl->sendDoneInfo[0].nEntriesMinusOne = NCP_TASK_API_MAX_BULK_ITEM_COUNT - 1;
     NCP_CALL(ncp_nvm_robust_malloc( (NCP_TASK_API_MAX_BULK_ITEM_COUNT*sizeof(ncp_task_sendDone_entry_t)),
@@ -3344,6 +3407,7 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
         = pvtTqsHdl->sendDoneInfo[0].entries;        
     
      /* TXQ1 sendone */
+	debug_task("TXQ1 senddone");
     memset(&pvtTqsHdl->sendDoneInfo[1], 0, sizeof(ncp_task_pvt_sendDone_ctl_t));
     pvtTqsHdl->sendDoneInfo[1].nEntriesMinusOne = NCP_TASK_API_MAX_BULK_ITEM_COUNT - 1;
     NCP_CALL(ncp_nvm_robust_malloc( (NCP_TASK_API_MAX_BULK_ITEM_COUNT*sizeof(ncp_task_sendDone_entry_t)),
@@ -3357,27 +3421,33 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
     /* Now its ok to update use counts */    
     if (pParams->useRxQueue)
     {
+	    debug_task("rxQ usecount++");
         pTqs->shareCtl.rxQ_useCnt++; 
         pvtTqsHdl->useFlags.useRxQueue = TRUE;         
     }          
     if (pParams->useTxQueue0)
     {
+	    debug_task("txQ0 usecount++");
         pTqs->shareCtl.txQ0_useCnt++;
         pvtTqsHdl->useFlags.useTxQueue[0] = TRUE;        
     }  
     if (pParams->useTxQueue1)
     {
+	    debug_task("txQ1 usecount++");
         pTqs->shareCtl.txQ1_useCnt++;
         pvtTqsHdl->useFlags.useTxQueue[1] = TRUE;        
     } 
     
+	debug_task("validate allocator");
     /* Valildate allocator usage */
     for (poolId = NCP_NCAV3_FIRST_SHARED_POOL_ID; 
          poolId < NCP_NCAV3_MAX_SHARED_POOLS; 
          poolId++)
     {
+		debug_task("poolId %d",poolId);
         if (pParams->useAllocator[poolId])
         {
+		    debug_task("allocatorUseCnt[%d]++",poolId);
             pTqs->shareCtl.allocatorUseCnt[poolId]++;
             pvtTqsHdl->useFlags.useAllocator[poolId] = TRUE;            
         } 
@@ -3385,20 +3455,26 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
        
     pvtTqsHdl->pProcess->poolsMask |= pTqs->validPoolsMask;
     
+	// LAPAJ: shared data region is not used by EIOA
+	debug_task("map shared data region");
     NCP_CALL(ncp_ncav3_map_shared_data_regions(pvtTqsHdl));
 
+	// LAPAJ: fix pool is not used by EIOA
+	debug_task("map fixed pool");
     NCP_CALL(ncp_ncav3_map_fixed_pool(
         &pvtTqsHdl->pTqs->pAppProfile->baseProfile));
 
     /* If this is the first handle to bind to this TQS, turn on its iPCQ */
 
+	debug_task("check if first handle");
     if (0 == pvtTqsHdl->pTqs->tqsUseCnt)
     {
         ncp_dev_hdl_t dev = ncp_dev_hdls[((ncp_t *) ncpHdl)->id];
-
+	    debug_task("enable ipcq");
         NCP_CALL(ncp_ncav3_enable_ipcq(dev, tqsId / 8, tqsId % 8, tqsId));
     }
     
+	debug_task("increment pool use counts");
     NCP_TASK_INCREMENT_POOL_USE_COUNTS(pvtTqsHdl);             
     
 
@@ -3418,6 +3494,7 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
 
     pvtTqsHdl->cookie = NCP_TASK_TQS_HDL_COOKIE;
     
+	debug_task("end");
 NCP_RETURN_LABEL
     if (NCP_ST_SUCCESS != ncpStatus)
     {

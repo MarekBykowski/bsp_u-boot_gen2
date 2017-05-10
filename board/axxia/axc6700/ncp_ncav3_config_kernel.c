@@ -2963,6 +2963,7 @@ ncp_ncav3_tqs_configure(
     ncp_bool_t ncapFound = FALSE;
     int i;
     NCP_TASK_LOCK_FLAGS(flags);
+	debug_task("begin");
 
     NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                           ncp_ncav3_tqs_configure_entry,
@@ -2984,6 +2985,7 @@ ncp_ncav3_tqs_configure(
 
     /* Confirm that the requested TQS' NCAP exists. Will always succeed
        on ASIC devices. */
+	debug_task("find ncap");
     for (i = 0; i < numNCAPs; i++)
     {
         if ((tqsId / 8) == ncapList[i])
@@ -2993,6 +2995,7 @@ ncp_ncav3_tqs_configure(
         }
     }
 
+	debug_task("found ncap");
     NCP_ASSERT(ncapFound, NCP_ST_TASK_NCAP_DOES_NOT_EXIST);
 
     /* If calling from the kernel, the lock is already held. */
@@ -3001,6 +3004,7 @@ ncp_ncav3_tqs_configure(
         NCP_CALL(NCP_TASK_CLAIM_LOCK(pNcpTaskSwState->taskIoResourceLock, flags, &unlockRequired));
     }
 
+	debug_task("get tqs");
     tqs = &pNcpTaskSwState->tqsSwState[tqsId];
 
     /* The TQS must be shut down before it can be configured. */
@@ -3010,6 +3014,7 @@ ncp_ncav3_tqs_configure(
     NCP_ASSERT(tqs->tqsEnabled == TRUE, NCP_ST_TASK_TQS_DISABLED);
 
     /* Get the TQS's new profile */
+	debug_task("get profile");
     NCP_CALL(ncp_ncav3_get_app_profile_from_name(
         myNcpHdl,
         appProfileName->name,
@@ -3019,6 +3024,7 @@ ncp_ncav3_tqs_configure(
         NCP_ST_INVALID_PARAMETER);
 
     /* Check if TQS name is already in use (except by this TQS) */
+	debug_task("check tqs in use");
     for (i = 0; i < NCP_NCAV3_MAX_NUM_TQSETS; i++)
     {
         if (FALSE == pNcpTaskSwState->tqsSwState[i].configured ||
@@ -3035,6 +3041,7 @@ ncp_ncav3_tqs_configure(
         }
     }
 
+	debug_task("strncpy");
     strncpy(tqs->name.name,
             tqsName->name,
             sizeof(ncp_task_resource_name_t));
@@ -3050,6 +3057,7 @@ ncp_ncav3_tqs_configure(
     /* Set the MQG for ncp_ncav3_tqs_memory_quota_group_get() to use. */
     tqs->mqg = mqgId;
 
+	debug_task("initialize tqs control");
     NCP_CALL(ncp_ncav3_initialize_tqs_control(
                 myNcpHdl,
                 tqsId,
@@ -3058,6 +3066,7 @@ ncp_ncav3_tqs_configure(
     /* Calling in the kernel relies on the fact that the kernel maintains the
      * iPCQ<->QG mappings.
      */
+	debug_task("config tqs hw");
     NCP_CALL(ncp_ncav3_configure_tqs_hw(
                 myNcpHdl,
                 myDevHdl,
@@ -3065,6 +3074,7 @@ ncp_ncav3_tqs_configure(
                 tqsId % 8,
                &appProfile->baseProfile));
 
+	debug_task("config tqs hw");
     tqs->configured = TRUE;
 
 NCP_RETURN_LABEL

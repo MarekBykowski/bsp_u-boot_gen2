@@ -50,7 +50,8 @@ static void mmu_setup(void)
 #ifndef CONFIG_AXXIA_EIOA
 		ulong end = bd->bi_dram[i].start + bd->bi_dram[i].size;
 #else 
-		ulong end = bd->bi_dram[i].start + EIOA_SYSTEM_MEMORY;
+		ulong end = bd->bi_dram[i].start + bd->bi_dram[i].size;
+		//ulong end = bd->bi_dram[i].start + EIOA_SYSTEM_MEMORY;
 #endif
 
 		for (j = start >> SECTION_SHIFT;
