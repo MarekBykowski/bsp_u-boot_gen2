@@ -17,6 +17,8 @@
  * to the stack frame.
  */
 .macro	exception_entry
+	mov x22, x0
+	mov x21, x0
 	stp	x29, x30, [sp, #-16]!
 	stp	x27, x28, [sp, #-16]!
 	stp	x25, x26, [sp, #-16]!

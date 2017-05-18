@@ -512,6 +512,34 @@ ncr_write32_0x167(ncp_uint32_t region, ncp_uint32_t offset, ncp_uint32_t value)
 }
 
 
+/*
+  -------------------------------------------------------------------------------
+  ncr_read32_0x168
+*/
+static int 
+ncr_read32_axi2ser(ncp_uint64_t offset, ncp_uint32_t *value)
+{
+	debug("%s() reading val 0x%x at 0x%llx\n", 
+			__func__, *(volatile ncp_uint32_t *)value, offset);
+	*value = readl(POINTER(offset));
+	return 0;
+}
+
+
+/*
+  -------------------------------------------------------------------------------
+  ncr_write32_0x168
+*/
+static int 
+ncr_write32_axi2ser(ncp_uint64_t offset, ncp_uint32_t value)
+{
+	debug("%s() writing val 0x%x at 0x%llx\n", 
+			__func__, value, offset);
+	writel(value, POINTER(offset));
+	return 0;
+}
+
+
 typedef struct
 {
 #ifdef NCP_BIG_ENDIAN
@@ -840,6 +868,18 @@ ncr_read(ncp_uint32_t region,
 	case 0x167:
 		return ncr_read32_0x167(region, address, (ncp_uint32_t *)buffer);
 		break;
+#ifdef CONFIG_AXXIA_XLF
+	case 0x168:
+	{
+		ncp_uint64_t offset = 0;
+		if (NCP_NODE_ID(region) == 0x168)
+			offset = NCP_TARGET_ID(region) * 0x40000 + 
+						(AXI2SER8 + address);
+
+		return ncr_read32_axi2ser(offset, (ncp_uint32_t *)buffer);
+		break;
+	}
+#endif
 	case 0x101:
 	case 0x109:
 	case 0x1d0:
@@ -853,7 +893,8 @@ ncr_read(ncp_uint32_t region,
 			ncp_uint64_t offset = 0;
 
 			if(NCP_NODE_ID(region) == 0x101) {
-				offset = (unsigned long)(NCA + address);
+				offset = NCP_TARGET_ID(region) * 0x80000 + 
+							(NCA + address);
 			} else if(NCP_NODE_ID(region) == 0x109) {
 				offset = ((unsigned long)MME_POKE + address);
 			} else if(NCP_NODE_ID(region) == 0x1d0) {
@@ -1148,6 +1189,18 @@ ncr_write(ncp_uint32_t region,
 		return ncr_write32_0x167(region, address,
 					 *((ncp_uint32_t *)buffer));
 		break;
+#ifdef CONFIG_AXXIA_XLF
+	case 0x168:
+	{
+		ncp_uint64_t offset = 0;
+		if (NCP_NODE_ID(region) == 0x168)
+			offset = NCP_TARGET_ID(region) * 0x40000 + 
+						(AXI2SER8 + address);
+	
+		return ncr_write32_axi2ser(offset, *(ncp_uint32_t *)buffer);
+		break;
+	}
+#endif
 	case 0x101:
 	case 0x109:
 	case 0x1d0:
@@ -1157,14 +1210,15 @@ ncr_write(ncp_uint32_t region,
 			ncp_uint64_t offset = 0;
 
 			if(NCP_NODE_ID(region) == 0x101) {
-				offset = (unsigned long)(NCA + address);
+				offset = NCP_TARGET_ID(region) * 0x80000 + 
+							(NCA + address);
 			} else if(NCP_NODE_ID(region) == 0x109) {
 				offset = (unsigned long)(MME_POKE + address);
 			} else if(NCP_NODE_ID(region) == 0x1d0) {
 				offset = (unsigned long)(SCB + address);
 			} else if (NCP_NODE_ID(region) == 0x149) {
 				offset = (unsigned long)(GPREG + address);
-			} 
+			}
 
 			while (4 <= number) {
 				ncr_register_write(*((ncp_uint32_t *)buffer),

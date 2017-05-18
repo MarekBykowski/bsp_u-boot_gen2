@@ -43,6 +43,9 @@ _bss_end_ofs:
 	.quad	__bss_end - _start
 
 reset:
+#ifndef CONFIG_SPL_BUILD
+	#kot: b kot
+#endif
 	/*
 	 * Could be EL3/EL2/EL1, Initial State:
 	 * Little Endian, MMU Disabled, i/dCache Disabled
