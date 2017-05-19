@@ -26,6 +26,7 @@ ES = namedtuple('EngineSpec', 'start_state, start_sign, end_state, end_sign, out
 
 # enigines in order of processing
 ENGINES = [MME, PBM, VP, NCA, EIOA, EIOAE]
+ENGINE_ALL = 100  # for dumping all engines
 
 # engines definitions
 ENGINE_DEFS = {
@@ -96,16 +97,25 @@ def save_trace(trace, arch, parsed_data):
     ''' Save traces to separate files per engine '''
     for engine_type in trace:
         engine = ENGINE_DEFS[engine_type]
+        save_file('{0}.trace'.format(engine.output_file), trace[engine_type])
+        convert('{0}.c'.format(engine.output_file), trace[engine_type], parsed_data)
 
-        if engine_type == EIOAE:
-            # append "EIOA Port(s) Enable" to EIOA
-            trace[EIOA] += trace[EIOAE]
-        else:
-            save_file('{0}.trace'.format(engine.output_file), trace[engine_type])
-            convert('{0}.c'.format(engine.output_file), trace[engine_type], parsed_data)
+    # special case for EIOE, it needs to be appended to EIOA
+    if EIOA in trace and EIOAE in trace:
+        engine = ENGINE_DEFS[EIOA]
+        # append "EIOA Port(s) Enable" to EIOA
+        trace[EIOA] += trace[EIOAE]
+        save_file('{0}.trace'.format(engine.output_file), trace[EIOA])
+        convert('{0}.c'.format(engine.output_file), trace[EIOA], parsed_data)
 
 
-def parse_trace(fname, input_state, arch):
+def trace_append(trace, line, engine_type):
+    if not engine_type in trace:
+        trace[engine_type] = []
+    trace[engine_type].append(line)
+
+
+def parse_trace(fname, arch):
     '''Parse trace file and return dictionary with list
     of lines for every engine'''
 
@@ -126,10 +136,13 @@ def parse_trace(fname, input_state, arch):
                         # discard "# Begin: Engines.NCAv3 (CPU)"
                         if len(line.split()) == 3:
                             state = engine.end_state
+                            trace_append(trace, line, engine_type)
                     else:
                         state = engine.end_state
+                        trace_append(trace, line, engine_type)
             elif state == engine.end_state:
                 if line.startswith(engine.end_sign):
+                    trace_append(trace, line, engine_type)
                     try:
                         engine_type = ENGINES.pop(0)
                         engine = ENGINE_DEFS[engine_type]
@@ -137,14 +150,32 @@ def parse_trace(fname, input_state, arch):
                     except IndexError:
                         break
                 else:
-                    if not engine_type in trace:
-                        trace[engine_type] = []
-                    trace[engine_type].append(line)
+                    trace_append(trace, line, engine_type)
             else:
                 print 'Unknown processing state <{0}> for line <{1}>'.format(state, line)
                 break
 
     return trace
+
+
+def parse_all(fname):
+    '''Parse trace file and return dictionary with list
+    of lines for every engine'''
+
+    trace = {ENGINE_ALL: []}
+    with open(fname) as f:
+        for line in f:
+            if not line.rstrip(): continue   # skip empty lines
+            if VERBOSE:
+                print '{0}'.format(line),
+            trace[ENGINE_ALL].append(line)
+    return trace
+
+
+def save_all(trace, parsed_data):
+    ''' Save traces to separate files per engine '''
+    save_file('all.trace', trace[ENGINE_ALL])
+    convert('all.c', trace[ENGINE_ALL], parsed_data)
 
 
 def va_to_pa(values, node, target, offset, parsed_data):
@@ -483,9 +514,13 @@ def main():
         sys.exit(3)
     parsed_data = parse_tree(tree_file)
     if VERBOSE: print 'PARSED DATA: PHY_ADDR: {phy_addr}, MAXD: {maxd}'.format(**parsed_data)
-    process_state = ARCH_TO_STATE.get(arch, MME_LOOK)  # by default MME_LOOK
-    trace = parse_trace(input_, process_state, arch)
-    save_trace(trace, arch, parsed_data)
+    trace = None
+    if arch == ARCH_ALL:
+        trace = parse_all(input_)
+        save_all(trace, parsed_data)
+    else:
+        trace = parse_trace(input_, arch)
+        save_trace(trace, arch, parsed_data)
 
 
 if __name__ == '__main__':

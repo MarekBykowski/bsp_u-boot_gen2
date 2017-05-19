@@ -1,4 +1,6 @@
 static ncr_command_t mme[] = {
+
+	/* Begin: Engines.MME */
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(21, 16), 0x00000400, 0x80000000, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(21, 16), 0x02000400, 0x00000003, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(21, 16), 0x04000400, 0x00000003, 0},
@@ -1650,5 +1652,7 @@ static ncr_command_t mme[] = {
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(21, 16), 0x13000030, 0xffffff8f, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(21, 16), 0x14000030, 0xffffff00, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(21, 16), 0x00000400, 0x7fffffff, 0},
+
+	/* End:   Engines.MME */
 	{NCR_COMMAND_NULL, 0, 0, 0, 0}
 };

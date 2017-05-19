@@ -30,7 +30,7 @@
 #include <miiphy.h>
 
 DECLARE_GLOBAL_DATA_PTR;
-
+#define ALL_TRACES
 
 /* task NCAv3 */
 #include "../common/ncp_sysmem_lsiphy.h" /* for macros and stuff mainly. Must go first */
@@ -52,7 +52,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define NCP_EIOA_GEN_CFG_REG_OFFSET(portIndex)                                  \
     0x100000 +                                                                  \
     ((portIndex > 0) ? 0x10000 : 0) +                                           \
-    ((portIndex > 0) ? (0x1000 * (portIndex - 1)) : 0)
+    ((portIndex > 0) ? (0x1000 * (portIndex)) : 0)
 
 /* Native domain is up to 10 gmacs, they are numbered
  * 0-4 and 15-20. Nokia is gmac20 */
@@ -1209,11 +1209,15 @@ ncp_dev_configure(ncr_command_t *commands) {
 }
 
 #if defined(CONFIG_AXXIA_XLF)
+#ifdef ALL_TRACES
+#include "EIOA67xx/all.c"
+#else
 #include "EIOA67xx/mme.c"
 #include "EIOA67xx/pbm.c"
 #include "EIOA67xx/vp.c"
 #include "EIOA67xx/nca.c"
 #include "EIOA67xx/eioa.c"
+#endif /* ALL_TRACES */
 #else
 #error "EIOA is not defined for this architecture!"
 #endif
@@ -1260,8 +1264,8 @@ gmac_set_region_offset(
 int __weak
 take_snapshot(int gmac) 
 {
-	int rc, val, number = 56;
-	unsigned zero = 0;
+	int rc, number = 56;
+	unsigned val, zero = 0;
 	int offset_rx = 0xf00, offset_tx = 0xe00;
 	/*unsigned eioaRegion;*/
 	unsigned gmacRegion;
@@ -1283,7 +1287,7 @@ take_snapshot(int gmac)
 
 	printf("Snapshot for gmac%d\n", gmac);
 	while (0 < number--) {
-		rc = ncr_read(gmacRegion, 0, offset_tx, 4, &val);
+		rc = ncr_read32(gmacRegion, offset_tx, &val);
 		if (0 != val) { 
 			zero = 1;
 			printf("%08x\t", val);
@@ -1297,7 +1301,7 @@ take_snapshot(int gmac)
 
 	number = 56;
 	while (0 < number--) {
-		rc = ncr_read(gmacRegion, 0, offset_rx, 4, &val);
+		rc = ncr_read32(gmacRegion, offset_rx, &val);
 		if (0 != val) { 
 			zero = 1;
 			printf("%08x\t", val);
@@ -1357,7 +1361,7 @@ test_write_32_64(void)
   Itis weak as a Waco has internal PHYs that do not require programming. 
 */
 
-int __weak
+int
 line_setup(int index) {
 	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
 	unsigned ncr_status;
@@ -1384,6 +1388,9 @@ line_setup(int index) {
 
 	if (0 != gmac_set_region_offset(index, &eioaRegion, &hwPortGmac, &gmacRegion, &gmacPortOffset))
 		return -1;
+
+	printf("eioaRegion 0x%08x, hwPortGmac 0x%08x, gmacRegion 0x%08x, gmacPortOffset 0x%08x\n",
+				eioaRegion, hwPortGmac, gmacRegion, gmacPortOffset);
 
 	/* 
  		Disable stuff. 
@@ -1426,8 +1433,6 @@ line_setup(int index) {
 	NCP_CALL(ncr_write32(gmacRegion, 0x324 + gmacPortOffset,
 				 ncr_status));
 
-
-
 #ifdef PHY
 {
 	unsigned control, ad_value, ge_ad_value;	
@@ -1469,9 +1474,8 @@ line_setup(int index) {
 }
 #endif
 
-
 	/*
-	  Set the Ethernet addresses...
+		Set the Ethernet addresses...
 	*/
 
 	top = (ethernet_address[0] << 8) | ethernet_address[1];
@@ -1494,7 +1498,9 @@ line_setup(int index) {
 	NCP_CALL(ncr_write32(gmacRegion, 0x350 + gmacPortOffset, bottom));
 	NCP_CALL(ncr_write32(gmacRegion, 0x354 + gmacPortOffset, top));
 
-	/* Enable stuff. */
+	/* 
+ 		Enable stuff. 
+	 */
 	NCP_CALL(ncr_modify32(gmacRegion, 0x300 + gmacPortOffset, 0x8, 0x8));
 	NCP_CALL(ncr_modify32(eioaRegion, 
 				NCP_EIOA_GEN_CFG_REG_OFFSET(hwPortGmac) + 0x0, 
@@ -1529,6 +1535,15 @@ initialize_task_io(void)
     ncp_task_uboot_domain_bundle_clear();
     debug("done\n");
 
+
+#ifdef ALL_TRACES
+	debug("Configuring all.c ...");
+    if (0 != ncp_dev_configure(all)) {
+            printf("all.c Configuration Failed\n");
+            return -1;
+    }
+	debug("done\n");
+#else
 	debug("Configuring MME...");
     if (0 != ncp_dev_configure(mme)) {
             printf("MME Configuration Failed\n");
@@ -1563,8 +1578,8 @@ initialize_task_io(void)
 				return -1;
 		}
 	debug("done\n");
+#endif
 
-	line_setup(20);
 	return 0;
 }
 

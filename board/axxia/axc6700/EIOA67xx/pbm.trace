@@ -1,3 +1,4 @@
+# Begin: PBM
 ncpWrite   0.51.16.0x0000000030 0xc040fff0
 ncpWrite   0.51.16.0x0002000030 0xffffc081
 ncpWrite   0.51.16.0x0003000030 0x1fffffff
@@ -160,3 +161,4 @@ ncpWrite   0.151.0.0x0000000004 0x80000000
 ncpRead    0.135.0.0x0000000004 1
 ncpRead    0.51.16.0x0000000030 1
 ncpWrite   0.51.16.0x0000000030 0xc040fff0
+# End:   PBM

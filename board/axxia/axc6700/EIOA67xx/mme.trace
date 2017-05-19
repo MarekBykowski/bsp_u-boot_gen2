@@ -1,3 +1,4 @@
+# Begin: Engines.MME
 ncpWrite   0.21.16.0x0000000400 0x80000000
 ncpWrite   0.21.16.0x0002000400 0x00000003
 ncpWrite   0.21.16.0x0004000400 0x00000003
@@ -536,3 +537,4 @@ ncpWrite   0.21.16.0x0012800030 0x00000007
 ncpWrite   0.21.16.0x0013000030 0xffffff8f
 ncpWrite   0.21.16.0x0014000030 0xffffff00
 ncpWrite   0.21.16.0x0000000400 0x7fffffff
+# End:   Engines.MME

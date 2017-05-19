@@ -119,6 +119,9 @@ extern int __weak
 take_snapshot(int gmac);
 extern int
 initialize_task_io(void);
+extern int
+line_setup(int index);
+
 
 #define DEBUG
 #include <config.h>
@@ -148,6 +151,7 @@ do_net_snapshot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		c += 4;
 		no = simple_strtoul(c, NULL, 10);
 		printf("mb: %s() for gmac %lu\n", __func__, no);
+		line_setup(no);
 		take_snapshot(no);
 		return 0;
 	}

@@ -35,11 +35,19 @@
 #define POINTER(address) ((unsigned long *)((unsigned long)(address)))
 #endif
 
+#define NCR_TRACER
+
 static int ncr_sysmem_mode_disabled = 1;
 static int ncr_tracer_disabled = 1;
 void ncr_tracer_enable( void ) { ncr_tracer_disabled = 0; }
 void ncr_tracer_disable( void ) { ncr_tracer_disabled = 1; }
-int ncr_tracer_is_enabled( void ) { return 0 == ncr_tracer_disabled ? 1 : 0; }
+int ncr_tracer_is_enabled( void ) 
+{ 
+	char *envstring = getenv("ncrdbg");	
+	if (NULL != envstring) 
+		return 1;
+	return 0; 
+}
 void ncr_sysmem_init_mode_enable(void) { ncr_sysmem_mode_disabled = 0; }
 void ncr_sysmem_init_mode_disable(void) { ncr_sysmem_mode_disabled = 1; }
 

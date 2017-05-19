@@ -1,3 +1,4 @@
+# Begin: VirtualPipelines
 ## Begin Virtual Pipeline configuration clear
 ncpWrite   0.31.1.0x0000018000 0x00000000 0x00000000
 ncpWrite   0.31.1.0x0000018008 0x00000000 0x00000000
@@ -8894,3 +8895,4 @@ ncpWrite   0.41.1.0x000001027c 0x01000000
 ncpWrite   0.42.1.0x000001027c 0x01000000
 ncpWrite   0.43.1.0x000001027c 0x01000000
 ## End Virtual Pipeline configuration
+# End:   VirtualPipelines

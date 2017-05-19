@@ -1,5 +1,7 @@
 static ncr_command_t nca[] = {
 
+	/* Begin: Engines.NCAv3 */
+
 	/* Begin COW config */
 
 	/* TCLd Clear Task Queue registers */
@@ -7920,5 +7922,7 @@ static ncr_command_t nca[] = {
 	{NCR_COMMAND_USLEEP, 0, 0, 1000, 0},
 	{NCR_COMMAND_READ, NCP_REGION_ID(22, 0), 0x00000004, 0, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(22, 0), 0x00000004, 0x01530880, 0},
+
+	/* End:   Engines.NCAv3 */
 	{NCR_COMMAND_NULL, 0, 0, 0, 0}
 };
