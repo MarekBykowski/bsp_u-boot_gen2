@@ -30,7 +30,6 @@
 #include <miiphy.h>
 
 DECLARE_GLOBAL_DATA_PTR;
-#define ALL_TRACES
 
 /* task NCAv3 */
 #include "../common/ncp_sysmem_lsiphy.h" /* for macros and stuff mainly. Must go first */
