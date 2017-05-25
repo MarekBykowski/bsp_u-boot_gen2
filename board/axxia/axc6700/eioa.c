@@ -31,8 +31,9 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+
 /* task NCAv3 */
-#include "../common/ncp_sysmem_lsiphy.h" /* for macros and stuff mainly. Must go first */
+/*#include "../common/ncp_sysmem_lsiphy.h"*/ /* for macros and stuff mainly. Must go first */
 #include "ncp_task_basetypes.h"
 #include "ncp_timer_regions.h"
 #include "ncp_tmgr_system_count_reg_defines.h"
@@ -40,6 +41,15 @@ DECLARE_GLOBAL_DATA_PTR;
 #include "ncp_syscon_xlf_reg_defines.h" /* syscon */
 #include "ncp_ncap_reg_defines.h" /* eg. NCP_NCAP_CONFIG_INIT */
 #include "ncp_cmn_axi_reg_defines.h" /* eg. NCP_CMN_AXI_CFG_RING_ACK_TIMER_CNT */
+
+/* Marcin's port. Needs revisiting and cleanup */
+#include "ncp_task_pvt.h"
+
+ncp_hdl_t ncpHdl;
+ncp_uint32_t tqsId = 0;
+ncp_task_resource_name_t processName;
+ncp_task_tqs_hdl_t tqsHdl = NULL;
+ncp_task_tqs_usage_t params;
 
 /*==============================================================================
   ==============================================================================
@@ -1006,6 +1016,11 @@ ncp_dev_do_write(ncr_command_t *command)
 	case NCP_REGION_ID(0x200, 1):
 	{
 		unsigned int read_back = *(volatile unsigned*)(unsigned long)command->offset;
+			printf("WRITE to smem n=0x%x t=0x%x o=0x%x "
+				"v=0x%x\n",
+				NCP_NODE_ID(command->region),
+				NCP_TARGET_ID(command->region),
+				command->offset, command->value);
 
  		*(volatile unsigned*)(unsigned long)(command->offset) = (unsigned) command->value;
 		if (read_back != command->value) {
@@ -1523,6 +1538,7 @@ int
 initialize_task_io(void)
 #endif
 {
+    ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
     debug("Resetting device...");
 	if (0 != ncp_dev_reset()) {
 		printf("Device reset Failed\n");
@@ -1543,6 +1559,7 @@ initialize_task_io(void)
     }
 	debug("done\n");
 #else
+
 	debug("Configuring MME...");
     if (0 != ncp_dev_configure(mme)) {
             printf("MME Configuration Failed\n");
@@ -1579,7 +1596,14 @@ initialize_task_io(void)
 	debug("done\n");
 #endif
 
-	return 0;
+    debug("Configuring Uboot task io... and creating task hdl\n");
+    NCP_CALL(ncp_ncav3_config_uboot(&ncpHdl));
+    debug("done\n");
+
+	ncp_task_tqs_bind(ncpHdl,tqsId,&params,&processName,&processName,tqsHdl);
+
+NCP_RETURN_LABEL
+    return ncpStatus;
 }
 
 /*
