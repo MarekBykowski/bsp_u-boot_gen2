@@ -1596,11 +1596,13 @@ initialize_task_io(void)
 	debug("done\n");
 #endif
 
+#if 0
     debug("Configuring Uboot task io... and creating task hdl\n");
     NCP_CALL(ncp_ncav3_config_uboot(&ncpHdl));
     debug("done\n");
 
 	ncp_task_tqs_bind(ncpHdl,tqsId,&params,&processName,&processName,tqsHdl);
+#endif
 
 NCP_RETURN_LABEL
     return ncpStatus;
