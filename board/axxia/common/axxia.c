@@ -244,7 +244,7 @@ arch_early_init_r
 Called just after the heap has been initialized.
 */
 
-extern int do_read;
+extern int do_read_parameters;
 int
 arch_early_init_r(void)
 {
@@ -255,7 +255,9 @@ arch_early_init_r(void)
 	printf("Sysmem Size: %llu MB\n",
 	       (sysmem_size() / (1024ULL * 1024ULL)));
 	printf("Relocation Address: 0x%lx\n", gd->relocaddr);
-	do_read = 0;
+	printf("is parameters.c:do_read_parameters available? addr %p val %d\n",
+				&do_read_parameters, do_read_parameters);
+	do_read_parameters = 0;
 
 	return 0;
 }

@@ -276,7 +276,7 @@ static int initr_malloc(void)
 	
 	{
 		marek = (unsigned long*) malloc(sizeof(int));
-		printf("*addr %u at addr %lu\n", (unsigned)(*marek),(unsigned long) marek);
+		printf("mb: (*addr) %u at addr %08lx from within malloc\n", (unsigned)(*marek),(unsigned long) marek);
 	}
 	
 	return 0;
