@@ -46,6 +46,8 @@ ifdef CONFIG_AXXIA_SPL_DIAGNOSTICS
 obj-y += spl_diagnostics.o
 endif
 
+obj-y += xlat.o
+
 endif
 
 ################################################################################

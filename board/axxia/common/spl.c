@@ -816,6 +816,7 @@ jtag_jump_to_monitor(void)
 */
 
 #ifdef SYSCACHE_ONLY_MODE
+extern int axxia_xlat_init(u64* pgt);
 static __attribute__((noclone)) void display_mapping(unsigned long address);
 
 static void
@@ -1487,7 +1488,8 @@ board_init_f(ulong dummy)
 		
 		printf("pgt are at %p\n", (void*) pgt);
 
-		mmu_configure((u64*)pgt, DISABLE_DCACHE);
+		/*mmu_configure((u64*)pgt, DISABLE_DCACHE);*/
+		axxia_xlat_init((u64*)pgt);
 
 		display_mapping(0);
 
@@ -1500,13 +1502,13 @@ board_init_f(ulong dummy)
 
 		/* Enable dcache */
 		set_sctlr(get_sctlr() | CR_C);
-		isb();                                                           
 
 		display_mapping(0);
 																	 
 		/* TODO: Fine grain mmu mapping */
 		/*configure_mmu_el3(LSM, SZ_256K, 
 					0x0000008031000000, 0x000000803101ab3c);*/
+asm volatile("mb1: b mb1\n");
 		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
 		entry = (void (*)(void *, void *))0x0;
 		flush_dcache_range((unsigned long) LSM, (unsigned long) (LSM+SZ_256K));
