@@ -884,6 +884,7 @@ load_image(void)
 	}
 
 	spi_flash_read(flash, offset, sizeof(struct image_header), &header);
+	printf("mb: Uboot from offset %08x on flash\n", offset);
 	spl_parse_image_header(&header);
 
 	if (!image_check_magic(&header)) {
@@ -898,6 +899,7 @@ load_image(void)
 
 	offset += sizeof(struct image_header);
 	size = spl_image.size - sizeof(struct image_header);
+	printf("mb: Uboot size %08x\n", size);
 
 	while (SYSCACHE_SIZE > bytes_written) {
 		memset(buffer, 0, sizeof(buffer));
@@ -909,6 +911,9 @@ load_image(void)
 		}
 
 		ret = gpdma_xfer((void *)output, (void *)buffer, 256, 1);
+		if ( 0 == (output % 0x40000)) /* Every 256K*/
+			debug("mb: from flash at offset %08x: %08x... to %08lx\n", 
+						offset, buffer[0], output);
 		if (ret != 0) {
 			printf("xfer failed %d, %u\n", ret, bytes_written);
 			break;
@@ -1478,7 +1483,7 @@ board_init_f(ulong dummy)
 	{
 		void (*entry)(void *, void *);
 		extern unsigned long *_pgt_start;
-		unsigned int junk;
+		volatile unsigned int junk;
 		unsigned long *pgt = (unsigned long*) &_pgt_start, address = LSM;
 
 		if (0 != setup_security())
@@ -1496,11 +1501,11 @@ board_init_f(ulong dummy)
 			junk = readl(address);                                
 			junk = junk;                                                 
 			address += sizeof(unsigned int);                             
-		}                                                                
+		}        
+		asm volatile("dmb nsh");                                                         
 
 		/* Enable dcache */
 		set_sctlr(get_sctlr() | CR_C);
-		isb();                                                           
 
 		display_mapping(0);
 																	 

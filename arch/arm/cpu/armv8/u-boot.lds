@@ -21,6 +21,10 @@ SECTIONS
 		*(.__image_copy_start)
 		CPUDIR/start.o (.text*)
 		*(.text*)
+
+		. = ALIGN(8);
+		__monitor_parameters = .;
+		. += 256;
 	}
 
 	. = ALIGN(8);

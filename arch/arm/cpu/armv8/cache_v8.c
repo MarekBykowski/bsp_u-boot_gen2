@@ -96,9 +96,12 @@ void mmu_configure(u64 *addr, int flags)
 					MT_NORMAL, PMD_SECT_NON_SHARE);
 	}
 
-	start = LSM;
-	/* Minumum granule size is 2MB. Needs changing. */
-	end = LSM + 0x20000000; /*SZ_256K*/
+
+	/* Set atrribute memory non cachable to LSM.
+  	   Minumum granule size is 512MB. Needs changing. 
+	   LSM is in between the below start end */
+	start = 0x8020000000;
+	end = 0x8040000000;
 	for (j = start >> SECTION_SHIFT;
 		 j < end >> SECTION_SHIFT; j++) {
 		set_pgtable_section(page_table, j, j << SECTION_SHIFT,

@@ -42,7 +42,10 @@
 
 #include <os.h>
 #include <post.h>
+#include <spl.h>
+#include <spl.h>
 #include <spi.h>
+#include <spi_flash.h>
 #include <status_led.h>
 #include <trace.h>
 #include <watchdog.h>
@@ -764,7 +767,7 @@ __weak int arch_cpu_init_dm(void)
 extern int sysmem_init(void);
 int do_heap(void) 
 {
-	/* sysmem_size below needs malloc so servicing it here */
+	/* sysmem_size() from init_mem_axxia() uses malloc so that servicing it here */
 	mem_malloc_init(map_sysmem(0x300000/*malloc_start*/, TOTAL_MALLOC_LEN), TOTAL_MALLOC_LEN);
 	return 0;
 }
@@ -777,6 +780,8 @@ int init_mem_axxia(void)
 	(void)sysmem_size();
 	
 	if (0 != sysmem_init())
+		acp_failure(__FILE__, __FUNCTION__, __LINE__);
+
 	gd->bd->bi_dram[0].start = 0;
 	gd->bd->bi_dram[0].size = ((phys_size_t)1 << 30); 
 
@@ -790,13 +795,104 @@ int flush_all(void)
 	return 0;
 }
 
+typedef enum {
+	AXXIA_5600 = 0,
+	AXXIA_6700 = 1
+} axxia_target_t;
+
+typedef enum {
+	AXXIA_SIM = 0,
+	AXXIA_EMU = 1,
+	AXXIA_HW = 2
+} axxia_platform_t;
+
+typedef enum {
+	AXXIA_NONE = 0,
+	AXXIA_SYSCACHE_ONLY = 1
+} axxia_option_t;
+
+typedef struct axxia_configuration {
+	axxia_target_t target;
+	axxia_platform_t platform;
+	axxia_option_t option;
+	unsigned int per_clock_hz;
+	unsigned int baud_rate;
+	unsigned long entered_at;
+} axxia_configuration_t;
+
+extern void *__monitor_parameters;
+
 int switch_to_EL2_non_secure(void)
 {
-    writel(0, (MMAP_SCB + 0x42800));
 	//memcpy((void *)0x7ffc1000, (void *)0x8031001000, 0x10000);
 	//asm volatile ("ldr x10, =0x7ffc1000\nret x10");
 	//asm volatile ("mov x0, x30\nldr x10, =0x8031007834\nret x10");
-	armv8_switch_to_el2();
+	struct spi_flash *flash;
+	struct image_header header;
+	unsigned int offset;
+	unsigned int size;
+	
+	void (*entry)(void *, void *);
+	axxia_configuration_t *axxia_configuration;
+
+	flash = spi_flash_probe(CONFIG_SPL_SPI_BUS, CONFIG_SPL_SPI_CS,
+				CONFIG_SF_DEFAULT_SPEED,
+				CONFIG_SF_DEFAULT_MODE);
+
+	if (!flash) {
+		puts("SPI probe failed.\n");
+		hang();
+	}
+
+	offset = 0x300000; /* Secure Monitor was flashed at there */
+	spi_flash_read(flash, offset, sizeof(struct image_header), &header);
+
+	if (!image_check_magic(&header)) {
+		puts("\tBad Magic!\n");
+		hang();
+	}
+
+	offset += sizeof(struct image_header);
+	size = 0x40000 /*Secure Monitor size*/ - sizeof(struct image_header);
+
+	spi_flash_read(flash, offset, size, (void*) LSM+/*by John J.*/0x1000);
+
+	axxia_configuration = (axxia_configuration_t *)&__monitor_parameters;
+#if defined(CONFIG_AXXIA_56XX)
+	axxia_configuration->target = AXXIA_5600;
+	axxia_configuration->platform = AXXIA_HW;
+#elif defined(CONFIG_AXXIA_XLF)
+	axxia_configuration->target = AXXIA_6700;
+	axxia_configuration->platform = AXXIA_HW;
+#endif
+	axxia_configuration->option = AXXIA_NONE;
+
+	if (0 != acp_clock_get(clock_peripheral,
+			       &axxia_configuration->per_clock_hz))
+		acp_failure(__FILE__, __func__, __LINE__);
+
+
+	axxia_configuration->per_clock_hz *= 1000;
+	axxia_configuration->baud_rate = gd->baudrate;
+	entry = (void (*)(void *, void *))(LSM+/*by John J.*/0x1000);
+	cleanup_before_linux();
+	/* Inormatively pass the addr Uboot enteres the Secire Monitor with 
+ 	   and print it in the Secure Monitor */
+	asm volatile ("adr %0, .\n" : "=r" (axxia_configuration->entered_at));
+	asm volatile (
+		"str x18, [sp, #-8]!\n" /* Store global data to the stack */
+		"mov x22, sp\n"  /* Migrate SP */
+		"msr sp_el2, x22\n"
+		"mrs x22, vbar_el3\n" /* Migrate VBAR */
+		"msr vbar_el2, x22\n"
+	);
+	entry(NULL, axxia_configuration);
+	asm volatile("ldr x18, [sp], #8\n"); /*Restore global data from the stack */
+
+	/* We are now at EL2, non-secure state */
+	/* Override the RNI to output non-secure transations */
+    writel(0, (MMAP_SCB + 0x42800));
+
 	return 0;
 }
 int memmove_mb(void)
