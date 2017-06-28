@@ -790,8 +790,11 @@ int init_mem_axxia(void)
 
 int flush_all(void)
 {
-	flush_dcache_all();
-	invalidate_icache_all();
+	/*invalidate_icache_all();
+	flush_dcache_all();*/
+asm volatile("mb2: b mb2\n");
+	cleanup_before_linux();
+asm volatile("mb3: b mb3\n");
 	return 0;
 }
 

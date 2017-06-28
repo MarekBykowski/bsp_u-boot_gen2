@@ -108,6 +108,10 @@ goback:
 	 */
 
 	/* Processor specific initialization */
+
+#ifndef CONFIG_SPL_BUILD
+mb2: b mb2
+#endif
 	bl	lowlevel_init
 
 #ifdef CONFIG_ARMV8_MULTIENTRY

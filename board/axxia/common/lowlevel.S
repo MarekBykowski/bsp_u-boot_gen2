@@ -94,13 +94,11 @@ lowlevel_init:
 /*
  Don't do the MMU now. Use what SPL did.
 */
-#define SKIP_MMU 
+#define DO_MMU
 
-#ifdef SKIP_MMU
-#if defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_SPL_BUILD)
+#if defined(DO_MMU) && defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_SPL_BUILD)
 	mov x28, x30 /* Save LR */
 	bl __asm_do_mmu
-#endif
 #endif
 
 	/*
@@ -119,7 +117,7 @@ lowlevel_init:
 	mov	x0, #0
 	msr	OSLAR_EL1, x0
 
-#if defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_SPL_BUILD)
+#if defined(DO_MMU) && defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_SPL_BUILD)
 	mov x30, x28 /*Restore LR */
 #endif
 
