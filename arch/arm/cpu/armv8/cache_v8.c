@@ -8,6 +8,8 @@
 #include <common.h>
 #include <asm/system.h>
 #include <asm/armv8/mmu.h>
+#include <config.h>
+#define DEBUG
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -151,10 +153,11 @@ inline void flush_dcache_all(void)
 
 	__asm_flush_dcache_all();
 	ret = __asm_flush_l3_cache();
-	if (ret)
-		debug("flushing dcache returns 0x%x\n", ret);
-	else
-		debug("flushing dcache successfully.\n");
+	if (ret) {
+		printf("flushing dcache returns 0x%x\n", ret);
+		acp_failure(__FILE__, __FUNCTION__, __LINE__);
+	} else 
+		printf("flushing dcache successfully.\n");
 }
 
 /*

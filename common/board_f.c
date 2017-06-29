@@ -895,7 +895,8 @@ int switch_to_EL2_non_secure(void)
 
 	return 0;
 }
-int memmove_mb(void)
+int __weak 
+memmove_mb(void)
 {
 	/*   _pgt_end is in SPL linker script so need to give it by hand here.
 		extern unsigned long* _pgt_end; 
@@ -904,11 +905,11 @@ int memmove_mb(void)
 	*/
 	/*
 	  	Cache 1K of Uboot and copy to LSM
- 	*/
 	memmove((void*) 0x0000008031020000, (void*) 0, 1024);
 	
 	if ( 0 != memcmp((void*) 0x0000008031020000, (void*) 0, 1024) )
 		return 1;	
+ 	*/
 	return 0;
 }
 #endif
