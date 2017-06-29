@@ -790,8 +790,9 @@ int init_mem_axxia(void)
 
 int flush_all(void)
 {
-	flush_dcache_all();
-	invalidate_icache_all();
+	/*invalidate_icache_all();
+	flush_dcache_all();*/
+	cleanup_before_linux();
 	return 0;
 }
 

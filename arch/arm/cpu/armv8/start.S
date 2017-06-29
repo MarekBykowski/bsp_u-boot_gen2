@@ -126,6 +126,9 @@ master_cpu:
 	/* On the master CPU */
 #endif /* CONFIG_ARMV8_MULTIENTRY */
 
+#ifndef CONFIG_SPL_BUILD
+#mb1: b mb1              
+#endif                  
 	bl	_main
 
 /*-----------------------------------------------------------------------*/
