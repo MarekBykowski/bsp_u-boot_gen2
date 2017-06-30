@@ -860,7 +860,7 @@ load_image(void)
 	struct spi_flash *flash;
 	struct image_header header;
 	unsigned int bytes_written = 0;
-	/* 
+	/*
  	  GPDMA requires 16 byte alignment for a source address.
  	*/
 	unsigned int buffer[64] __attribute__ ((aligned(16)));
@@ -884,7 +884,6 @@ load_image(void)
 	}
 
 	spi_flash_read(flash, offset, sizeof(struct image_header), &header);
-	printf("mb: Uboot from offset %08x on flash\n", offset);
 	spl_parse_image_header(&header);
 
 	if (!image_check_magic(&header)) {
@@ -899,7 +898,6 @@ load_image(void)
 
 	offset += sizeof(struct image_header);
 	size = spl_image.size - sizeof(struct image_header);
-	printf("mb: Uboot size %08x\n", size);
 
 	while (SYSCACHE_SIZE > bytes_written) {
 		memset(buffer, 0, sizeof(buffer));
@@ -911,9 +909,6 @@ load_image(void)
 		}
 
 		ret = gpdma_xfer((void *)output, (void *)buffer, 256, 1);
-		if ( 0 == (output % 0x40000)) /* Every 256K*/
-			debug("mb: from flash at offset %08x: %08x... to %08lx\n", 
-						offset, buffer[0], output);
 		if (ret != 0) {
 			printf("xfer failed %d, %u\n", ret, bytes_written);
 			break;
@@ -922,7 +917,47 @@ load_image(void)
 		output += 256;
 		offset += 256;
 	}
+	return;
+}
 
+void
+load_image_mem(void)
+{
+	struct spi_flash *flash;
+	struct image_header header;
+	unsigned int offset = CONFIG_UBOOT_OFFSET;
+	unsigned int size;
+
+	flash = spi_flash_probe(CONFIG_SPL_SPI_BUS, CONFIG_SPL_SPI_CS,
+				CONFIG_SF_DEFAULT_SPEED,
+				CONFIG_SF_DEFAULT_MODE);
+
+	if (!flash) {
+		puts("SPI probe failed.\n");
+		hang();
+	}
+
+	spi_flash_read(flash, offset, sizeof(struct image_header), &header);
+	spl_parse_image_header(&header);
+
+	if (!image_check_magic(&header)) {
+		puts("\tBad Magic!\n");
+		hang();
+	}
+
+	if (!image_check_target_arch(&header)) {
+		puts("\tWrong Architecture!\n");
+		hang();
+	}
+
+	offset += sizeof(struct image_header);
+	size = spl_image.size - sizeof(struct image_header);
+
+	/* A read to address 0 is implemeted as a read to /dev/null
+	   So we need to split up and move first part */
+	spi_flash_read(flash, offset, 4, (void*)0x100);
+	*(uint32_t *)0 = *(uint32_t *)0x100;
+	spi_flash_read(flash, offset+4, size-4, (void*)4);
 	return;
 }
 
@@ -1483,29 +1518,44 @@ board_init_f(ulong dummy)
 	{
 		void (*entry)(void *, void *);
 		extern unsigned long *_pgt_start;
-		volatile unsigned int junk;
+		unsigned int junk;
 		unsigned long *pgt = (unsigned long*) &_pgt_start, address = LSM;
 
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
+
+#if 1
+	unsigned int buffer[64] __attribute__ ((aligned(16)));
+	unsigned long output = 0;
+	int ret = 0;
+	memset(buffer, 0, sizeof(buffer));
+	for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {
+		ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), 1);
+		if (ret != 0)
+			printf("gpdma_xfer failed %d\n", ret);
+	}
+#endif
 		load_image();
-		
+
 		printf("pgt are at %p\n", (void*) pgt);
 
 		mmu_configure((u64*)pgt, DISABLE_DCACHE);
 
 		display_mapping(0);
 
-		/* Walk page tables */
-		for (i = 0; i < SZ_256K; i+=sizeof(unsigned int)) {         
-			junk = readl(address);                                
-			junk = junk;                                                 
-			address += sizeof(unsigned int);                             
-		}        
-		asm volatile("dmb nsh");                                                         
+		address = 0x8001000000ULL; /*AXI_MMAP part 1*/
+		junk = readl(address);
+		junk = junk;
+		address = 0x8020000000ULL; /*AXI_MMAP part 2 incl. LSM */
+		junk = readl(address);
+		junk = junk;
+		address = 0x8080000000ULL; /*AXI_PERIPH*/
+		junk = readl(address);
+		junk = junk;
 
 		/* Enable dcache */
 		set_sctlr(get_sctlr() | CR_C);
+		isb();                                                           
 
 		display_mapping(0);
 																	 
@@ -1515,7 +1565,11 @@ board_init_f(ulong dummy)
 		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
 		entry = (void (*)(void *, void *))0x0;
 		flush_dcache_range((unsigned long) LSM, (unsigned long) (LSM+SZ_256K));
-
+#if 1
+		load_image_mem();
+#endif
+		invalidate_icache_all();
+		__asm_flush_dcache_all();
 		/* Jump to Uboot at address 0x0 */
 		(*entry)(NULL, NULL);
 
