@@ -1524,7 +1524,8 @@ board_init_f(ulong dummy)
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
 
-#if 1
+#if 0
+asm volatile("mb4: b mb4\n");
 	unsigned int buffer[64] __attribute__ ((aligned(16)));
 	unsigned long output = 0;
 	int ret = 0;
@@ -1534,6 +1535,7 @@ board_init_f(ulong dummy)
 		if (ret != 0)
 			printf("gpdma_xfer failed %d\n", ret);
 	}
+asm volatile("mb5: b mb5\n");
 #endif
 		load_image();
 
