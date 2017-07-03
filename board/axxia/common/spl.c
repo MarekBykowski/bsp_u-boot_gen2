@@ -817,8 +817,7 @@ jtag_jump_to_monitor(void)
 
 #ifdef SYSCACHE_ONLY_MODE
 static __attribute__((noclone)) void display_mapping(unsigned long address);
-
-static void
+void static
 display_mapping(unsigned long address)
 {
     unsigned long par_el1;
@@ -1524,8 +1523,6 @@ board_init_f(ulong dummy)
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
 
-#if 0
-asm volatile("mb4: b mb4\n");
 	unsigned int buffer[64] __attribute__ ((aligned(16)));
 	unsigned long output = 0;
 	int ret = 0;
@@ -1535,9 +1532,6 @@ asm volatile("mb4: b mb4\n");
 		if (ret != 0)
 			printf("gpdma_xfer failed %d\n", ret);
 	}
-asm volatile("mb5: b mb5\n");
-#endif
-		load_image();
 
 		printf("pgt are at %p\n", (void*) pgt);
 
