@@ -42,14 +42,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #include "ncp_ncap_reg_defines.h" /* eg. NCP_NCAP_CONFIG_INIT */
 #include "ncp_cmn_axi_reg_defines.h" /* eg. NCP_CMN_AXI_CFG_RING_ACK_TIMER_CNT */
 
-/* Marcin's port. Needs revisiting and cleanup */
-#include "ncp_task_pvt.h"
 
-ncp_hdl_t ncpHdl;
-ncp_uint32_t tqsId = 0;
-ncp_task_resource_name_t processName;
-ncp_task_tqs_hdl_t tqsHdl = NULL;
-ncp_task_tqs_usage_t params;
 
 /*==============================================================================
   ==============================================================================
@@ -1596,13 +1589,6 @@ initialize_task_io(void)
 	debug("done\n");
 #endif
 
-#if 0
-    debug("Configuring Uboot task io... and creating task hdl\n");
-    NCP_CALL(ncp_ncav3_config_uboot(&ncpHdl));
-    debug("done\n");
-
-	ncp_task_tqs_bind(ncpHdl,tqsId,&params,&processName,&processName,tqsHdl);
-#endif
 
 NCP_RETURN_LABEL
     return ncpStatus;
