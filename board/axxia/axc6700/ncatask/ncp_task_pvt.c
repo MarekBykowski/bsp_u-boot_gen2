@@ -3,6 +3,8 @@
  **    Copyright (c) 2001-2017, Intel Corporation.                        *
  **                                                                       *
  **************************************************************************/
+#include <compiler.h>
+#include <malloc.h>
 
 #include "uboot/ncp_sal_types_linux.h"
 #include "uboot/ncp_status.h"
@@ -2998,11 +3000,15 @@ ncp_st_t ncp_task_map_pools(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
         }                
      
         if (0 == ncpTaskPoolMapCnt[mapCntIdx])
-        {    
+        {   
+#if 0
+			LAPAJ todo
 			mmapResult = mmap((void *)pPool->poolVA, pPool->poolSize, (PROT_READ | PROT_WRITE), MAP_SHARED,
-                           (intptr_t)myDevHdl, (off_t) pPool->poolPA);
+                           (uintptr_t)myDevHdl, (off_t) pPool->poolPA);
             NCP_ASSERT((mmapResult == (void *)pPool->poolVA),
                     NCP_ST_TASK_MMAP_FAILED);
+#endif
+			mmapResult = (void *) pPool->poolPA;
 
         }
         pvtTqsHdl->mappedPools |= (1<<poolId);

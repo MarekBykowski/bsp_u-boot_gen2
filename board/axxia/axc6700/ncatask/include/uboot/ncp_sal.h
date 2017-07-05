@@ -190,7 +190,7 @@ typedef struct ncp_nvm_addr_s {
     ncp_uint32_t     cookie;
     void            *rootPtr;
     void            *userPtr[NCP_NVM_MAX_USER_POINTERS];
-    ncp_mutex_t      nvmLock;
+    //ncp_mutex_t      nvmLock;
     ncp_bool_t      nvmActive;
 } ncp_nvm_addr_t;
 

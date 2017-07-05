@@ -89,7 +89,7 @@ NCP_API void       ncp_hr_addtime_us(ncp_timespec_us_t *timespecStart_us, ncp_ti
 #define NCP_IRQ_TYPE_LEVEL_HIGH  IRQ_TYPE_LEVEL_HIGH
 #define NCP_IRQ_TYPE_EDGE_RISING IRQ_TYPE_EDGE_RISING
 
-
+#undef __KERNEL__
 #ifdef __KERNEL__
 
 #ifndef NCP_KERNEL
