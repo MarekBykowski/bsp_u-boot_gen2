@@ -4037,14 +4037,14 @@ typedef enum
  * Prints the string equivalent of a status code. If input argument "s" is not
  * NULL, this function prepends the string "s" to the status code.
  */
-NCP_API void ncp_status_print(
+void ncp_status_print(
     const char *s,              /*! Pre-pend message string */
     ncp_st_t    st);            /*! Status code */
 
 /*!
  * Returns the string equivalent of a specific status code.
  */
-NCP_API const char *ncp_status_get(
+const char *ncp_status_get(
     ncp_st_t    st);            /*! Status code */
 #endif /* #ifndef SWIG */
 

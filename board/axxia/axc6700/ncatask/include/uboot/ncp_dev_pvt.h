@@ -12,9 +12,7 @@
 
 #if defined ( NCP_KERNEL ) 
 
-#include <linux/version.h>
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 2, 9)
 extern void acp_spin_lock_init(void *);
 extern void acp_spin_lock(void *);
 extern void acp_spin_unlock(void *);
@@ -22,7 +20,6 @@ extern void acp_spin_lock_bh(void *);
 extern void acp_spin_unlock_bh(void *);
 extern void acp_spin_lock_irqsave(void *, unsigned long);
 extern void acp_spin_unlock_irqrestore(void *, unsigned long);
-#endif
 
 #endif
 
@@ -550,6 +547,16 @@ typedef enum irqreturn irqreturn_t;
 #ifndef NO_IRQ
 #define NO_IRQ 0 /* Later versions of linux removed this constant and treat 0 as no irq */
 #endif
+
+
+enum irqreturn {
+    IRQ_NONE        = (0 << 0),
+    IRQ_HANDLED     = (1 << 0),
+    IRQ_WAKE_THREAD     = (1 << 1),
+};
+typedef enum irqreturn irqreturn_t;
+
+
 
 /* ==============================================
  * End - For new ISR specific-wakeup support

@@ -50,6 +50,7 @@ extern "C" {
 
 #define NCP_SLEEP_POLL_INTERVAL 0
 
+typedef ncp_waitq_t ncp_task_isr_wait_primitive_t;
 
 /* RWXXX #include "ncp_modules.h" */
 #if (1 == USE_EIOA)
