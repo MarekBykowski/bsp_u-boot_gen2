@@ -38,7 +38,7 @@ Cambridge, MA 02139, USA.
 #endif
 
 #if	defined(_LIBC) || defined(STDC_HEADERS) || defined(USG) || (defined(__STDC__) && __STDC__) 
-#include <string.h>
+#include <linux/string.h>
 #ifdef __C166__
 #define memset xmemset
 #define memcpy xmemcpy
@@ -54,13 +54,13 @@ Cambridge, MA 02139, USA.
 #endif
 #endif
 
-#if	defined (__GNU_LIBRARY__) || (defined (__STDC__) && __STDC__)
-#include <limits.h>
-#else
+//#if	defined (__GNU_LIBRARY__) || (defined (__STDC__) && __STDC__)
+//#include <limits.h>
+//#else
 #ifndef CHAR_BIT
 #define	CHAR_BIT	8
 #endif
-#endif
+//#endif
 
 #ifdef	HAVE_UNISTD_H
 #include <unistd.h>
