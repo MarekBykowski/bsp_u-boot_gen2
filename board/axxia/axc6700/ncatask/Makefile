@@ -24,27 +24,11 @@
 ifndef CONFIG_SPL_BUILD
 
 
-include $(srctree)/board/axxia/axc6700/ncatask/Makefile
 
 ################################################################################
 ## Normal Build
-
+ccflags-y += -I$(srctree)/board/axxia/axc6700/ncatask/include -I$(srctree)/board/axxia/axc6700/ncatask/include/uboot/
 #ccflags-y += -Wno-unused-but-set-variable -Wno-unused-variable -Wno-maybe-uninitialized -Wno-error=int-conversion
-obj-y += qos.o mdio.o eioa.o
-else
-
-################################################################################
-## SPL Build
-
-obj-y += secure.o ncp_l3lock_region_init.o
-
-ifdef CONFIG_AXXIA_EMU
-obj-y += sysmem_emulation.o
+obj-y += ncatask/ncp.o ncatask/ncp_vpm.o
 endif
 
-endif
-
-################################################################################
-## All Builds
-
-obj-y += failure.o version.o spi.o
