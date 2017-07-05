@@ -16,6 +16,24 @@
   0b11 - FULL
 */
 
+ENTRY(__diable_ecc_parity_l3)
+	mov x9, x30
+	mov	x10, 0x20
+1:	mov	x11, 0x10000
+	mul	x11, x10, x11
+	ldr	x12, =(DICKENS + 0x0) /*hnf_cfg_ctrl*/
+	add	x11, x11, x12
+	ldr x13, [x11]
+	orr x13, x13, #0x3f<<12 /*clear bits 12-18*/
+	str x13, [x11] 
+	add	w10, w10, 1
+	cmp	w10, 0x27
+	ble	1b
+
+	mov x30, x9
+	ret
+ENDPROC(__diable_ecc_parity_l3)
+
 set_outer_cache_state:
 #ifndef CONFIG_TARGET_SIMULATION
 	/* Make sure the give state is valid (0, 1, 2, or 3). */

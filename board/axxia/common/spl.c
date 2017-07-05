@@ -1523,16 +1523,23 @@ board_init_f(ulong dummy)
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
 
-	unsigned int buffer[64] __attribute__ ((aligned(16)));
-	unsigned long output = 0;
-	int ret = 0;
-	memset(buffer, 0, sizeof(buffer));
-	for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {
-		ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), 1);
-		if (ret != 0)
-			printf("gpdma_xfer failed %d\n", ret);
-	}
+#if 1
+		unsigned int buffer[64] __attribute__ ((aligned(16)));
+		unsigned long output = 0;
+		int ret = 0;
+		memset(buffer, 0, sizeof(buffer));
+		for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {
+			ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), 1);
+			if (ret != 0)
+				printf("gpdma_xfer failed %d\n", ret);
+		}
+#endif
 
+#if 0
+		if (__diable_ecc_parity_l3() != 0)
+			printf("disabling ECC and parity for L3 failed\n");
+asm volatile("mb7: b mb7\n");
+#endif
 		printf("pgt are at %p\n", (void*) pgt);
 
 		mmu_configure((u64*)pgt, DISABLE_DCACHE);
