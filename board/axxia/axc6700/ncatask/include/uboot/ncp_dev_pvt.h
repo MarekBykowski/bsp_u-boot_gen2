@@ -1230,7 +1230,6 @@ ncp_dev_event_dispatch(ncp_dev_hdl_t devHdl, ncp_dev_event_type_t type,
  * Per-NCP instance device structure.
  *
  */
-
 struct ncp_dev_s
 {
     ncp_uint32_t             tag;           /* Structure validation tag */
@@ -1298,8 +1297,8 @@ struct ncp_dev_s
     spinlock_t               busLock;   /* lock for use by bus adaptor, if needed */
     spinlock_t               hssTimerLock;
 
-    ncp_mutex_t                dmaIoSem;
-    ncp_mutex_t                i2cLock;
+//    ncp_mutex_t                dmaIoSem;
+//    ncp_mutex_t                i2cLock;
 
     /* bottom half status bits */
     ncp_uint16_t             numQpmEventQueues;
@@ -1313,7 +1312,7 @@ struct ncp_dev_s
     ncp_uint64_t             refStrobeTs;  /* Captured ref strobe timestamp */
     ncp_uint64_t             cpuIsrSeq[16];  /* Captured CPU Timer timestamp */
 #if defined(NCP_LINUX) && defined(NCP_KERNEL)
-    struct timer_list        hssTimer;
+//    struct timer_list        hssTimer;
 #else
     ncp_uint8_t hssTimer[0x20]; /* 0x20 ?? */
 #endif /* NCP_LINUX */

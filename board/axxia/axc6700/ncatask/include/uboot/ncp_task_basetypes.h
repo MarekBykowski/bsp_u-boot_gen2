@@ -39,15 +39,15 @@
 
 #define NCP_API extern
 
-#ifdef __KERNEL__
+//#ifdef __KERNEL__
 
-#define NCP_EXPORT_SYMBOL(sym) EXPORT_SYMBOL(sym)
+//#define NCP_EXPORT_SYMBOL(sym) EXPORT_SYMBOL(sym)
 
-#else
+//#else
 
 #define NCP_EXPORT_SYMBOL(sym);
 
-#endif
+//#endif
 
 /*
  * Basic memory types

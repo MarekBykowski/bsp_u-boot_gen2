@@ -7,7 +7,7 @@
 
 #ifndef _NCP_VPM_PVT_H_
 #define _NCP_VPM_PVT_H_
-
+#include "uboot/ncp_cow.h"
 #include "uboot/ncp_dev_pvt.h"
 #include "uboot/ncp_vpm_ext.h"
 
