@@ -181,6 +181,9 @@ NCP_API ncp_st_t ncp_mme_destroy(ncp_t *ncp);
     @param iFormatRev The revision number for the MME CAT format
     @param oFile The output file
 */
+
+typedef int FILE;
+
 NCP_API ncp_st_t ncp_mme_cat_dump_info(ncp_dev_hdl_t devHdl,
                                ncp_mme_cat_save_t iSelect,
                                ncp_uint32_t iNumEntries,

@@ -4,6 +4,7 @@
  **                                                                       *
  **************************************************************************/
 
+#include <malloc.h>
 #include "uboot/ncp_sal_types_linux.h"
 #include "uboot/ncp_status.h"
 #include "uboot/axxia.h"
@@ -753,7 +754,7 @@ ncp_task_tqs_bind(
      * i.e. that app is not restarting and TBR is ON.
      */
 /*TODO*/
-    pvtTqsHdl = malloc(sizeof(ncp_task_pvt_tqsHdl_data_t));
+    pvtTqsHdl = (ncp_task_pvt_tqsHdl_data_t *) malloc(sizeof(ncp_task_pvt_tqsHdl_data_t));
 	memset(pvtTqsHdl,0,sizeof(ncp_task_pvt_tqsHdl_data_t));
 
     NCP_NCA_INC_CRITICAL_SECTION(pvtTqsHdl, critSecFlag);

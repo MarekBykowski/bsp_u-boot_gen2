@@ -4,23 +4,10 @@
  **                                                                       *
  **************************************************************************/
 
-#include <stdio.h>
-#include <arpa/inet.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <ctype.h>
-#ifdef NCP_CURSES
-    #include <ncurses.h>
-#else
-    #include <sys/ioctl.h>
-#endif
-#include <sys/wait.h>
-
+#include <linux/types.h>
+#include <linux/ctype.h>
+#include <linux/byteorder/generic.h>
+#include <linux/byteorder/little_endian.h>
 
 #if (defined NCP_SAL_HOSTMEM_NVM) && (defined NCP_SAL_SHM_NVM)
 #error "Both NCP_SAL_HOSTMEM_NVM and NCP_SAL_SHM_NVM are defined"

@@ -3,7 +3,7 @@
  **    Copyright (c) 2001-2015, Intel Corporation.              *
  **                                                                       *
  **************************************************************************/
-
+#include <malloc.h>
 #include "main.h"
 #include "uboot/ncp_task_pvt.h"
 #include "uboot/ncp_dev_pvt.h"
@@ -92,8 +92,8 @@ ncp_ncav3_tqs_control_t peek_tqs_array(int offset)
 /* end for GDB debugging */
 /*************************/
 
-
-
+#if 0
+uboot - no files
 static ncp_st_t
 status_code(void)
 {
@@ -119,7 +119,7 @@ status_code(void)
 
     return NCP_ST_DEV_UNMAPPED_ERROR;
 }
-
+#endif
 
 static ncp_st_t
 ncav3_map_domain_memory(ncp_t *ncp, ncp_ncav3_hdl_t *nca, ncp_dev_hdl_t dev)
@@ -158,6 +158,8 @@ dev_open(
     ncp_uint32_t flags,             /* IN: Open flags (not used; set to zero) */
     ncp_dev_hdl_t *devHdl)          /* OUT: Return location for NCP handle */
 {
+#if 0
+	no files in uboot
     int  fd;
     char devName[MAX_DEV_NAME_LEN] = {'\0'};
 
@@ -170,7 +172,7 @@ dev_open(
     }
 
     *devHdl = (void *)((intptr_t)fd);
-
+#endif
     return NCP_ST_SUCCESS;
 }
 
@@ -577,6 +579,7 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
 	pNcpTaskSwState->currPidArrayEntries = 10;
 	pNcpTaskSwState->pidArray = pidArray;
 
+	devHdl = 0;
     dev_open(0, 0, &devHdl);
     myDevHdl = devHdl;
     ncp_dev_hdls[0] = devHdl;
