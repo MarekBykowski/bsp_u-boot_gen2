@@ -8,16 +8,10 @@
 #ifndef __NCP_DEV_LINUX_H__
 #define __NCP_DEV_LINUX_H__
 
-#ifndef LINUX_VERSION_CODE
-#  include <linux/version.h>
-#endif
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <sys/ioctl.h>
 
 #ifdef NCP_DEV_PCI
 #include "ncp_bus_pci.h"

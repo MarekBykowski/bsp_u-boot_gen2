@@ -27,8 +27,7 @@ ifndef CONFIG_SPL_BUILD
 
 ################################################################################
 ## Normal Build
-ccflags-y += -I$(srctree)/board/axxia/axc6700/ncatask/include -I$(srctree)/board/axxia/axc6700/ncatask/include/uboot/
-#ccflags-y += -Wno-unused-but-set-variable -Wno-unused-variable -Wno-maybe-uninitialized -Wno-error=int-conversion
-obj-y += ncatask/ncp.o
+ccflags-y +=  -Wno-unused-but-set-variable -Wno-unused-variable -I$(srctree)/board/axxia/axc6700/ncatask/include -I$(srctree)/board/axxia/axc6700/ncatask/include/uboot/
+obj-y += ncatask/ncp.o ncatask/ncp_status.o
 endif
 
