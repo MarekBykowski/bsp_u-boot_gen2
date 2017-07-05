@@ -1430,6 +1430,9 @@ typedef enum {
 	 */
 	NCP_VPM_INVALID_TEMPLATE_ID_BUFFER             = 2819, /*!< */
 
+
+	NCP_VPM_INVALID_VP_NAME_LEN                 = 2820, /*!< */
+
 	/* I2C codes */
 	NCP_ST_I2C_INVALID_HANDLE                   = 2901, /*!< */
 	NCP_ST_I2C_INVALID_ARGUMENT                 = 2902, /*!< */

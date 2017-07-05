@@ -104,7 +104,8 @@ NCP_API void       ncp_hr_addtime_us(ncp_timespec_us_t *timespecStart_us, ncp_ti
 
 #ifdef __KERNEL__
 
-#define NCP_EXPORT_SYMBOL(sym) EXPORT_SYMBOL(sym)
+#define NCP_EXPORT_SYMBOL(sym);
+//#define NCP_EXPORT_SYMBOL(sym) EXPORT_SYMBOL(sym)
 
 
 #define NCP_TASK_ISR_EVENT_WAIT_TIMEOUT_VAL (HZ)
