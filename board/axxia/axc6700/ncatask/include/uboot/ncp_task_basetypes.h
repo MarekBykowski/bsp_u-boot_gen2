@@ -27,9 +27,12 @@
 */
 
 /* RWXXX */
-#include <unistd.h>
+//#include <unistd.h>
 
 /* #include "uboot/axxia.h" */
+
+
+#include <ncp_sal_types_linux.h>
 
 #define debug_task(fmt, args...) printf("[%s:%s()]:%i: " fmt "\n",__FILE__,__func__ , __LINE__, ##args)
 
@@ -417,9 +420,10 @@ ncp_return:
 /* 	if (_len) {} \ */
 /* 	NCP_MEM_UNMAP((((ncp_dev_t *)_dev)->num), _addr) */
 
+/* LAPAJ
 #define NCP_MEM_MAP(...) \
 	(void *) 0;
-
+*/
 
 
 /* #define NCP_TASK_MEM_MMAP(_dev, _startVA, _size, _physAddr) \ */

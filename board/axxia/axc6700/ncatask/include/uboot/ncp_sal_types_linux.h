@@ -18,9 +18,9 @@
 
 #ifdef __KERNEL__
 
-#include <linux/version.h>
-#include <linux/types.h>
-#include <linux/wait.h>
+//#include <linux/version.h>
+//#include <linux/types.h>
+//#include <linux/wait.h>
 
 /* ========== BEGIN: Addional feature control ============ */
 
@@ -49,16 +49,25 @@
 /* ========== END: Addional feature control ============ */
 
 
-    typedef __s8   ncp_int8_t;
-    typedef __u8   ncp_uint8_t;
-    typedef __s16  ncp_int16_t;
-    typedef __u16  ncp_uint16_t;
-    typedef __s32  ncp_int32_t;
-    typedef __u32  ncp_uint32_t;
-    typedef __s64  ncp_int64_t;
-    typedef __u64  ncp_uint64_t;
-    typedef __u8   ncp_bool_t;
+typedef long long               ncp_int64_t;
+typedef unsigned long long      ncp_uint64_t;
+typedef unsigned                ncp_uint32_t;
+typedef long                    ncp_int32_t;
+typedef unsigned short          ncp_uint16_t;
+typedef unsigned char           ncp_uint8_t;
+typedef unsigned char           ncp_bool_t;
 
+/*
+   typedef __s8   ncp_int8_t;
+   typedef __u8   ncp_uint8_t;
+   typedef __s16  ncp_int16_t;
+   typedef __u16  ncp_uint16_t;
+   typedef __s32  ncp_int32_t;
+   typedef __u32  ncp_uint32_t;
+   typedef __s64  ncp_int64_t;
+   typedef __u64  ncp_uint64_t;
+   typedef __u8   ncp_bool_t;
+*/
     /* Some older BSPs don't define uintptr_t in linux/types.h */
     #ifdef __LP64__
     typedef ncp_uint64_t ncp_uintptr_t;
@@ -66,8 +75,28 @@
     typedef ncp_uint32_t ncp_uintptr_t;
     #endif
 
-    typedef size_t  ncp_size_t;
-    typedef ssize_t ncp_ssize_t;
+#ifdef __GNUC__
+	typedef __SIZE_TYPE__       __kernel_size_t;
+#else
+	typedef unsigned int        __kernel_size_t;
+#endif
+typedef long         __kernel_ssize_t;
+
+
+// LAPAJ BEGIN
+#ifndef _SIZE_T
+#define _SIZE_T
+	typedef __kernel_size_t     size_t;
+#endif
+#ifndef _SSIZE_T
+#define _SSIZE_T
+typedef __kernel_ssize_t    ssize_t;
+#endif
+
+typedef size_t  ncp_size_t;
+typedef ssize_t ncp_ssize_t;
+typedef int wait_queue_head_t;
+// LAPAJ END
 
 #ifdef NCP_USE_SWAIT
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)

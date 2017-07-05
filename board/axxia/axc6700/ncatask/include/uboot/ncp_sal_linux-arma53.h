@@ -13,8 +13,8 @@
 
 #ifdef __KERNEL__
 
-#include <linux/semaphore.h>
-#include <linux/timer.h>
+//#include <linux/semaphore.h>
+//#include <linux/timer.h>
 #include <linux/math64.h>
 
 #endif
