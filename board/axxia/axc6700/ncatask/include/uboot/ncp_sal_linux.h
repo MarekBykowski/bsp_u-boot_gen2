@@ -14,29 +14,15 @@
 
 #ifdef __KERNEL__
 
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/spinlock.h>
-#include <linux/interrupt.h>
-#include <linux/irq.h>
-#include <linux/sched.h>
-#include <linux/version.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 14, 0)
-#include <linux/semaphore.h>
-#endif
+//#include <linux/module.h>
+//#include <linux/slab.h>
+//#include <linux/spinlock.h>
+//#include <linux/interrupt.h>
+//#include <linux/irq.h>
+//#include <linux/sched.h>
+//#include <linux/version.h>
 
-#if defined(NCP_USE_SWAIT)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
-	/*
-	  swait.h is available without the Preempt-RT patch as of 4.6.
-	*/
-#include <linux/swait.h>
-#else
-#include <linux/wait-simple.h>
-#endif
-#endif /* NCP_USE_SWAIT */
 
-#include <linux/version.h>
 
 #ifdef NCP_DEV_PLB
 #include <asm/dcr.h>
@@ -64,18 +50,6 @@ extern "C" {
 
 #define NCP_SLEEP_POLL_INTERVAL 0
 
-#if defined(NCP_KERNEL) && defined(NCP_USE_SWAIT)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
-	/*
-	  swait.h is available without the Preempt-RT patch as of 4.6.
-	*/
-  typedef struct swait_queue_head  ncp_task_isr_wait_primitive_t;
-#else
-typedef struct swait_head  ncp_task_isr_wait_primitive_t;
-#endif
-#else
-typedef ncp_waitq_t ncp_task_isr_wait_primitive_t;
-#endif
 
 /* RWXXX #include "ncp_modules.h" */
 #if (1 == USE_EIOA)
@@ -142,19 +116,11 @@ NCP_API void       ncp_hr_addtime_us(ncp_timespec_us_t *timespecStart_us, ncp_ti
 /* Use simple wait if preempt-RT linux */    
 #ifdef NCP_USE_SWAIT /*  ======================================== */
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
 #define NCP_WAITQ_ALLOC(_pWaitQ) \
     do { \
         *(_pWaitQ) = ncp_malloc(sizeof(struct swait_queue_head)); \
         init_swait_queue_head((struct swait_queue_head *)*(_pWaitQ)); \
     } while (0)
-#else
-#define NCP_WAITQ_ALLOC(_pWaitQ) \
-    do { \
-        *(_pWaitQ) = ncp_malloc(sizeof(struct swait_head)); \
-        init_swait_head((struct swait_head *)*(_pWaitQ)); \
-    } while (0)
-#endif
 
 #define NCP_WAITQ_FREE(_pWaitQ) \
     do { \
@@ -169,13 +135,8 @@ NCP_API void       ncp_hr_addtime_us(ncp_timespec_us_t *timespecStart_us, ncp_ti
 #define NCP_WAITQ_WAIT_TIMEOUT(_pWaitQ, _cond, timeout)       \
      (_pWaitQ ? swait_event_interruptible_timeout((*_pWaitQ), (_cond), timeout) : -1)
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
 #define NCP_WAITQ_WAKEUP(_pWaitQ) \
     (_pWaitQ ? swake_up_all((_pWaitQ)) : -1)
-#else
-#define NCP_WAITQ_WAKEUP(_pWaitQ) \
-    (_pWaitQ ? swait_wake_all((_pWaitQ)) : -1)
-#endif
     
 #else /* NCP_USE_SWAIT ======================================== */
 /* use traditional waitq */
@@ -362,12 +323,10 @@ ncp_st_t ncp_daemonize_self(void);
 #define kmemleak_not_leak(p)
 
 #endif /* #ifdef __KERNEL__ */
-
-#ifndef NCP_KERNEL
+// LAPAJ
 typedef unsigned long  spinlock_t ;
 typedef unsigned long  raw_spinlock_t ;
-#endif
-
+// LAPAJ
 typedef struct {
     raw_spinlock_t raw;
     spinlock_t     cooked;

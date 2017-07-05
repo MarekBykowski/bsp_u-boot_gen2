@@ -19,8 +19,7 @@
  ** inducement, estoppel or otherwise. Any license under such intellectual 
  ** property rights must be express and approved by Intel in writing.
  *************************************************************************/
-
-#include <stdio.h>
+#include <linux/string.h>
 
 #include "uboot/ncp_sal_types_linux.h"
 #include "uboot/ncp_status.h"
@@ -90,13 +89,13 @@ NCP_RETURN_LABEL
 void
 ncp_hw_not_yet(const char *s)
 {
-    printf("no hw mod for: %s\n",s);
+    //printf("no hw mod for: %s\n",s);
 }
 
 void
 ncp_stub_not_yet(const char *s)
 {
-    printf("no api or hw mod for %s\n",s);
+    //printf("no api or hw mod for %s\n",s);
 }
 
 

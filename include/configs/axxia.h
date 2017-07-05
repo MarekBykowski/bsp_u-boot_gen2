@@ -75,6 +75,8 @@ typedef unsigned char           ncp_bool_t;
 typedef void *                  ncp_dev_hdl_t;
 typedef unsigned                ncp_region_id_t;
 
+#ifndef NCP_STATUS_H
+#define NCP_STATUS_H
 typedef enum {
 	/* Generic Status Codes */
 	NCP_ST_SUCCESS = 0,                /*!< Operation was successful */
@@ -3564,6 +3566,7 @@ typedef enum {
 	/* MUST BE LAST. DO NOT REMOVE! */
 	NCP_ST_LAST_STATUS_CODE                      = 65535
 } ncp_st_t;
+#endif
 
 /*
  * enumerated type for the four 'standard' topologies

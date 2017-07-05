@@ -44,7 +44,7 @@ typedef struct ncp_s
 {
     ncp_uint32_t        cookie;
     ncp_uint32_t        id;
-    ncp_mutex_t         lock; 
+    //ncp_mutex_t         lock; 
     char                chipName[NCP_CFG_MAX_CHIP_NAME_LEN];
     ncp_debug_mode_t    debug_mode;
 
