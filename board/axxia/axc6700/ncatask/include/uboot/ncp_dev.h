@@ -1194,6 +1194,8 @@ NCP_API ncp_st_t ncp_dev_trace_level_set(
     ncp_dev_hdl_t devHdl,
     ncp_uint32_t traceLevel);
 
+#if 0 
+this is implemented
 /*!
  * @fn ncp_st_t ncp_dev_reset( ncp_dev_hdl_t devHdl)
  * @brief Performs a reset of the hardware and software of the ACP device
@@ -1204,6 +1206,9 @@ NCP_API ncp_st_t ncp_dev_trace_level_set(
 
 NCP_API ncp_st_t ncp_dev_reset(
     ncp_dev_hdl_t devHdl);
+
+#endif
+
 
 /*!
  * @fn ncp_st_t ncp_dev_num_get( ncp_dev_hdl_t devHdl, ncp_uint32_t *devNum)

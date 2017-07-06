@@ -268,10 +268,10 @@ ncp_return:
 
 /* #define NCP_MSG(type, ...) printf(__VA_ARGS__) */
 #define NCP_LOG NCP_MSG
-/* #define NCP_MSG_NONE  0 */
-/* #define NCP_MSG_INFO  1 */
-/* #define NCP_MSG_ERROR 2 */
-/* #define NCP_MSG_DEBUG 3 */
+//#define NCP_MSG_NONE  0
+//#define NCP_MSG_INFO  1
+//#define NCP_MSG_ERROR 2
+//#define NCP_MSG_DEBUG 3
 
 #define NCP_TASK_REGISTER_GROUP_INTERRUPTS(...)
 
