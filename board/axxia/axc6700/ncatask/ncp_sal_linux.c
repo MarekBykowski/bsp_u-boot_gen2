@@ -3,7 +3,7 @@
  **    Copyright (c) 2001-2015, Intel Corporation.              *
  **                                                                       *
  **************************************************************************/
-
+#include <common.h>
 #include <linux/types.h>
 #include <linux/ctype.h>
 #include <linux/byteorder/generic.h>
@@ -19,7 +19,7 @@
  * _POSIX_C_SOURCE required to expose the declaration of ftruncate() was 200809L 
  * instead of 200112L. This has been fixed in later glibc versions.
  */
-extern int ftruncate(int fd, __off_t length);
+// LAPAJ extern int ftruncate(int fd, __off_t length);
 #endif
 
 #include "uboot/ncp_sal_types_linux.h"
@@ -79,6 +79,8 @@ char *
 ncp_nvm_mmap(void)
 {
     char *pnvm_base         = NULL;
+#if 0
+	LAPAJ
     int         fd          = -1;
 #if (defined NCP_SAL_HOSTMEM_NVM) || (defined NCP_SAL_SHM_NVM)
     int      devfd          = -1;
@@ -235,6 +237,7 @@ ncp_nvm_mmap(void)
     close(devfd);
 #endif
 
+#endif
     return pnvm_base;
 }
 
@@ -815,6 +818,8 @@ ncp_hr_addtime_us(ncp_timespec_us_t *timespecStart_us, ncp_timespec_us_t *timesp
 void 
 ncp_hr_gettime_us(ncp_timespec_us_t *timespec_us)
 {
+#if 0
+	LAPAJ
 #ifdef NCP_PLATFORM_HAS_CLOCK_MONOTONIC    
     struct timespec      hr_timeval;
     clock_gettime(CLOCK_MONOTONIC, &hr_timeval);
@@ -830,12 +835,14 @@ ncp_hr_gettime_us(ncp_timespec_us_t *timespec_us)
         "timespec_us=%p tv_sec=%ld tv_usec=%ld\n", timespec_us,
         timespec_us ? timespec_us->tv_sec : 0,
         timespec_us ? timespec_us->tv_usec : 0);
+#endif
 }
  
 
 void
 ncp_gettime(ncp_timespec_t *timespecval)
 {
+#if 0
     struct timeval      timevalval;
     NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_gettime_entry, NCP_MSG_ENTRY, 
         "timespecval=%p\n", timespecval);
@@ -846,6 +853,7 @@ ncp_gettime(ncp_timespec_t *timespecval)
         "timespecval: tv_sec=%ld tv_nsec=%ld\n", 
         timespecval ? timespecval->tv_sec : 0,
         timespecval ? timespecval->tv_nsec : 0);
+#endif
 }
 
 /*
@@ -887,7 +895,8 @@ ncp_gettime_elapsed(
 
 ncp_st_t ncp_screen_startup(int *lines, int *cols)
 {
-    NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_screen_startup_entry, NCP_MSG_ENTRY, 
+#if 0 
+	NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_screen_startup_entry, NCP_MSG_ENTRY, 
         "lines=%p cols=%p\n", lines, cols);
 #ifdef NCP_CURSES
     initscr();
@@ -916,7 +925,8 @@ ncp_st_t ncp_screen_startup(int *lines, int *cols)
         "lines=%d cols=%d\n", 
         lines ? *lines : 0,
         cols ? *cols :0);
-    return NCP_ST_SUCCESS;
+#endif
+	return NCP_ST_SUCCESS;
 }
 
 
@@ -935,6 +945,7 @@ ncp_st_t
 ncp_mutex_init(ncp_mutex_t *pMutex, ncp_int32_t shared)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
 
     NCP_ASSERT((pthread_mutexattr_init(&pMutex->mutexAttr)) == 0, 
                NCP_ST_MUTEX_ATTR_INIT_ERROR);
@@ -960,7 +971,7 @@ ncp_mutex_init(ncp_mutex_t *pMutex, ncp_int32_t shared)
 
     NCP_ASSERT((pthread_mutex_init(&pMutex->mutex, &pMutex->mutexAttr)) == 0,
                NCP_ST_MUTEX_INIT_ERROR);
-
+#endif
 NCP_RETURN_LABEL
     return ncpStatus;
 }
@@ -1069,8 +1080,9 @@ NCP_RETURN_LABEL
 ncp_st_t
 ncp_sem_init(ncp_sem_t *sem, ncp_int32_t shared, ncp_uint32_t value)
 {
-    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
 
+    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_sem_init_entry, NCP_MSG_ENTRY, 
         "sem=%p shared=%d value=%d\n", sem, shared, value);
     NCP_ASSERT((pthread_mutexattr_init(&sem->mutexAttr)) == 0, 
@@ -1096,7 +1108,8 @@ ncp_sem_init(ncp_sem_t *sem, ncp_int32_t shared, ncp_uint32_t value)
 NCP_RETURN_LABEL
     NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_sem_init_exit, NCP_MSG_EXIT, 
         "ncpStatus=%d\n", ncpStatus);
-    return ncpStatus;
+#endif
+return ncpStatus;
 }
 
 ncp_st_t
@@ -1148,7 +1161,7 @@ ncp_st_t
 ncp_sem_trywait(ncp_sem_t *sem)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0 
     int rv = pthread_mutex_trylock(&sem->mutex);
     NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_sem_trywait_entry, NCP_MSG_ENTRY, 
         "sem=%p\n", sem);
@@ -1164,6 +1177,7 @@ ncp_sem_trywait(ncp_sem_t *sem)
 NCP_RETURN_LABEL
     NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_sem_trywait_exit, NCP_MSG_EXIT, 
         "ncpStatus=%d\n", ncpStatus);
+#endif
     return ncpStatus;
 }
 
@@ -1526,6 +1540,8 @@ struct ncp_isr_lock_fns ncp_isr_lock_cooked = {
 };
 
 
+#if 0
+LAPAJ
 #ifndef _XOPEN_SOURCE
 #ifndef __KERNEL__
 #ifdef __cplusplus
@@ -1535,6 +1551,7 @@ struct ncp_isr_lock_fns ncp_isr_lock_cooked = {
 #endif /* #ifdef __cplusplus */
 #endif /* #ifndef __KERNEL__ */
 #endif /* #ifndef _XOPEN_SOURCE */
+#endif
 
 /*
  * ncp_sys_usleep()
@@ -1566,10 +1583,10 @@ ncp_sys_usleep(unsigned long usec)
    }
     
 #else
-   (void)usleep(usec);       /* deprecated in POSIX 2008 */
+   (void)udelay(usec);       /* deprecated in POSIX 2008 */
 #endif
 #else
-   (void)usleep(usec);       /* deprecated in POSIX 2008 */
+   (void)udelay(usec);       /* deprecated in POSIX 2008 */
 #endif
 #endif
     return 0;

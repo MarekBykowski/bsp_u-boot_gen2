@@ -110,6 +110,8 @@ typedef int wait_queue_head_t;
 
 	struct semaphore {
 		unsigned int		count;
+		void *mutex;
+		void *mutexAttr;
 	};
 
     /* Note that ncp_sem_t is deprecated,   and will be replaced by ncp_mutex_t below */

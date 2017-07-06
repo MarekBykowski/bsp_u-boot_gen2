@@ -32,8 +32,10 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 /* task NCAv3 */
-#include "../common/ncp_sysmem_lsiphy.h" /* for macros and stuff mainly. Must go first */
-#include "ncp_task_basetypes.h"
+/*#include "../common/ncp_sysmem_lsiphy.h"*/ /* for macros and stuff mainly. Must go first */
+#include "uboot/ncp_task_basetypes.h"
+#include "uboot/ncp_task_pvt.h"
+#include "uboot/ncp_mme_ext.h"
 #include "ncp_timer_regions.h"
 #include "ncp_tmgr_system_count_reg_defines.h"
 #include "ncp_axis_apb2ser3_regions.h" /* syscon */
@@ -1577,10 +1579,90 @@ initialize_task_io(void)
 				return -1;
 		}
 	debug("done\n");
+
 #endif
+	/* NCAv3 code begin */
+	ncp_task_send_meta_t    meta_data;
+	ncp_task_tqs_hdl_t       tqsHdl = NULL;
+	ncp_uint32_t          devNum = 0;
+	ncp_hdl_t             ncpHdl;
+	ncp_uint32_t numSent;
+	int i = 0;
+
+	/* VP id - hardcoded*/
+	ncp_uint8_t              vpId = 0;
+	ncp_uint8_t              vpTxId = 1;
+
+	NCP_CALL(ncp_config_uboot_attach(devNum, &ncpHdl));
+	ncp_task_resource_name_t processName;
+	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
+
+	ncp_task_tqs_usage_t     params;
+#define RECV_PGIT             0
+	params.useRxQueue  = TRUE;
+	params.useTxQueue0 = TRUE;
+	params.useTxQueue1 = TRUE;
+
+	for (i = 0; i < 8; i++)
+		params.useAllocator[i] = FALSE;
+#define SHARED_BUFFER_POOL2   2
+	params.useAllocator[SHARED_BUFFER_POOL2] = TRUE;
+
+	NCP_CALL(ncp_task_tqs_bind(ncpHdl, RECV_PGIT, &params, &processName, &processName, &tqsHdl));
+
+	ncp_task_header_t        *task;
+	ncp_uint32_t             numRx;
+	while (true){
+		ncpStatus = ncp_task_recv(tqsHdl, 1, &numRx, &task, FALSE);
+		if(NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
+		{
+			/* sleep(10); */
+			continue;
+		}
+
+		memset(&meta_data, 0x0, sizeof(ncp_task_send_meta_t));
+		task->templateId = vpTxId;
+
+		/* myCreateTask(tqsHdl, vpTxId, &newTask); */
+		printf("sending task...\n");
+		/* printTask(newTask); */
+
+		/* Fill meta data fields */
+		meta_data.sendDoneFn = NULL;
+		meta_data.sendDoneArg = NULL;
+		meta_data.freeHeader = TRUE;
+		meta_data.freeDataPointers = TRUE;
+		meta_data.issueCompletion = FALSE;
+		meta_data.taskHeader = task;
+
+		ncp_task_send(tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
+		/* NCAv3 code end */
+	}
 
 	return 0;
 }
+
+
+int getpid(void){
+	return 0;
+}
+
+
+int pthread_mutex_lock(void *mutex){
+	return 1;
+}
+
+int pthread_mutex_unlock(void *mutex){
+	return 1;
+}
+
+
+int pthread_mutex_destroy(void *mutex){
+
+	return 1;
+}
+
+
 
 /*
   -------------------------------------------------------------------------------

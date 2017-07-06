@@ -25,12 +25,7 @@
  * NCP UNIX API <--> Driver System Call Interfaces
  */
 
-#include <fcntl.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
+#include <compiler.h>
 
 #include "uboot/ncp_sal_types_linux.h"
 #include "uboot/ncp_status.h"
@@ -62,7 +57,8 @@
 static ncp_st_t
 ncp_status_code(void)
 {
-    switch (errno)
+#if 0
+	switch (errno)
     {
         case EBADF:
         case ENOTTY:
@@ -84,7 +80,7 @@ ncp_status_code(void)
 
     NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_sal_status_code_unexpectedIoctl, NCP_MSG_ERROR,
                    "Unexpected ioctl error : %d\n", errno);
-
+#endif
     return NCP_ST_DEV_UNMAPPED_ERROR;
 }
 
@@ -103,6 +99,7 @@ ncp_dev_open(
     ncp_uint32_t flags,             /* IN: Open flags (not used; set to zero) */
     ncp_dev_hdl_t *devHdl)      /* OUT: Return location for NCP handle */
 {
+#if 0
     int  fd;
     char devName[NCP_MAX_DEV_NAME_LEN] = {'\0'};
 
@@ -114,8 +111,8 @@ ncp_dev_open(
         return ncp_status_code();
     }
 
-    *devHdl = (void *)((intptr_t)fd);
-
+    *devHdl = (void *)((uintptr_t)fd);
+#endif
     return NCP_ST_SUCCESS;
 }
 
@@ -123,7 +120,7 @@ ncp_st_t
 ncp_dev_close(
     ncp_dev_hdl_t devHdl)       /* IN: Device handle */
 {
-    if (close((intptr_t)devHdl) == -1) {
+    if (close((uintptr_t)devHdl) == -1) {
         return ncp_status_code();
     }
 
@@ -267,8 +264,9 @@ ncp_dev_block_read8(
     ncp_uint32_t count,         /* IN: Number of 8-bit words to read */
     ncp_uint32_t flags)         /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -280,12 +278,13 @@ ncp_dev_block_read8(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_READ8, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_READ8, &rw) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
+#endif
     return ncpStatus;
 }
 
@@ -298,8 +297,9 @@ ncp_dev_block_read16(
     ncp_uint32_t count,         /* IN: Number of 16-bit words to read */
     ncp_uint32_t flags)         /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -311,12 +311,12 @@ ncp_dev_block_read16(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_READ16, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_READ16, &rw) == -1)
     {
         return ncp_status_code();
     }
-
 NCP_RETURN_LABEL
+#endif
     return ncpStatus;
 }
 
@@ -329,8 +329,9 @@ ncp_dev_block_read32(
     ncp_uint32_t count,         /* IN: Number of 32-bit words to read */
     ncp_uint32_t flags)         /* IN: Operational control flags */
 {
+	ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_rw_t rw;
-    ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -342,11 +343,12 @@ ncp_dev_block_read32(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_READ32, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_READ32, &rw) == -1)
     {
         return ncp_status_code();
     }
 
+#endif
     return ncpStatus;
 }
 
@@ -359,8 +361,10 @@ ncp_dev_block_read64(
     ncp_uint32_t count,             /* IN: Number of 64-bit values to read */
     ncp_uint32_t flags)             /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
+
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -372,11 +376,12 @@ ncp_dev_block_read64(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_READ64, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_READ64, &rw) == -1)
     {
         return ncp_status_code();
     }
 
+#endif
     return ncpStatus;
 }
 
@@ -389,8 +394,9 @@ ncp_dev_block_write8(
     ncp_uint32_t count,         /* IN: Number of 8-bit words to write */
     ncp_uint32_t flags)         /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -402,12 +408,13 @@ ncp_dev_block_write8(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_WRITE8, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_WRITE8, &rw) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
+#endif
     return ncpStatus;
 }
 
@@ -420,8 +427,9 @@ ncp_dev_block_write16(
     ncp_uint32_t count,         /* IN: Number of 16-bit words to write */
     ncp_uint32_t flags)         /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+	ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -433,12 +441,13 @@ ncp_dev_block_write16(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_WRITE16, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_WRITE16, &rw) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
+#endif
     return ncpStatus;
 }
 
@@ -451,8 +460,9 @@ ncp_dev_block_write32(
     ncp_uint32_t count,         /* IN: Number of 32-bit words to write */
     ncp_uint32_t flags)         /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -464,11 +474,11 @@ ncp_dev_block_write32(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_WRITE32, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_WRITE32, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -481,8 +491,9 @@ ncp_dev_block_write64(
     ncp_uint32_t count,         /* IN: Number of 64-bit values to write */
     ncp_uint32_t flags)         /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -494,11 +505,11 @@ ncp_dev_block_write64(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_WRITE64, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_WRITE64, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -510,8 +521,9 @@ ncp_dev_block_fill(
     ncp_fill_t     *buffer,       /* IN: 32-bit fill value */
     ncp_uint32_t    flags)        /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -523,11 +535,11 @@ ncp_dev_block_fill(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(buffer->NCP_POINTER_64(value));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_FILL, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_FILL, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -540,8 +552,9 @@ ncp_dev_read_modify_write(
     ncp_rmw_t      *ncp_rmw_p,    /* IN: pointer to RMW structure */
     ncp_uint32_t    flags)        /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -553,11 +566,11 @@ ncp_dev_read_modify_write(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(ncp_rmw_p->NCP_POINTER_64(rmw_buffer));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_RMW, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_RMW, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -569,8 +582,9 @@ ncp_dev_scatter_write(
     ncp_crsw_t     *crsw_p,         /* IN: pointer to CRSW structure */
     ncp_uint32_t    flags)          /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = 0;
@@ -582,11 +596,11 @@ ncp_dev_scatter_write(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(crsw_p->NCP_POINTER_64(swvector));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_SW, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_SW, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -599,8 +613,9 @@ ncp_dev_broadcast_block_write(
     ncp_crbbw_t    *crbbw_p,        /* IN: pointer to CRBBW structure */
     ncp_uint32_t    flags)          /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -612,11 +627,11 @@ ncp_dev_broadcast_block_write(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(crbbw_p->NCP_POINTER_64(data));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_BBW, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_BBW, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -628,8 +643,9 @@ ncp_dev_broadcast_scatter_write(
     ncp_crbsw_t    *crbsw_p,        /* IN: pointer to CRBSW structure */
     ncp_uint32_t    flags)          /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = 0;
@@ -641,11 +657,11 @@ ncp_dev_broadcast_scatter_write(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(crbsw_p->NCP_POINTER_64(bswvector));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_BSW, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_BSW, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -658,8 +674,9 @@ ncp_dev_broadcast_block_fill(
     ncp_fill_t     *ncp_fill_p,     /* IN: pointer to ncp_fill_t structure */
     ncp_uint32_t    flags)          /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -671,11 +688,11 @@ ncp_dev_broadcast_block_fill(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(ncp_fill_p->NCP_POINTER_64(value));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_BBF, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_BBF, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -690,8 +707,9 @@ ncp_dev_coherent_sysmem_read(
     ncp_uint32_t    xferWidth,      /* IN: width of data unit in bytes */
     ncp_uint32_t    flags)          /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = address;
@@ -704,11 +722,11 @@ ncp_dev_coherent_sysmem_read(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_CSMBR, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_CSMBR, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -723,8 +741,9 @@ ncp_dev_coherent_sysmem_write(
     ncp_uint32_t    xferWidth,      /* IN: width of data unit in bytes */
     ncp_uint32_t    flags)          /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t     ncpStatus = NCP_ST_SUCCESS;
+#if 0
+	ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = address;
@@ -737,11 +756,11 @@ ncp_dev_coherent_sysmem_write(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_CSMBW, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_CSMBW, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -751,6 +770,7 @@ ncp_dev_info(
     ncp_dev_info_t *devInfo)    /* OUT: Return location for device info */
 {
     ncp_st_t       ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_dev_hdl_t  devHdl=0;
     ncp_ioc_info_t ioc_info;
 
@@ -766,7 +786,7 @@ ncp_dev_info(
     NCP_POINTER_FIXUP(ioc_info.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(ioc_info.NCP_POINTER_64(info));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_INFO, &ioc_info) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_INFO, &ioc_info) == -1)
     {
         ncpStatus = ncp_status_code();
     }
@@ -776,6 +796,7 @@ error:
     {
         ncp_dev_close(devHdl);
     }
+#endif
     return ncpStatus;
 }
 
@@ -786,6 +807,7 @@ ncp_dev_gsm_info_get(
     ncp_dev_gsm_info_t  *gsmInfo)
 {
     ncp_st_t           ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_gsm_info_t ioc_gsm_info;
 
     ioc_gsm_info.NCP_POINTER(info) = gsmInfo;
@@ -794,11 +816,11 @@ ncp_dev_gsm_info_get(
     NCP_POINTER_FIXUP(ioc_gsm_info.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(ioc_gsm_info.NCP_POINTER_64(info));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_TASK_GSM_INFO_GET, &ioc_gsm_info) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_TASK_GSM_INFO_GET, &ioc_gsm_info) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -808,6 +830,7 @@ ncp_dev_info_get(
     ncp_uint32_t *flags)        /* OUT: Return location for device info */
 {
     ncp_st_t           ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_info_get_t ioc_info;
 
     ioc_info.NCP_POINTER(info) = flags;
@@ -816,11 +839,11 @@ ncp_dev_info_get(
     NCP_POINTER_FIXUP(ioc_info.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(ioc_info.NCP_POINTER_64(info));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_INFO_GET, &ioc_info) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_INFO_GET, &ioc_info) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -830,6 +853,7 @@ ncp_dev_info_set(
     ncp_uint32_t  flags)             /* IN: New device flag info */
 {
     ncp_st_t           ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_info_set_t ioc_info;
 
     ioc_info.info            = flags;
@@ -837,11 +861,11 @@ ncp_dev_info_set(
 
     NCP_POINTER_FIXUP(ioc_info.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_INFO_SET, &ioc_info) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_INFO_SET, &ioc_info) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -850,6 +874,7 @@ ncp_st_t ncp_dev_stats(
     ncp_dev_stats_t *devStats)  /* OUT: Return location for device stats */
 {
     ncp_st_t        ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_stats_t ioc_stats;
 
     ioc_stats.NCP_POINTER(stats) = devStats;
@@ -858,11 +883,11 @@ ncp_st_t ncp_dev_stats(
     NCP_POINTER_FIXUP(ioc_stats.NCP_POINTER_64(stats));
     NCP_POINTER_FIXUP(ioc_stats.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_STATS, &ioc_stats) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_STATS, &ioc_stats) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -870,9 +895,10 @@ ncp_st_t
 ncp_dev_version(
     char *version)                  /* OUT: Return location for version info */
 {
+    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_dev_hdl_t devHdl;
     ncp_ioc_version_t ver;
-    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
 
     ncpStatus = ncp_dev_open(0, 0, &devHdl);
     if (ncpStatus != NCP_ST_SUCCESS)
@@ -886,14 +912,14 @@ ncp_dev_version(
     NCP_POINTER_FIXUP(ver.NCP_POINTER_64(version));
     NCP_POINTER_FIXUP(ver.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_VERSION, &ver) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_VERSION, &ver) == -1)
     {
         ncpStatus = ncp_status_code();
     }
 
     ncp_dev_close(devHdl);
-
 error:
+#endif
     return ncpStatus;
 }
 
@@ -903,6 +929,7 @@ ncp_dev_hw_version_get(
     ncp_version_t *version)     /* OUT: Return location for dev version */
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_hw_version_t ioc_hw_version;
 
     ioc_hw_version.NCP_POINTER(version) = version;
@@ -911,11 +938,11 @@ ncp_dev_hw_version_get(
     NCP_POINTER_FIXUP(ioc_hw_version.NCP_POINTER_64(version));
     NCP_POINTER_FIXUP(ioc_hw_version.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_HW_VERSION, &ioc_hw_version) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_HW_VERSION, &ioc_hw_version) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -923,13 +950,15 @@ ncp_st_t
 ncp_dev_unref(
     ncp_dev_hdl_t devHdl)       /* IN: Device handle */
 {
-    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_UNREF, NULL) == -1)
+	ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_UNREF, NULL) == -1)
     {
         return ncp_status_code();
     }
 
+#endif
     return ncpStatus;
 }
 
@@ -938,8 +967,9 @@ ncp_dev_trace_level_get(
     ncp_dev_hdl_t devHdl,        /* IN: Device handle */
     ncp_uint32_t *traceLevel)        /* OUT: Current trace level */
 {
-    ncp_ioc_tr_lvl_get_t trace;
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
+	ncp_ioc_tr_lvl_get_t trace;
 
     trace.NCP_POINTER(level) = traceLevel;
     trace.NCP_POINTER(st)    = &ncpStatus;
@@ -947,11 +977,11 @@ ncp_dev_trace_level_get(
     NCP_POINTER_FIXUP(trace.NCP_POINTER_64(level));
     NCP_POINTER_FIXUP(trace.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_TR_LVL_GET, &trace) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_TR_LVL_GET, &trace) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -960,19 +990,20 @@ ncp_dev_trace_level_set(
     ncp_dev_hdl_t devHdl,        /* IN: Device handle */
     ncp_uint32_t traceLevel)         /* IN: Selected trace level */
 {
-    ncp_ioc_tr_lvl_set_t trace;
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_tr_lvl_set_t trace;
 
     trace.level = traceLevel;
     trace.NCP_POINTER(st) = &ncpStatus;
 
     NCP_POINTER_FIXUP(trace.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_TR_LVL_SET, &trace) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_TR_LVL_SET, &trace) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -980,18 +1011,19 @@ ncp_st_t
 ncp_dev_pci_config_space_reinit(
     ncp_dev_hdl_t devHdl)       /* IN: Device handle */
 {
-    ncp_ioc_status_t status;
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_status_t status;
 
     status.NCP_POINTER(st) = &ncpStatus;
 
     NCP_POINTER_FIXUP(status.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_PCI_REINIT, &status) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_PCI_REINIT, &status) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -999,56 +1031,61 @@ ncp_st_t
 ncp_dev_isr_disable(
     ncp_dev_hdl_t devHdl)       /* IN: Device handle */
 {
-    ncp_ioc_status_t status;
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_status_t status;
 
     status.NCP_POINTER(st) = &ncpStatus;
 
     NCP_POINTER_FIXUP(status.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_ISR_DISABLE, &status) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_ISR_DISABLE, &status) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
+#if 0 
+implemented in uboot
 ncp_st_t
 ncp_dev_reset(
     ncp_dev_hdl_t devHdl)       /* IN: Device handle */
 {
-    ncp_ioc_status_t status;
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
+    ncp_ioc_status_t status;
     status.NCP_POINTER(st) = &ncpStatus;
 
     NCP_POINTER_FIXUP(status.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_RESET, &status) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_RESET, &status) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
+#endif
 
 ncp_st_t
 ncp_dev_pci_reset(
     ncp_dev_hdl_t devHdl)       /* IN: Device handle */
 {
-    ncp_ioc_status_t status;
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_status_t status;
 
     status.NCP_POINTER(st) = &ncpStatus;
 
     NCP_POINTER_FIXUP(status.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_PCI_RESET, &status) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_PCI_RESET, &status) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -1057,7 +1094,7 @@ int
 ncp_dev_fd_get(
     ncp_dev_hdl_t devHdl)       /*   IN: Device handle */
 {
-    return (intptr_t) devHdl;
+    return (uintptr_t) devHdl;
 }
 
 ncp_st_t
@@ -1066,6 +1103,7 @@ ncp_dev_num_get(
     ncp_uint32_t *devNum)        /* OUT: Device number */
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_dev_num_get_t ioc;
 
     ioc.NCP_POINTER(devNum) = devNum;
@@ -1074,11 +1112,11 @@ ncp_dev_num_get(
     NCP_POINTER_FIXUP(ioc.NCP_POINTER_64(devNum));
     NCP_POINTER_FIXUP(ioc.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_DEV_NUM_GET, &ioc) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_DEV_NUM_GET, &ioc) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -1090,6 +1128,7 @@ ncp_dev_alarm_irq_get(
         ncp_alarm_bitmask_t     *alarm)
 {
     ncp_st_t    ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_alarm_t al;
 
     al.blocking = blocking;
@@ -1099,11 +1138,11 @@ ncp_dev_alarm_irq_get(
     NCP_POINTER_FIXUP(al.NCP_POINTER_64(alarm));
     NCP_POINTER_FIXUP(al.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_ALARM_IRQ_GET, &al) == -1) 
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_ALARM_IRQ_GET, &al) == -1) 
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -1111,8 +1150,8 @@ ncp_st_t
 ncp_dev_se_fem_event_get(ncp_dev_hdl_t devHdl)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
-    if ((ncpStatus = ioctl((intptr_t)devHdl, NCP_IOC_SE_FEM_WAIT_FOR_INTERRUPT, NULL)) == -1)
+#if 0
+    if ((ncpStatus = ioctl((uintptr_t)devHdl, NCP_IOC_SE_FEM_WAIT_FOR_INTERRUPT, NULL)) == -1)
     {
         if (0 != errno)
         {    
@@ -1124,6 +1163,7 @@ ncp_dev_se_fem_event_get(ncp_dev_hdl_t devHdl)
     }  
 
 NCP_RETURN_LABEL
+#endif
     return(ncpStatus);
 }
 
@@ -1131,8 +1171,8 @@ ncp_st_t
 ncp_dev_timer_sync_external(ncp_dev_hdl_t devHdl)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
-    if ((ncpStatus = ioctl((intptr_t)devHdl, NCP_IOC_TIMER_SYNC_EXTERNAL, NULL)) == -1)
+#if 0
+    if ((ncpStatus = ioctl((uintptr_t)devHdl, NCP_IOC_TIMER_SYNC_EXTERNAL, NULL)) == -1)
     {
         if (0 != errno)
         {
@@ -1144,6 +1184,7 @@ ncp_dev_timer_sync_external(ncp_dev_hdl_t devHdl)
     }
 
 NCP_RETURN_LABEL
+#endif
     return(ncpStatus);
 }
 
@@ -1151,7 +1192,8 @@ ncp_st_t
 ncp_dev_timer_event_get(ncp_dev_hdl_t devHdl, ncp_uint64_t *ticks)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-    ncp_ioc_timestamp_t ts;
+#if 0
+	ncp_ioc_timestamp_t ts;
 
     ts.NCP_POINTER(ticks) = ticks;
     ts.NCP_POINTER(st) = 0;
@@ -1159,7 +1201,7 @@ ncp_dev_timer_event_get(ncp_dev_hdl_t devHdl, ncp_uint64_t *ticks)
     NCP_POINTER_FIXUP(ts.NCP_POINTER_64(ticks));
     NCP_POINTER_FIXUP(ts.NCP_POINTER_64(st));
 
-    if ( ( ncpStatus = ioctl((intptr_t)devHdl, NCP_IOC_TIMER_WAIT_FOR_INTERRUPT, &ts)) == -1)
+    if ( ( ncpStatus = ioctl((uintptr_t)devHdl, NCP_IOC_TIMER_WAIT_FOR_INTERRUPT, &ts)) == -1)
     {
         if (0 != errno)
         {    
@@ -1169,7 +1211,7 @@ ncp_dev_timer_event_get(ncp_dev_hdl_t devHdl, ncp_uint64_t *ticks)
             ncpStatus = NCP_ST_ERROR;
         }    
     }  
-
+#endif
     return(ncpStatus);
 }
 
@@ -1177,6 +1219,7 @@ ncp_st_t
 ncp_dev_timer_cpu_timer_event_wait(ncp_hdl_t hdl, ncp_uint32_t timerIndex, ncp_uint64_t lastSeq, ncp_uint64_t *currentSeq, ncp_uint32_t flags)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_cpu_timer_info_t cpu_info = {0};
     ncp_t *ncp = (ncp_t *)hdl;
     ncp_dev_hdl_t devHdl = ncp_dev_hdls[ncp->id];
@@ -1192,7 +1235,7 @@ ncp_dev_timer_cpu_timer_event_wait(ncp_hdl_t hdl, ncp_uint32_t timerIndex, ncp_u
     NCP_POINTER_FIXUP(cpu_info.NCP_POINTER_64(currentSeq));
     NCP_POINTER_FIXUP(cpu_info.NCP_POINTER_64(st));
 
-    if ( ( ncpStatus = ioctl((intptr_t)devHdl, NCP_IOC_TIMER_WAIT_FOR_CPU_INTERRUPT, &cpu_info)) == -1)
+    if ( ( ncpStatus = ioctl((uintptr_t)devHdl, NCP_IOC_TIMER_WAIT_FOR_CPU_INTERRUPT, &cpu_info)) == -1)
     {
         if (0 != errno)
         {    
@@ -1206,6 +1249,7 @@ ncp_dev_timer_cpu_timer_event_wait(ncp_hdl_t hdl, ncp_uint32_t timerIndex, ncp_u
     NCP_TRACEPOINT (Intel_AXXIA_ncp_sal, ncp_dev_timer_cpu_timer_event_wait_sal_exit, NCP_MSG_EXIT,
                 "ncpStatus=%d currentSeq=%"PRIu64 "\n", ncpStatus,
                 currentSeq ? *currentSeq : 0);
+#endif
     return(ncpStatus);
 }
 
@@ -1214,13 +1258,14 @@ ncp_dev_eioa_hss_los_hdlr_start (ncp_hdl_t hdl,
                                       ncp_uint32_t timerInterval)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_eioa_hss_los_hdlr_t kCalStart;
     ncp_t *ncp = (ncp_t *)hdl;
     ncp_dev_hdl_t devHdl = ncp_dev_hdls[ncp->id];
 
     kCalStart.timerInterval = timerInterval;
 
-    if ((ncpStatus = ioctl((intptr_t)devHdl, NCP_IOC_EIOA_HSS_LOS_HDLR_START, &kCalStart)) == -1)
+    if ((ncpStatus = ioctl((uintptr_t)devHdl, NCP_IOC_EIOA_HSS_LOS_HDLR_START, &kCalStart)) == -1)
     {
         if (0 != errno)
         {
@@ -1232,6 +1277,7 @@ ncp_dev_eioa_hss_los_hdlr_start (ncp_hdl_t hdl,
     }
 
 NCP_RETURN_LABEL
+#endif
     return(ncpStatus);
 }
 
@@ -1239,11 +1285,12 @@ ncp_st_t
 ncp_dev_eioa_hss_los_hdlr_stop(ncp_hdl_t hdl)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_eioa_hss_los_hdlr_t kCalStart;
     ncp_t *ncp = (ncp_t *)hdl;
     ncp_dev_hdl_t devHdl = ncp_dev_hdls[ncp->id];
 
-    if ((ncpStatus = ioctl((intptr_t)devHdl, NCP_IOC_EIOA_HSS_LOS_HDLR_STOP, &kCalStart)) == -1)
+    if ((ncpStatus = ioctl((uintptr_t)devHdl, NCP_IOC_EIOA_HSS_LOS_HDLR_STOP, &kCalStart)) == -1)
     {
         if (0 != errno)
         {
@@ -1255,6 +1302,7 @@ ncp_dev_eioa_hss_los_hdlr_stop(ncp_hdl_t hdl)
     }
 
 NCP_RETURN_LABEL
+#endif
     return(ncpStatus);
 } /* ncp_dev_eioa_hss_los_hdlr_stop() */
 
@@ -1264,6 +1312,7 @@ ncp_st_t
 ncp_dev_transaction_start(
     ncp_dev_hdl_t devHdl)
 {
+#if 0
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
     ncp_ioc_status_t status;
     NCP_TRACEPOINT (Intel_AXXIA_ncp_sal, ncp_dev_transaction_start_sal_entry, NCP_MSG_ENTRY,
@@ -1273,7 +1322,7 @@ ncp_dev_transaction_start(
 
     NCP_POINTER_FIXUP(status.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_TRANS_START, &status) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_TRANS_START, &status) == -1)
     {
         ncpStatus=ncp_status_code();
     }
@@ -1281,6 +1330,7 @@ ncp_dev_transaction_start(
     NCP_TRACEPOINT (Intel_AXXIA_ncp_sal, ncp_dev_transaction_start_sal_exit, NCP_MSG_ENTRY,
         "ncpStatus=%d\n", ncpStatus);
     return ncpStatus;
+#endif
 }
 
 ncp_st_t
@@ -1291,6 +1341,7 @@ ncp_dev_transaction_add(
     ncp_uint32_t flags)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_trans_add_t iocArg;
     NCP_TRACEPOINT (Intel_AXXIA_ncp_sal, ncp_dev_transaction_add_sal_entry, NCP_MSG_ENTRY,
         "devHdl=%p transType=%d trans=%p flags=%d\n", devHdl, transType, trans, flags);
@@ -1318,11 +1369,11 @@ ncp_dev_transaction_add(
 
     NCP_POINTER_FIXUP(iocArg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_TRANS_ADD, &iocArg) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_TRANS_ADD, &iocArg) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -1339,7 +1390,7 @@ ncp_dev_transaction_end(
 
     NCP_POINTER_FIXUP(status.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_TRANS_END, &status) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_TRANS_END, &status) == -1)
     {
         ncpStatus = ncp_status_code();
     }
@@ -1356,7 +1407,7 @@ ncp_dev_event_dispatch_cfg_start(
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_EVENT_CFG_START, NULL) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_EVENT_CFG_START, NULL) == -1)
     {
         return ncp_status_code();
     }
@@ -1371,7 +1422,7 @@ ncp_dev_event_dispatch_cfg_complete(
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_EVENT_CFG_COMPLETE, NULL) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_EVENT_CFG_COMPLETE, NULL) == -1)
     {
         return ncp_status_code();
     }
@@ -1385,7 +1436,7 @@ ncp_dev_event_dispatch_cfg_destroy(
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_EVENT_CFG_DESTROY, NULL) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_EVENT_CFG_DESTROY, NULL) == -1)
     {
         return ncp_status_code();
     }
@@ -1406,7 +1457,7 @@ ncp_display_mem_attributes(ncp_dev_hdl_t devHdl, void *va)
     NCP_POINTER_FIXUP(getAttrStruct.NCP_POINTER_64(va));
 
     printf("Get Mem Attributes for va=%p\r\n",va);
-    if ((ncpStatus = ioctl((intptr_t)devHdl, NCP_IOC_TASK_DISPLAY_MEM_ATTTRIBUTES, &getAttrStruct)) == -1) 
+    if ((ncpStatus = ioctl((uintptr_t)devHdl, NCP_IOC_TASK_DISPLAY_MEM_ATTTRIBUTES, &getAttrStruct)) == -1) 
     {
         NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_sal_ioc_task_display_mem_attributes_failed, NCP_MSG_ERROR,
                        "NCP_IOC_TASK_DISPLAY_MEM_ATTTRIBUTES failed with errno=0x%x for handle %p\r\n",
@@ -1423,8 +1474,8 @@ NCP_RETURN_LABEL
 ncp_st_t ncp_task_initiate_shutdown(ncp_dev_hdl_t devHdl)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
-    if ((ncpStatus = ioctl((intptr_t)devHdl, NCP_IOC_TASK_INITIATE_SHUTDOWN , NULL)) == -1)
+#if 0
+    if ((ncpStatus = ioctl((uintptr_t)devHdl, NCP_IOC_TASK_INITIATE_SHUTDOWN , NULL)) == -1)
     {
         if (0 != errno)
         {    
@@ -1436,17 +1487,19 @@ ncp_st_t ncp_task_initiate_shutdown(ncp_dev_hdl_t devHdl)
     }  
 
 NCP_RETURN_LABEL
+#endif
     return(ncpStatus);        
 }
 
 /* only called it application is required to run in 32bit mode */
 ncp_st_t ncp_dev_appMode_is32bit(ncp_dev_hdl_t devHdl)
 {
-    ncp_ioc_status_t data;
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_status_t data;
     
     ncp_memset(&data, 0, sizeof(ncp_ioc_status_t));
-    if ((ncpStatus = ioctl((intptr_t)devHdl, NCP_IOC_APPMODE_IS32BIT , &data)) == -1)
+    if ((ncpStatus = ioctl((uintptr_t)devHdl, NCP_IOC_APPMODE_IS32BIT , &data)) == -1)
     {
         if (0 != errno)
         {    
@@ -1459,6 +1512,7 @@ ncp_st_t ncp_dev_appMode_is32bit(ncp_dev_hdl_t devHdl)
     }  
 
 NCP_RETURN_LABEL
+#endif
     return(ncpStatus);        
 }
 
@@ -1471,6 +1525,7 @@ ncp_st_t ncp_task_manage_kmode_stats(
     ncp_uint8_t                 poolId)     /* IN,  which CPU Pool */
 {
     ncp_st_t        ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_t           *ncp = (ncp_t *)ncpHdl;
     ncp_dev_hdl_t   devHdl = ncp_dev_hdls[ncp->id];
     ncp_ioc_get_task_stats_t ioc_get_task_stats;
@@ -1484,7 +1539,7 @@ ncp_st_t ncp_task_manage_kmode_stats(
     NCP_POINTER_FIXUP(ioc_get_task_stats.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(ioc_get_task_stats.NCP_POINTER_64(pTaskStats));
     
-    if (ioctl((intptr_t)devHdl, NCP_IOC_TASK_MANAGE_KMODE_STATS, &ioc_get_task_stats) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_TASK_MANAGE_KMODE_STATS, &ioc_get_task_stats) == -1)
     {
         NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_sal_ioc_task_manage_kmode_stats_failed, NCP_MSG_INFO,
                        "NCP_IOC_TASK_MANAGE_KMODE_STATS failed with ec=%d, sc=%d\r\n",
@@ -1492,7 +1547,7 @@ ncp_st_t ncp_task_manage_kmode_stats(
 
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 #endif
@@ -1504,6 +1559,7 @@ ncp_st_t ncp_task_tqs_state_modify(ncp_dev_hdl_t devHdl,
 
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_task_tqs_state_modify_t tqs_state_modify;    
 
     tqs_state_modify.tqsID      = tqsID;      
@@ -1517,7 +1573,7 @@ ncp_st_t ncp_task_tqs_state_modify(ncp_dev_hdl_t devHdl,
 
     NCP_POINTER_FIXUP(tqs_state_modify.NCP_POINTER_64(st));
 
-    if ((ncpStatus = ioctl((intptr_t)devHdl, 
+    if ((ncpStatus = ioctl((uintptr_t)devHdl, 
                             NCP_IOC_TASK_TQS_STATE_MODIFY, 
                             &tqs_state_modify)) == -1)
     {
@@ -1542,6 +1598,7 @@ ncp_st_t ncp_task_tqs_state_modify(ncp_dev_hdl_t devHdl,
     }        
                  
 NCP_RETURN_LABEL
+#endif
     return(ncpStatus);    
 }    
 
@@ -1553,6 +1610,7 @@ ncp_task_waiter_thread_operation(
     ncp_uint32_t  pid)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_task_waiter_operation_t ioc;
 
     ioc.NCP_POINTER(st) = &ncpStatus;
@@ -1562,7 +1620,7 @@ ncp_task_waiter_thread_operation(
 
     NCP_POINTER_FIXUP(ioc.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) devHdl,
+    if (ioctl((uintptr_t) devHdl,
                 NCP_IOC_TASK_WAITER_THREADS_OP,
                 &ioc) == -1)
     {
@@ -1576,7 +1634,7 @@ ncp_task_waiter_thread_operation(
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -1584,6 +1642,7 @@ ncp_st_t ncp_task_register_grp_interrupts(ncp_dev_hdl_t devHdl,
                                           ncp_uint32_t  activeGrpMask)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_u32_t ioc_u32;
 
     ioc_u32.value = activeGrpMask;
@@ -1591,7 +1650,7 @@ ncp_st_t ncp_task_register_grp_interrupts(ncp_dev_hdl_t devHdl,
     
     NCP_POINTER_FIXUP(ioc_u32.NCP_POINTER_64(st));
 
-    if ((ioctl((intptr_t)devHdl, NCP_IOC_TASK_REGISTER_GRP_INTERRUPTS , &ioc_u32)) == -1)
+    if ((ioctl((uintptr_t)devHdl, NCP_IOC_TASK_REGISTER_GRP_INTERRUPTS , &ioc_u32)) == -1)
     {
         if (0 != errno)
         {    
@@ -1603,6 +1662,7 @@ ncp_st_t ncp_task_register_grp_interrupts(ncp_dev_hdl_t devHdl,
     }  
 
 NCP_RETURN_LABEL
+#endif
     return(ncpStatus);        
 }
 
@@ -1611,6 +1671,7 @@ ncp_st_t ncp_task_register_ncav3_interrupts(
     ncp_uint64_t  activeTQSMask)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_u64_t ioc_u64;
 
     ioc_u64.value = activeTQSMask;
@@ -1618,7 +1679,7 @@ ncp_st_t ncp_task_register_ncav3_interrupts(
     
     NCP_POINTER_FIXUP(ioc_u64.NCP_POINTER_64(st));
 
-    if ((ioctl((intptr_t)devHdl, NCP_IOC_TASK_REGISTER_NCAV3_INTERRUPTS, &ioc_u64))
+    if ((ioctl((uintptr_t)devHdl, NCP_IOC_TASK_REGISTER_NCAV3_INTERRUPTS, &ioc_u64))
             == -1)
     {
         if (0 != errno)
@@ -1631,7 +1692,7 @@ ncp_st_t ncp_task_register_ncav3_interrupts(
     }  
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;        
 }
 
@@ -1641,6 +1702,7 @@ ncp_task_finish_kmode_config(ncp_hdl_t ncpHdl,
                              ncp_dev_gsm_info_t *pGSMinfo) 
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_t *ncp = (ncp_t *)ncpHdl;
     ncp_ioc_task_nca_kmode_finish_cfg_t kmodeFinishCfg;
     ncp_dev_hdl_t devHdl = ncp_dev_hdls[ncp->id];
@@ -1656,7 +1718,7 @@ ncp_task_finish_kmode_config(ncp_hdl_t ncpHdl,
                    "NCP_IOC_TASK_NCA_FINISH_KMODE_CFG issued with buf=%p, st=%p\r\n",
                    &kmodeFinishCfg, kmodeFinishCfg.NCP_POINTER(st));
 
-    if ((ioctl((intptr_t)devHdl, NCP_IOC_TASK_NCA_FINISH_KMODE_CFG , &kmodeFinishCfg)) == -1) 
+    if ((ioctl((uintptr_t)devHdl, NCP_IOC_TASK_NCA_FINISH_KMODE_CFG , &kmodeFinishCfg)) == -1) 
     {
         NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_sal_ioc_task_nca_finish_kmode_cfg_failed, NCP_MSG_ERROR,
                        "NCP_IOC_TASK_NCA_FINISH_KMODE_CFG failed with errno=0x%x for handle %p\r\n",
@@ -1672,6 +1734,7 @@ ncp_task_finish_kmode_config(ncp_hdl_t ncpHdl,
     }      
     
 NCP_RETURN_LABEL
+#endif
     return(ncpStatus);        
 }   
 
@@ -1682,6 +1745,7 @@ ncp_task_do_kmode_config(ncp_hdl_t ncpHdl,
                          ncp_dev_gsm_info_t *pGSMinfo)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_t *ncp = (ncp_t *)ncpHdl;
     ncp_ioc_task_nca_kmode_cfg_t kmodeCfg;
     ncp_dev_hdl_t devHdl = ncp_dev_hdls[ncp->id];
@@ -1700,7 +1764,7 @@ ncp_task_do_kmode_config(ncp_hdl_t ncpHdl,
                    "NCP_IOC_TASK_NCA_DO_KMODE_CFG issued with buf=%p, cfgSize=%d, st=%p\r\n",
                    &kmodeCfg, kmodeCfg.cfgSize, kmodeCfg.NCP_POINTER(st));
 
-    if (((ioctl((intptr_t)devHdl, NCP_IOC_TASK_NCA_DO_KMODE_CFG , &kmodeCfg)) == -1))
+    if (((ioctl((uintptr_t)devHdl, NCP_IOC_TASK_NCA_DO_KMODE_CFG , &kmodeCfg)) == -1))
     {
         NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_sal_ioc_task_nca_do_kmode_cfg_ioctl_failed, NCP_MSG_ERROR,
                        "NCP_IOC_TASK_NCA_DO_KMODE_CFG failed with errno=0x%x for handle %p\r\n",
@@ -1716,6 +1780,7 @@ ncp_task_do_kmode_config(ncp_hdl_t ncpHdl,
     }  
     
 NCP_RETURN_LABEL
+#endif
     return(ncpStatus);        
 }    
 
@@ -1726,6 +1791,7 @@ ncp_st_t ncp_task_block_on_hw_interrupt(ncp_dev_hdl_t devHdl, ncp_uint32_t intrT
                                         ncp_uint8_t grp, ncp_uint32_t grpRelQueueId, ncp_uint8_t tqsID)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_task_interrupt_t waitIntr;
 #if defined(NCP_ARCH_ARM) && defined(NCP_TASK_DBG_ISR_LATENCY)
     struct timeval                  sTime = {0};
@@ -1748,7 +1814,7 @@ ncp_st_t ncp_task_block_on_hw_interrupt(ncp_dev_hdl_t devHdl, ncp_uint32_t intrT
 /* Get start time */
 gettimeofday(&sTime, NULL);    
 #endif    
-    if ((ncpStatus = ioctl((intptr_t)devHdl, NCP_IOC_TASK_WAIT_FOR_INTERRUPT, &waitIntr)) == -1)
+    if ((ncpStatus = ioctl((uintptr_t)devHdl, NCP_IOC_TASK_WAIT_FOR_INTERRUPT, &waitIntr)) == -1)
     {
         if (0 != errno)
         {    
@@ -1777,6 +1843,7 @@ printf("Measurement overhead is: %.9f seconds\r\n",timeSec);
     }    
 
 NCP_RETURN_LABEL
+#endif
     return(ncpStatus);        
 }
 
@@ -1785,9 +1852,10 @@ ncp_mem_mmap(ncp_dev_hdl_t devHdl, void *startAddr, ncp_uint32_t size,
              ncp_uint64_t physAddr)
 {
     void *mmapPtr = NULL;
+#if 0
 
     mmapPtr = mmap(startAddr, size, (PROT_READ | PROT_WRITE), MAP_SHARED,
-                           (intptr_t)devHdl, (off_t) physAddr);
+                           (uintptr_t)devHdl, (off_t) physAddr);
     
     if (((NULL != startAddr) && (startAddr != mmapPtr)) || (NULL == mmapPtr))
     {
@@ -1813,6 +1881,7 @@ ncp_mem_mmap(ncp_dev_hdl_t devHdl, void *startAddr, ncp_uint32_t size,
     }
 
 NCP_RETURN_LABEL
+#endif
     return mmapPtr;
 }
 
@@ -1825,8 +1894,9 @@ ncp_dev_mdioRead(
     ncp_uint32_t count,         /* IN: Number of 32-bit words to read */
     ncp_uint32_t flags)         /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -1838,11 +1908,11 @@ ncp_dev_mdioRead(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_MDIO_READ, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_MDIO_READ, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -1855,8 +1925,9 @@ ncp_dev_mdioWrite(
     ncp_uint32_t count,         /* IN: Number of 32-bit words to read */
     ncp_uint32_t flags)         /* IN: Operational control flags */
 {
-    ncp_ioc_rw_t rw;
     ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
+#if 0
+    ncp_ioc_rw_t rw;
 
     rw.regionId = regionId;
     rw.offset   = offset;
@@ -1868,11 +1939,11 @@ ncp_dev_mdioWrite(
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(buffer));
     NCP_POINTER_FIXUP(rw.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_MDIO_WRITE, &rw) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_MDIO_WRITE, &rw) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 
@@ -1884,6 +1955,7 @@ ncp_dev_nrcp_event_wait(
     ncp_uint32_t *nrcpIntrStat) /* OUT: NRCP interrupt status */
 {
     ncp_st_t           ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_info_get_t ioc_info;
 
     ioc_info.NCP_POINTER(info) = nrcpIntrStat;
@@ -1892,11 +1964,11 @@ ncp_dev_nrcp_event_wait(
     NCP_POINTER_FIXUP(ioc_info.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(ioc_info.NCP_POINTER_64(info));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_NRCP_EVENT_WAIT, &ioc_info) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_NRCP_EVENT_WAIT, &ioc_info) == -1)
     {
         return ncp_status_code();
     }
-
+#endif
     return ncpStatus;
 }
 #endif
@@ -1915,6 +1987,7 @@ ncp_dev_cat_config(
     ncp_uint64_t *oCatMemoryNeeded)  /* OUT: Min memory needed for CAT */
 {
     ncp_st_t              ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_cat_config_t  cfg;
 
     cfg.catMemoryEnable               = catMemoryEnable;
@@ -1926,12 +1999,13 @@ ncp_dev_cat_config(
     NCP_POINTER_FIXUP(cfg.NCP_POINTER_64(oCatMemoryNeeded));
     NCP_POINTER_FIXUP(cfg.NCP_POINTER_64(ncp_status));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_CAT_CONFIG, &cfg) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_CAT_CONFIG, &cfg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
+#endif
     return ncpStatus;
 }
 
@@ -1940,6 +2014,7 @@ ncp_dev_cat_write(
     ncp_dev_hdl_t           devHdl)
 {
     ncp_st_t            ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_cat_write_t wr;
 
     wr.flags                   = 0;
@@ -1947,12 +2022,13 @@ ncp_dev_cat_write(
 
     NCP_POINTER_FIXUP(wr.NCP_POINTER_64(ncp_status));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_CAT_WRITE, &wr) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_CAT_WRITE, &wr) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
+#endif
     return ncpStatus;
 }
 
@@ -1963,6 +2039,7 @@ ncp_dev_cat_write_raw(
     void               *buffer)
 {
     ncp_st_t            ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_cat_write_raw_t wr;
 
     wr.count      = count;
@@ -1973,12 +2050,13 @@ ncp_dev_cat_write_raw(
     NCP_POINTER_FIXUP(wr.NCP_POINTER_64(ncp_status));
     NCP_POINTER_FIXUP(wr.NCP_POINTER_64(buffer));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_CAT_WRITE_RAW, &wr) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_CAT_WRITE_RAW, &wr) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
+#endif
     return ncpStatus;
 }
 
@@ -1987,6 +2065,7 @@ ncp_dev_cat_write_finalize(
     ncp_dev_hdl_t           devHdl)
 {
     ncp_st_t            ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_cat_write_finalize_t wr;
 
     wr.flags                   = 0;
@@ -1994,12 +2073,13 @@ ncp_dev_cat_write_finalize(
 
     NCP_POINTER_FIXUP(wr.NCP_POINTER_64(ncp_status));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_CAT_WRITE_FINALIZE, &wr) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_CAT_WRITE_FINALIZE, &wr) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
+#endif
     return ncpStatus;
 }
 
@@ -2012,6 +2092,7 @@ ncp_dev_cat_read(
     ncp_uint32_t       *readSize)
 {
     ncp_st_t            ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_cat_read_t  rd;
 
     rd.NCP_POINTER(buffer) = (void*)buffer;
@@ -2026,12 +2107,13 @@ ncp_dev_cat_read(
     NCP_POINTER_FIXUP(rd.NCP_POINTER_64(readSize));
     NCP_POINTER_FIXUP(rd.NCP_POINTER_64(ncp_status));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_CAT_READ, &rd) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_CAT_READ, &rd) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
+#endif
     return ncpStatus;
 }
 
@@ -2041,6 +2123,7 @@ ncp_dev_cat_size(
     ncp_uint64_t      *catMemorySize)
 {
     ncp_st_t           ncpStatus = NCP_ST_SUCCESS;
+#if 0
     ncp_ioc_cat_size_t sz;
 
     sz.NCP_POINTER(catMemorySize) = (ncp_uint32_t *)catMemorySize;
@@ -2049,12 +2132,13 @@ ncp_dev_cat_size(
     NCP_POINTER_FIXUP(sz.NCP_POINTER_64(catMemorySize));
     NCP_POINTER_FIXUP(sz.NCP_POINTER_64(ncp_status));
 
-    if (ioctl((intptr_t)devHdl, NCP_IOC_CAT_SIZE, &sz) == -1)
+    if (ioctl((uintptr_t)devHdl, NCP_IOC_CAT_SIZE, &sz) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
+#endif
     return ncpStatus;
 }
 
@@ -2070,6 +2154,7 @@ ncp_st_t
 ncp_daemonize_self(void)
 {
     ncp_st_t ncpStatus=NCP_ST_SUCCESS;
+#if 0
     pid_t sid;
          
     /* Change the file mode mask */
@@ -2096,6 +2181,7 @@ ncp_daemonize_self(void)
     freopen( "/dev/null", "w", stderr);
         
 NCP_RETURN_LABEL        
+#endif
     return(ncpStatus);
 }
 
@@ -2109,7 +2195,7 @@ ncp_ncav3_config_kernel(
     ncp_bool_t                internal)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_cfg_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2122,13 +2208,13 @@ ncp_ncav3_config_kernel(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(nca));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(swState));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_CFG, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_CFG, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return(ncpStatus);
 }
 
@@ -2138,20 +2224,20 @@ ncp_ncav3_kernel_destroy(
     ncp_dev_hdl_t dev)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_cfg_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_KERNEL_DESTROY, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_KERNEL_DESTROY, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return(ncpStatus);
 }
 
@@ -2163,7 +2249,7 @@ ncp_ncav3_enable_ipcq(
     ncp_uint8_t   pgitId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_ipcq_modify_t arg;
 
     /*
@@ -2180,13 +2266,13 @@ ncp_ncav3_enable_ipcq(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_ENABLE_IPCQ, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_ENABLE_IPCQ, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return(ncpStatus);
 }
 
@@ -2198,7 +2284,7 @@ ncp_ncav3_disable_ipcq(
     ncp_uint8_t   pgitId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_ipcq_modify_t arg;
 
     /*
@@ -2215,13 +2301,13 @@ ncp_ncav3_disable_ipcq(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_DISABLE_IPCQ, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_DISABLE_IPCQ, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return(ncpStatus);
 }
 
@@ -2234,7 +2320,7 @@ ncp_ncav3_get_qpm_stats(
     ncp_uint64_t  *overflow)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2249,13 +2335,13 @@ ncp_ncav3_get_qpm_stats(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 1));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 2));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return(ncpStatus);
 }
 
@@ -2266,7 +2352,7 @@ ncp_ncav3_enable_kernel_tqs(
     ncp_bool_t    enable)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2276,13 +2362,13 @@ ncp_ncav3_enable_kernel_tqs(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return(ncpStatus);
 }
 
@@ -2292,6 +2378,7 @@ ncp_ncav3_nca_queue_disable(
     ncp_uint32_t  queueId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
 
     ncp_ioc_ncav3_generic_t arg;
 
@@ -2301,13 +2388,13 @@ ncp_ncav3_nca_queue_disable(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return(ncpStatus);
 }
 
@@ -2317,7 +2404,7 @@ ncp_ncav3_nca_queue_enable(
     ncp_uint32_t  queueId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2326,13 +2413,13 @@ ncp_ncav3_nca_queue_enable(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return(ncpStatus);
 }
 
@@ -2344,7 +2431,7 @@ ncp_ncav3_queue_group_add(
     ncp_ncav3_recv_queue_type_t ordering)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2356,13 +2443,13 @@ ncp_ncav3_queue_group_add(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return(ncpStatus);
 }
 
@@ -2372,7 +2459,7 @@ ncp_ncav3_queue_group_delete(
     ncp_uint32_t queueGroupId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2381,13 +2468,13 @@ ncp_ncav3_queue_group_delete(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return(ncpStatus);
 }
 
@@ -2398,7 +2485,7 @@ ncp_ncav3_queue_group_modify(
     ncp_ncav3_recv_queue_type_t ordering)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2408,13 +2495,13 @@ ncp_ncav3_queue_group_modify(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2425,7 +2512,7 @@ ncp_ncav3_nca_queue_group_set(
     ncp_uint32_t queueGroupId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2435,13 +2522,13 @@ ncp_ncav3_nca_queue_group_set(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2453,7 +2540,7 @@ ncp_ncav3_tqs_queue_group_set(
     ncp_uint8_t numQueueGroups)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2465,13 +2552,13 @@ ncp_ncav3_tqs_queue_group_set(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2486,7 +2573,7 @@ ncp_ncav3_nca_queue_configure(
     ncp_task_nca_queue_sched_params_t *params)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2503,13 +2590,13 @@ ncp_ncav3_nca_queue_configure(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 1));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 2));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2520,7 +2607,7 @@ ncp_ncav3_tqs_configure_flags_get(
     ncp_task_tqs_shared_t *pFlags)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2531,13 +2618,13 @@ ncp_ncav3_tqs_configure_flags_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2548,7 +2635,7 @@ ncp_ncav3_tqs_memory_quota_group_get(
     ncp_uint32_t *pMemoryQuotaGroupId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2559,13 +2646,13 @@ ncp_ncav3_tqs_memory_quota_group_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2577,7 +2664,7 @@ ncp_ncav3_tqs_queue_group_get(
     ncp_uint8_t *pNumQueueGroups)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2590,13 +2677,13 @@ ncp_ncav3_tqs_queue_group_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 1));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2607,7 +2694,7 @@ ncp_ncav3_queue_group_membership_get(
     ncp_uint32_t  *pQueueGroupId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2618,13 +2705,13 @@ ncp_ncav3_queue_group_membership_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2635,7 +2722,7 @@ ncp_ncav3_queue_group_name_get(
     ncp_task_resource_name_t *name)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2646,13 +2733,13 @@ ncp_ncav3_queue_group_name_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2663,7 +2750,7 @@ ncp_ncav3_tqs_name_get(
     ncp_task_resource_name_t *pResourceName)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2674,13 +2761,13 @@ ncp_ncav3_tqs_name_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2691,7 +2778,7 @@ ncp_ncav3_nca_queue_name_get(
     ncp_task_resource_name_t *name)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2702,13 +2789,13 @@ ncp_ncav3_nca_queue_name_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2719,7 +2806,7 @@ ncp_ncav3_queue_group_id_get(
     ncp_uint32_t *pQueueGroupId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2731,13 +2818,13 @@ ncp_ncav3_queue_group_id_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 1));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2748,7 +2835,7 @@ ncp_ncav3_tqs_id_get(
     ncp_uint32_t *pTqsId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2760,13 +2847,13 @@ ncp_ncav3_tqs_id_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 1));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2777,7 +2864,7 @@ ncp_ncav3_nca_queue_id_get(
     ncp_uint32_t *pNcaQueueId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2789,13 +2876,13 @@ ncp_ncav3_nca_queue_id_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 1));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2806,7 +2893,7 @@ ncp_ncav3_cpu_app_profile_name_get(
     ncp_task_resource_name_t *name)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2817,13 +2904,13 @@ ncp_ncav3_cpu_app_profile_name_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2834,7 +2921,7 @@ ncp_ncav3_nca_queue_profile_name_get(
     ncp_task_resource_name_t *name)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2845,13 +2932,13 @@ ncp_ncav3_nca_queue_profile_name_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2862,7 +2949,7 @@ ncp_ncav3_nca_queue_profile_id_get(
     ncp_uint32_t  *profileId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2873,13 +2960,13 @@ ncp_ncav3_nca_queue_profile_id_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2890,7 +2977,7 @@ ncp_ncav3_pool_name_get(
     ncp_task_resource_name_t *name)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2901,13 +2988,13 @@ ncp_ncav3_pool_name_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2918,7 +3005,7 @@ ncp_ncav3_pool_id_get(
     ncp_uint8_t              *bufferPoolId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2930,13 +3017,13 @@ ncp_ncav3_pool_id_get(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 1));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2947,7 +3034,7 @@ ncp_ncav3_perform_tqs_bind_checks(
     ncp_bool_t    uMode)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2957,13 +3044,13 @@ ncp_ncav3_perform_tqs_bind_checks(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -2974,7 +3061,7 @@ ncp_ncav3_set_tqs_configured_state(
     ncp_bool_t    configured)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -2984,13 +3071,13 @@ ncp_ncav3_set_tqs_configured_state(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -3005,7 +3092,7 @@ ncp_ncav3_tqs_configure(
     ncp_bool_t   uMode)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -3022,13 +3109,13 @@ ncp_ncav3_tqs_configure(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 1));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 2));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -3038,7 +3125,7 @@ ncp_ncav3_set_tracing_enable(
     ncp_bool_t enable)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -3047,13 +3134,13 @@ ncp_ncav3_set_tracing_enable(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -3064,7 +3151,7 @@ ncp_ncav3_queue_set_tracing_enable(
     ncp_uint32_t ncaQueueId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -3074,13 +3161,13 @@ ncp_ncav3_queue_set_tracing_enable(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -3089,7 +3176,7 @@ ncp_ncav3_reset_tracing(
     ncp_dev_hdl_t dev)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -3097,13 +3184,13 @@ ncp_ncav3_reset_tracing(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -3114,7 +3201,7 @@ ncp_ncav3_update_kernel_tqs_state(
     ncp_int32_t   profileId)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -3124,13 +3211,13 @@ ncp_ncav3_update_kernel_tqs_state(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -3142,7 +3229,7 @@ ncp_ncav3_check_queue_group_for_orphaned_queues(
     ncp_bool_t   takeLock)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -3153,13 +3240,13 @@ ncp_ncav3_check_queue_group_for_orphaned_queues(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -3170,7 +3257,7 @@ ncp_ncav3_get_app_profile_pool_mapping(
     ncp_bool_t poolEnabled[8])
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -3182,13 +3269,13 @@ ncp_ncav3_get_app_profile_pool_mapping(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 1));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -3199,7 +3286,7 @@ ncp_ncav3_get_app_profile_name(
     ncp_task_resource_name_t *appProfileName)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -3210,13 +3297,13 @@ ncp_ncav3_get_app_profile_name(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -3227,7 +3314,7 @@ ncp_ncav3_get_unscheduled_receive_queue_profile_pool_mapping(
     ncp_bool_t poolEnabled[8])
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -3239,13 +3326,13 @@ ncp_ncav3_get_unscheduled_receive_queue_profile_pool_mapping(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 1));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 
@@ -3256,7 +3343,7 @@ ncp_ncav3_get_unscheduled_receive_queue_profile_name(
     ncp_task_resource_name_t *queueProfileName)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+#if 0
     ncp_ioc_ncav3_generic_t arg;
 
     arg.NCP_POINTER(st) = &ncpStatus;
@@ -3267,13 +3354,13 @@ ncp_ncav3_get_unscheduled_receive_queue_profile_name(
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
     NCP_POINTER_FIXUP(arg.NCP_POINTER_ARRAY_64(p, 0));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_TASK_NCAV3_GENERIC, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return ncpStatus;
 }
 #endif
@@ -3283,6 +3370,7 @@ ncp_enable_pmu_usermode(
     ncp_dev_hdl_t dev)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+#if 0
 
     ncp_ioc_status_t arg;
 
@@ -3290,13 +3378,13 @@ ncp_enable_pmu_usermode(
 
     NCP_POINTER_FIXUP(arg.NCP_POINTER_64(st));
 
-    if (ioctl((intptr_t) dev, NCP_IOC_PMU_USER_EN, &arg) == -1)
+    if (ioctl((uintptr_t) dev, NCP_IOC_PMU_USER_EN, &arg) == -1)
     {
         return ncp_status_code();
     }
 
 NCP_RETURN_LABEL
-
+#endif
     return(ncpStatus);
 }
 #endif /* __linux__ */

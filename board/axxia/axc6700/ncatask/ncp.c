@@ -155,6 +155,9 @@ ncp_usleep(
     return ncp_sys_usleep(usecs);
 }
 
+
+#if 0 
+this is implemented in uboot
 /*
  * ncp_reset
  */
@@ -190,7 +193,7 @@ ncp_reset(
 
     return ncp_dev_reset(devHdl);
 }
-
+#endif
 
 /*
  * ncp_read8

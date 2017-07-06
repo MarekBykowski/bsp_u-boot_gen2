@@ -2932,8 +2932,11 @@ ncp_st_t ncp_task_unmap_pools(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
         if (0 != (pvtTqsHdl->mappedPools & (1<<poolId)))
         {    
             if (1 == ncpTaskPoolMapCnt[mapCntIdx])
-            {    
+            {   
+#if 0
+				uboot is not using mapping
 				munmap(pPool->poolVA, pPool->poolSize);
+#endif
             }
             (pvtTqsHdl->mappedPools &= ~(1<<poolId));
             ncpTaskPoolMapCnt[mapCntIdx]--;
