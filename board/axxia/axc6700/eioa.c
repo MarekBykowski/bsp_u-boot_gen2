@@ -1525,6 +1525,8 @@ int
 initialize_task_io(void)
 #endif
 {
+    ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
+
     debug("Resetting device...");
 	if (0 != ncp_dev_reset()) {
 		printf("Device reset Failed\n");
@@ -1639,7 +1641,8 @@ initialize_task_io(void)
 		/* NCAv3 code end */
 	}
 
-	return 0;
+NCP_RETURN_LABEL
+    return ncpStatus;
 }
 
 
