@@ -24,7 +24,7 @@ ENTRY(__diable_ecc_parity_l3)
 	ldr	x12, =(DICKENS + 0x0) /*hnf_cfg_ctrl*/
 	add	x11, x11, x12
 	ldr x13, [x11]
-	orr x13, x13, #0x3f<<12 /*clear bits 12-18*/
+	orr x13, x13, #0x2<<13 /*set bits*/
 	str x13, [x11] 
 	add	w10, w10, 1
 	cmp	w10, 0x27

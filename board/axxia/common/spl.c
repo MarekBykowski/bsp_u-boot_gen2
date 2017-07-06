@@ -1534,11 +1534,11 @@ board_init_f(ulong dummy)
 				printf("gpdma_xfer failed %d\n", ret);
 		}
 #endif
-
 #if 0
+		__asm_disable_l3_cache();
 		if (__diable_ecc_parity_l3() != 0)
 			printf("disabling ECC and parity for L3 failed\n");
-asm volatile("mb7: b mb7\n");
+		__asm_enable_l3_cache();
 #endif
 		printf("pgt are at %p\n", (void*) pgt);
 
