@@ -4,7 +4,6 @@
  **                                                                       *
  **************************************************************************/
 
-#include <linux/string.h>
 #include "uboot/ncp_sal_types_linux.h"
 #include "uboot/ncp_status.h"
 #include "uboot/axxia.h"
