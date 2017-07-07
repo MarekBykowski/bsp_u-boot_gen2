@@ -3,7 +3,7 @@
  **    Copyright (c) 2001-2017, Intel Corporation.                        *
  **                                                                       *
  **************************************************************************/
-#include <compiler.h>
+
 #include <malloc.h>
 
 #include "uboot/ncp_sal_types_linux.h"
@@ -129,187 +129,6 @@ NCP_RETURN_LABEL
     return ncpStatus;
 }
 
-ncp_st_t
-ncp_task_tbr_remove_from_cpupool_tqs_list(
-    ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl)
-{
-    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-    ncp_task_tqs_swState_t *currTqs;
-    ncp_task_tqs_swState_t *prevTqs;
-
-    ncp_task_pool_t        *pPool;
-    ncp_task_tqs_swState_t *pTqs;
-
-    pPool = pvtTqsHdl->cpuPoolHdl;
-    pTqs = pvtTqsHdl->pTqs;
-
-    NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
-                          ncp_xlf_task_tbr_remove_from_cpupool_tqs_list_params,
-                          NCP_MSG_DEBUG, "[%s()] pool = %d\r\n",
-                          __func__, pPool->poolId);
-
-    currTqs = pPool->u.cpu.pCpuPoolTQSets;
-    prevTqs = NULL;
-
-    while (NULL != currTqs)
-    {
-        if (currTqs == pTqs)
-        {
-            if (currTqs == pPool->u.cpu.pCpuPoolTQSets)
-            {
-                pPool->u.cpu.pCpuPoolTQSets = currTqs->pNextCpuPoolTqs;
-            }
-            else
-            {
-                prevTqs->pNextCpuPoolTqs = currTqs->pNextCpuPoolTqs;
-            }
-            /* Found it! Return success. */
-            NCP_RETURN(NCP_ST_SUCCESS);
-        }
-        prevTqs = currTqs;
-        currTqs = currTqs->pNextCpuPoolTqs;
-    }
-
-    /* Couldn't find the TQS. Must be an RTE error. */
-    ncpStatus = NCP_ST_INTERNAL_ERROR;
-
-NCP_RETURN_LABEL
-
-    return ncpStatus;
-}
-
-ncp_st_t
-ncp_task_tbr_cpu_pool_recovery_clear(ncp_uint8_t poolId)
-{
-    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-    ncp_task_pool_t *pPool = &pNcpTaskSwState->taskPools[poolId];
-    ncp_task_tqs_swState_t *pTqs;
-
-    NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
-                          ncp_xlf_task_tbr_cpu_pool_recovery_clear_params,
-                          NCP_MSG_DEBUG,
-                          "Clear cpu pool recovery condition for pool %d\r\n",
-                          poolId);
-
-    if (TRUE == pPool->u.cpu.inCpuPoolRecovery)
-    {
-        pPool->u.cpu.inCpuPoolRecovery = FALSE;
-
-        pTqs = pPool->u.cpu.pCpuPoolTQSets;
-        while(NULL != pTqs)
-        {
-            if (0 == pTqs->cpuPoolId)
-            {
-                NCP_CALL(NCP_ST_INTERNAL_ERROR);
-            }
-            NCP_TASK_TQS_ENABLE(pTqs->tqsId);
-            pTqs = pTqs->pNextCpuPoolTqs;
-        }
-    }
-
-NCP_RETURN_LABEL
-    return(ncpStatus);
-}
-
-void
-ncp_task_increment_pool_use_counts(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl)
-{
-    int poolId;
-    
-    if (pvtTqsHdl->cpuPoolHdl)
-    {
-        pvtTqsHdl->cpuPoolHdl->poolUseCnt++;
-    }
-    else
-    {
-        for (poolId  = NCP_NCAV3_FIRST_SHARED_POOL_ID; 
-             poolId <= NCP_NCAV3_LAST_SHARED_POOL_ID;
-             poolId++)
-        {
-            if (0 == (pvtTqsHdl->pProcess->poolsMask  & (1<<poolId)))
-            {
-                continue;
-            }
-            pNcpTaskSwState->taskPools[poolId].poolUseCnt++;
-        }            
-    }            
-    return;
-}
-    
-ncp_st_t
-ncp_task_decrement_pool_use_counts(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl)
-{
-    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-    
-    int poolId;
-    
-    for (poolId  = NCP_NCAV3_FIRST_SHARED_POOL_ID; 
-         poolId <= NCP_NCAV3_LAST_CPU_POOL_ID;
-         poolId++)
-    {
-        if (0 == (pvtTqsHdl->pProcess->poolsMask  & (1<<poolId)))
-        {
-            continue;
-        }
-        pNcpTaskSwState->taskPools[poolId].poolUseCnt--;
-        if (0 == pNcpTaskSwState->taskPools[poolId].poolUseCnt)
-        {
-            /* Recover orphaned buffers */
-            NCP_TASK_TBR_BUFFERS_RECOVER(pvtTqsHdl, NCP_TASK_TBR_STATE_RTE_OWNED);
-            if (NCP_ST_SUCCESS != ncpStatus)
-            {    
-                NCP_CALL(ncpStatus);
-            }                  
-            
-            /* Perform NCA Rx buffer refills */
-            if (pvtTqsHdl->cpuPoolHdl)
-            {   
-                NCP_TASK_TBR_GLOBAL_POOL_REFILL_RECOVERY(pvtTqsHdl);                     
-
-                /* Any recovery has taken place now,   so clear in-recovery pool flag */
-                NCP_TASK_TBR_CPU_POOL_RECOVERY_CLEAR(poolId);
-            }  
-        }    
-    }            
-
-NCP_RETURN_LABEL
-    return(ncpStatus);
-}
-    
-ncp_st_t
-ncp_task_disble_tqsets_by_poolId(ncp_uint32_t poolId)
-{
-    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-    ncp_task_pool_t *pPool = &pNcpTaskSwState->taskPools[poolId];
-    ncp_task_tqs_swState_t *pTqs;
-
-    if (FALSE == pPool->u.cpu.inCpuPoolRecovery)
-    {    
-        /*
-         * Mark pool as in recovery state.
-         */
-        pPool->u.cpu.inCpuPoolRecovery = TRUE;
-        
-        /*
-         * Disable all TQSets that use this cpu pool,  and 
-         * mark them as in recovery state too.
-         */           
-        pTqs = pPool->u.cpu.pCpuPoolTQSets;
-        while(NULL != pTqs)
-        {
-            if (0 == pTqs->cpuPoolId)
-            {
-                NCP_CALL(NCP_ST_INTERNAL_ERROR);
-            } 
-            NCP_TASK_TQS_DISABLE(pTqs->tqsId);
-            pTqs = pTqs->pNextCpuPoolTqs;
-        }    
-    }
-     
-NCP_RETURN_LABEL
-    return(ncpStatus);
-}
-
 
 ncp_st_t
 ncp_task_tbr_unbind_threads(ncp_task_process_info_t *pProcess) 
@@ -332,228 +151,6 @@ ncp_task_tbr_unbind_threads(ncp_task_process_info_t *pProcess)
 NCP_RETURN_LABEL       
     return(ncpStatus);                              
 }
-
-
-/* 
- * This function is called when an ungraceful process restart is detected.  Specifically,    
- * the process still has active binds from its previous incarnation.   All threads 
- * belonging to this process are assumed to have terminated.
- */
-ncp_st_t
-ncp_task_tbr_initiate_recovery(ncp_task_process_info_t *pProcess)
-{
-    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-    ncp_task_thread_info_t  *pThread;
-    ncp_bool_t needOpcqCleanup;
-    ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl;
-
-    if (pProcess)
-    {    
-        NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
-          ncp_xlf_task_tbr_initiate_recovery_for_process,
-          NCP_MSG_INFO,
-          "attempting to recover process with pProcess=%p, name=%s, pid=%d\r\n",
-          pProcess,
-          &pProcess->clientProcess.name[0],
-          pProcess->pid);
-    }      
-    else
-    {
-        NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
-          ncp_xlf_task_tbr_initiate_recovery_for_process_null_process_ptr,
-          NCP_MSG_ERROR,
-          "Error: pProcess == NULL\n");
-        NCP_CALL(NCP_ST_INTERNAL_ERROR);
-    }
-
-    /*
-     * Verify RTE did not crash in a API that is not assocated with a tqs handle.
-     * This could leave internal structs in an inconsistent state,  and thus we cannot safely recover.
-     * We expect a value of one,   since we incrmented it during the bind API.
-     */    
-    if (FALSE == NCP_NCA_TEST_CRITICAL_SECTION(pNcpTaskSwState->inCriticalSection, 1))    
-    {
-        NCP_CALL(NCP_ST_TASK_IN_GLOBAL_CRITICAL_SECTION);                
-    }  
-            
-    /*
-     * Verify that all handles have a critical section count of zero.   We cannot safely recover if the
-     * fault occured within the RTE
-     */
-    pThread = pProcess->activeThreads;     
-    while (pThread) 
-    {
-        ncp_task_tqs_swState_t *pTqs = &pNcpTaskSwState->tqsSwState[pThread->tqsId];        
-                 
-        pvtTqsHdl = (ncp_task_pvt_tqsHdl_data_t *)pTqs->clientTqsHdls;
-        while(pvtTqsHdl)
-        {
-#if 0
-            NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
-                                  ncp_xlf_task_tbr_initiate_recovery_checkingCritSecCount,
-                                  NCP_MSG_DEBUG,
-                                  "checking critSec count for tqsHdl=%p\r\n",
-                                  pvtTqsHdl);
-#endif
-            if (FALSE == NCP_NCA_TEST_CRITICAL_SECTION(pvtTqsHdl->inCriticalSection, 0))
-            {
-                NCP_CALL(NCP_ST_TASK_PROCESS_IN_CRITICAL_SECTION);
-            }        
-            pvtTqsHdl = pvtTqsHdl->nextClientTqsHdl; 
-        }  
-        pThread = pThread->pNextThread;        
-    }    
-            
-    /* Already signalled? */
-    if (FALSE == pProcess->inProcessRecovery)
-    {                                 
-        pProcess->inProcessRecovery = TRUE;
-        needOpcqCleanup = TRUE;
-        
-        /*
-         * Restore the pool mappings for all threads belonging to this process
-         */
-        pThread = pProcess->activeThreads;     
-        while (pThread) 
-        {
-            ncp_task_tqs_swState_t *pTqs = &pNcpTaskSwState->tqsSwState[pThread->tqsId];           
-
-            /*
-             * Map pool(s) used by this Thread/TQset
-             */
-            NCP_CALL(ncp_task_map_pools(pThread->recoveryTqsHdl,  
-                                        pThread->tqsId));
-               
-            /* 
-             * set thread/hdl/TQS states to in recovery mode
-             */
-            pThread->executionState = NCP_TASK_THREAD_NEEDS_CLEANUP;
-            pThread->recoveryTqsHdl->executionState = NCP_TASK_THREAD_NEEDS_CLEANUP;
-            pTqs->inTqsRecovery = TRUE;
-                                                                 
-            /*
-             * if TQS uses a CPU pool,  then must set TQS disabled for all TQsets that use this pool,
-             * including threads that are not associated with this process. 
-             *
-             * TODO - Allow CPU pool recovery on a per process basis if new API called to 
-             * tell RTE that independent recovery is supported (no refill offloading).
-             */
-            if (pTqs->cpuPoolId)
-            {
-                NCP_CALL(ncp_task_disble_tqsets_by_poolId(pTqs->cpuPoolId));
-            }
-            else
-            {
-                /* Just disable this TQSet */    
-                NCP_TASK_TQS_DISABLE(pTqs->tqsId);
-            }    
-             
-            /*
-             * Wait for oPCQs to drain.   Just use first handle if more than one.
-             */
-            pvtTqsHdl = (ncp_task_pvt_tqsHdl_data_t *)pTqs->clientTqsHdls;
-
-            NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
-                                  ncp_xlf_task_tbr_initiate_recovery_baseTqsHdl,
-                                  NCP_MSG_DEBUG,
-                                  "initiate_recovery - base tqsHdl=%p\r\n",
-                                  pvtTqsHdl);
-
-            while(pvtTqsHdl)
-            {
-                
-                NCP_ASSERT(NCP_TASK_TQS_HDL_COOKIE == pvtTqsHdl->cookie, 
-                           NCP_ST_INTERNAL_ERROR);
-                           
-                if (needOpcqCleanup)
-                {  
-                    ncp_task_pcq_t *p_oPCQ;
-
-                    NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
-                                          ncp_xlf_task_tbr_initiate_recovery_opcqCleanup,
-                                          NCP_MSG_DEBUG,
-                                          "initiate_recovery - oPCQ cleanup with tqsHdl = %p\r\n",
-                                          pvtTqsHdl);
-
-                    p_oPCQ = &pvtTqsHdl->pTqs->txQ0;                 
-                    ncpStatus = ncp_task_tx_queue_flush((ncp_task_tqs_hdl_t)pvtTqsHdl, 0);
-
-                    if ( NCP_ST_PTHREAD_MUTEX_OWNER_DEAD == ncpStatus ) {
-                        NCP_CALL(NCP_ST_PTHREAD_MUTEX_OWNER_DEAD);
-                    }
-
-                    if ((ncpStatus != NCP_ST_SUCCESS) &&
-                        (ncpStatus != NCP_ST_TASK_TQS_SHARING_VIOLATION))
-                    {
-                        NCP_CALL(ncpStatus);
-                    }
-
-                    NCP_TASK_UPDATE_NUM_TX_ENTRIES_AVAIL(pvtTqsHdl, p_oPCQ);            
-                    
-                    p_oPCQ = &pvtTqsHdl->pTqs->txQ1;                    
-                    ncpStatus = ncp_task_tx_queue_flush((ncp_task_tqs_hdl_t)pvtTqsHdl, 1);
-
-                    if ( NCP_ST_PTHREAD_MUTEX_OWNER_DEAD == ncpStatus ) {
-                        NCP_CALL(ncpStatus);
-                    } 
-
-                    if ((ncpStatus != NCP_ST_SUCCESS) &&
-                        (ncpStatus != NCP_ST_TASK_TQS_SHARING_VIOLATION))
-                    {
-                        NCP_CALL(ncpStatus);
-                    }
-
-                    NCP_TASK_UPDATE_NUM_TX_ENTRIES_AVAIL(pvtTqsHdl, p_oPCQ);
-                    
-                    needOpcqCleanup = FALSE;
-                }
-
-                NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
-                                      ncp_xlf_task_tbr_initiate_recovery_opcqNukingSendDoneState,
-                                      NCP_MSG_DEBUG,
-                                      "initiate_recovery - oPCQ nuking sendDone state with tqsHdl = %p\r\n",
-                                      pvtTqsHdl);
-                    
-                /*
-                 * Nuke the thread local sendDone struct for TXQ0
-                 */
-                 
-                pvtTqsHdl->sendDoneInfo[0].currFillEntry
-                    = pvtTqsHdl->sendDoneInfo[0].currPendingEntry
-                    = pvtTqsHdl->sendDoneInfo[0].entries; 
-                pvtTqsHdl->sendDoneInfo[0].pendingIdx
-                    = pvtTqsHdl->sendDoneInfo[0].cIdx
-                    = 0;                       
-                pvtTqsHdl->sendDoneInfo[0].sendDonePending = FALSE;
-                                
-                /*
-                 * Nuke the thread local sendDone struct for TXQ1
-                 */
-                 
-                pvtTqsHdl->sendDoneInfo[1].currFillEntry
-                    = pvtTqsHdl->sendDoneInfo[1].currPendingEntry
-                    = pvtTqsHdl->sendDoneInfo[1].entries; 
-                pvtTqsHdl->sendDoneInfo[1].pendingIdx 
-                    = pvtTqsHdl->sendDoneInfo[1].cIdx
-                    = 0;                           
-                pvtTqsHdl->sendDoneInfo[1].sendDonePending = FALSE;
-                
-                /* Advance to next */                        
-                pvtTqsHdl = pvtTqsHdl->nextClientTqsHdl; 
-            }                
-
-                                                         
-            pThread = pThread->pNextThread;                                
-        } /* while */
-
-    }    
-
-    NCP_TASK_TBR_UNBIND_THREADS(pProcess);
-        
-NCP_RETURN_LABEL
-
-    return(ncpStatus);
-}        
 
 
 ncp_st_t
@@ -1578,7 +1175,7 @@ ncp_task_internal_tqs_unbind(
         NCP_TASK_TBR_CPUPOOL_REFILL_COUNT_UPDATE(pvtTqsHdl);
     }
 
-    NCP_TASK_DECREMENT_POOL_USE_COUNTS(pvtTqsHdl);
+    /* RWXXX NCP_TASK_DECREMENT_POOL_USE_COUNTS(pvtTqsHdl); */
 
     /*
      * make sure state is appropriate and perform any cleanup
@@ -2759,11 +2356,13 @@ ncp_task_do_wait(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
      
     if (NCP_NCA_WAIT_NONE != pWait->isr_wait_type)
     {
+        /* RWXXX
         NCP_TASK_BLOCK_ON_INTERRUPT(pvtTqsHdl, 
                                     dev, 
                                     pWait->isr_wait_type, 
                                     pWait->tqsRelId,
-                                    tqsID);  
+                                    tqsID);
+        */
     }
     else
     {
@@ -2932,9 +2531,9 @@ ncp_st_t ncp_task_unmap_pools(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
         if (0 != (pvtTqsHdl->mappedPools & (1<<poolId)))
         {    
             if (1 == ncpTaskPoolMapCnt[mapCntIdx])
-            {   
+            {    
 #if 0
-				uboot is not using mapping
+LAPAJ TODO
 				munmap(pPool->poolVA, pPool->poolSize);
 #endif
             }
@@ -3004,14 +2603,13 @@ ncp_st_t ncp_task_map_pools(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
      
         if (0 == ncpTaskPoolMapCnt[mapCntIdx])
         {   
-#if 0
-			LAPAJ todo
+#if 0 
+			TODO LAPAJ
 			mmapResult = mmap((void *)pPool->poolVA, pPool->poolSize, (PROT_READ | PROT_WRITE), MAP_SHARED,
-                           (uintptr_t)myDevHdl, (off_t) pPool->poolPA);
+                           (intptr_t)myDevHdl, (off_t) pPool->poolPA);
             NCP_ASSERT((mmapResult == (void *)pPool->poolVA),
                     NCP_ST_TASK_MMAP_FAILED);
 #endif
-			mmapResult = (void *) pPool->poolPA;
 
         }
         pvtTqsHdl->mappedPools |= (1<<poolId);
@@ -3167,7 +2765,7 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
         NCP_CALL(ncp_ncav3_enable_ipcq(dev, tqsId / 8, tqsId % 8, tqsId));
     }
     
-    NCP_TASK_INCREMENT_POOL_USE_COUNTS(pvtTqsHdl);             
+    /* RWXXX NCP_TASK_INCREMENT_POOL_USE_COUNTS(pvtTqsHdl); */
     
 
     
@@ -3263,7 +2861,7 @@ ncp_task_detach_tqs(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl)
     if (0 == pTqs->tqsUseCnt)
     {
 #if (1 == NCP_TASK_TBR_ENABLED)
-        NCP_TASK_TBR_TQS_IN_RECOVERY_CLEAR(myNcpHdl, pTqs);
+        /* RWXXX NCP_TASK_TBR_TQS_IN_RECOVERY_CLEAR(myNcpHdl, pTqs); */
 #endif
     }
 
@@ -5258,46 +4856,5 @@ ncp_ncav3_get_queue_profile_from_name(
 NCP_RETURN_LABEL
 
     return ncpStatus;
-}
-
-ncp_st_t
-ncp_task_disable_umode_tqsets(ncp_hdl_t ncpHdl)
-{
-    ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-    int tqsId;
-    
-    /*
-     * Has the GSM been mapped in?  If not,  just skip - config may not have been
-     * performed.
-     */
-    if (NULL == pNcpTaskSwState)
-    {
-        NCP_JUMP_RETURN();
-    }        
-
-    NCP_CALL(NCP_VALIDATE_NCP_HDL(ncpHdl));
-    
-    /* skip if nca not configured or software state not yet initialized */
-    if ((NULL != ((ncp_t *)ncpHdl)->ncaHdl) &&
-        (pNcpTaskSwState->cookie == NCP_TASK_STATE_COOKIE))
-    {
-        for (tqsId=0; tqsId< NCP_NCAV3_NUM_CPU_TQSETS; tqsId++)
-        {
-            ncp_task_tqs_swState_t *pTqs = &pNcpTaskSwState->tqsSwState[tqsId];
-
-            if ((0xFF == pTqs->tqsId)  /* unused ? */
-             || (pTqs->domainId != pNcpTaskSwState->domainId)   /* different domain */
-             || (FALSE == pTqs->configured)                     /* not configured   */
-             || (FALSE == pTqs->pAppProfile->baseProfile.uMode) /* not user mode    */
-             || (FALSE == pTqs->tqsEnabled))                    /* already disabled */
-            {
-                continue;
-            }  
-            NCP_CALL(ncp_task_tqs_disable(ncpHdl, tqsId));     
-        }   
-    }    
-    
-NCP_RETURN_LABEL
-    return(ncpStatus);
 }
 
