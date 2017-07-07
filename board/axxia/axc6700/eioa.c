@@ -50,6 +50,8 @@ DECLARE_GLOBAL_DATA_PTR;
   ==============================================================================
 */
 
+
+#define ALL_TRACES
 #define NCP_EIOA_GEN_CFG_REG_OFFSET(portIndex)                                  \
     0x100000 +                                                                  \
     ((portIndex > 0) ? 0x10000 : 0) +                                           \

@@ -284,6 +284,7 @@ def convert_ncp_write(f, options, parsed_data):
     target = int(m.group(3))
     offset = int(m.group(4), 16)
     values = m.group(5).split(' ')
+    values = [v for v in values if v]  # filter out empty values
     skip = False
     if target == 16 and node in (23, 31):
         skip = offset in (160, 164, 168, 172, 176, 180, 184, 188)
