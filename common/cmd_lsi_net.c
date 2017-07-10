@@ -115,12 +115,9 @@ do_net(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return -1;
 }
 
-extern int __weak
-take_snapshot(int gmac);
-extern int
-initialize_task_io(void);
-extern int
-line_setup(int index);
+extern int __weak take_snapshot(int gmac);
+extern int initialize_task_io(void);
+extern int line_setup(int index);
 
 
 #define DEBUG
