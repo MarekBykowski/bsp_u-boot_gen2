@@ -50,6 +50,8 @@ DECLARE_GLOBAL_DATA_PTR;
   ==============================================================================
 */
 
+
+#define ALL_TRACES
 #define NCP_EIOA_GEN_CFG_REG_OFFSET(portIndex)                                  \
     0x100000 +                                                                  \
     ((portIndex > 0) ? 0x10000 : 0) +                                           \
@@ -1583,6 +1585,8 @@ initialize_task_io(void)
 	debug("done\n");
 
 #endif
+
+#if 0
 	/* NCAv3 code begin */
 	ncp_task_send_meta_t    meta_data;
 	ncp_task_tqs_hdl_t       tqsHdl = NULL;
@@ -1640,6 +1644,7 @@ initialize_task_io(void)
 		ncp_task_send(tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
 		/* NCAv3 code end */
 	}
+#endif
 
 NCP_RETURN_LABEL
     return ncpStatus;
