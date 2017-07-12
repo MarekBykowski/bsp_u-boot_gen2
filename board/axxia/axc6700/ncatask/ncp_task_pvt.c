@@ -2603,6 +2603,8 @@ ncp_st_t ncp_task_map_pools(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
      
         if (0 == ncpTaskPoolMapCnt[mapCntIdx])
         {   
+			printf("mmap memory pool");
+			pPool->poolVA = pPool->poolPA;
 #if 0 
 			TODO LAPAJ
 			mmapResult = mmap((void *)pPool->poolVA, pPool->poolSize, (PROT_READ | PROT_WRITE), MAP_SHARED,
@@ -2903,6 +2905,7 @@ ncp_st_t
 ncp_task_mmap_attach(ncp_t *ncp, 
                      void **pDomainBundle) 
 {
+	printf("mmap attach");
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
                                                             
 #if  defined(NCP_DEV_SOCKET) 
@@ -2950,6 +2953,8 @@ ncp_st_t
 ncp_task_mmap_detach(ncp_t *ncp, 
                      void *pDomainBundle) 
 {
+
+	printf("mmap detach");
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
                                                             
 #if  defined(NCP_DEV_SOCKET) 

@@ -996,6 +996,7 @@ ncp_st_t
 ncp_mutex_lock(ncp_mutex_t *pMutex)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
+	return ncpStatus; /* LAPAJ */
     int err = 0;
     
 #ifndef PROC_EP5020
@@ -1063,7 +1064,8 @@ ncp_st_t
 ncp_mutex_unlock(ncp_mutex_t *pMutex)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+	return ncpStatus;
+/*LAPAJ*/
     NCP_ASSERT((pthread_mutex_unlock(&pMutex->mutex)) == 0, NCP_ST_MUTEX_POST_ERROR);
 
 NCP_RETURN_LABEL
@@ -1131,7 +1133,8 @@ ncp_st_t
 ncp_sem_wait(ncp_sem_t *sem)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-
+	/* LAPAJ */
+	return ncpStatus;
     NCP_TRACEPOINT(Intel_AXXIA_ncp_sal, ncp_sem_wait_entry, NCP_MSG_ENTRY, 
         "sem=%p\n", sem);
 #ifndef PROC_EP5020
