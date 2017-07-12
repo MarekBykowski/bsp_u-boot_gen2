@@ -1583,10 +1583,27 @@ initialize_task_io(void)
 				return -1;
 		}
 	debug("done\n");
-
+/* enable ipcq */
 #endif
 
-#if 0
+
+NCP_RETURN_LABEL
+    return ncpStatus;
+}
+
+
+ncp_st_t tx_rx_task(void){
+
+	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
+	/* enable ipcq */
+#define NCP_NCA_ITP_IPCQ_ONLINE00 0x0017FF40
+#define NCP_NCA_ITP_IPCQ_VALID00  0x0017FF60
+	NCP_CALL(ncr_write32(NCP_REGION_NCAV3_CORE,
+				NCP_NCA_ITP_IPCQ_ONLINE00, 0x1));
+	NCP_CALL(ncr_write32(NCP_REGION_NCAV3_CORE,
+				NCP_NCA_ITP_IPCQ_VALID00, 0x1));
+
+#if 1
 	/* NCAv3 code begin */
 	ncp_task_send_meta_t    meta_data;
 	ncp_task_tqs_hdl_t       tqsHdl = NULL;
@@ -1599,6 +1616,7 @@ initialize_task_io(void)
 	ncp_uint8_t              vpId = 0;
 	ncp_uint8_t              vpTxId = 1;
 
+    printf("trying to attach...\n");
 	NCP_CALL(ncp_config_uboot_attach(devNum, &ncpHdl));
 	ncp_task_resource_name_t processName;
 	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
@@ -1614,40 +1632,47 @@ initialize_task_io(void)
 #define SHARED_BUFFER_POOL2   2
 	params.useAllocator[SHARED_BUFFER_POOL2] = TRUE;
 
+    printf("trying to bind...\n");
 	NCP_CALL(ncp_task_tqs_bind(ncpHdl, RECV_PGIT, &params, &processName, &processName, &tqsHdl));
 
 	ncp_task_header_t        *task;
 	ncp_uint32_t             numRx;
-	while (true){
+    printf("before receive loop...\n");
+	//while (true)
+	{
 		ncpStatus = ncp_task_recv(tqsHdl, 1, &numRx, &task, FALSE);
 		if(NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
 		{
+			printf("empty");
 			/* sleep(10); */
-			continue;
+	//		continue;
 		}
+		else{
+			printf("rx status %d",ncpStatus);
+			memset(&meta_data, 0x0, sizeof(ncp_task_send_meta_t));
+			task->templateId = vpTxId;
 
-		memset(&meta_data, 0x0, sizeof(ncp_task_send_meta_t));
-		task->templateId = vpTxId;
+			/* myCreateTask(tqsHdl, vpTxId, &newTask); */
+			printf("sending task...\n");
+			/* printTask(newTask); */
 
-		/* myCreateTask(tqsHdl, vpTxId, &newTask); */
-		printf("sending task...\n");
-		/* printTask(newTask); */
+			/* Fill meta data fields */
+			meta_data.sendDoneFn = NULL;
+			meta_data.sendDoneArg = NULL;
+			meta_data.freeHeader = TRUE;
+			meta_data.freeDataPointers = TRUE;
+			meta_data.issueCompletion = FALSE;
+			meta_data.taskHeader = task;
 
-		/* Fill meta data fields */
-		meta_data.sendDoneFn = NULL;
-		meta_data.sendDoneArg = NULL;
-		meta_data.freeHeader = TRUE;
-		meta_data.freeDataPointers = TRUE;
-		meta_data.issueCompletion = FALSE;
-		meta_data.taskHeader = task;
-
-		ncp_task_send(tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
+			ncp_task_send(tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
+		}
 		/* NCAv3 code end */
 	}
 #endif
 
-NCP_RETURN_LABEL
-    return ncpStatus;
+	NCP_RETURN_LABEL
+    printf("return with status %d\n",ncpStatus);
+		return ncpStatus;
 }
 
 
