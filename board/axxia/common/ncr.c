@@ -1232,9 +1232,19 @@ ncr_write(ncp_uint32_t region,
 		if (NULL != buffer) {
 			ncp_uint64_t offset = 0;
 
-			if(NCP_NODE_ID(region) == 0x101) {
-				offset = NCP_TARGET_ID(region) * 0x80000 + 
-							(NCA + address);
+			if(NCP_NODE_ID(region)) {
+				if (NCP_TARGET_ID(region) == 0x0)
+ 					/* 0x80_2008_0000 */
+					offset = NCP_TARGET_ID(region) + (NCA + address); 
+				else if (NCP_TARGET_ID(region) == 0x1)
+ 					/* 0x80_2008_0000 */
+					offset = NCP_TARGET_ID(region) + 0x80000 + (NCA + address); 
+				else if (NCP_TARGET_ID(region) == 0x2)
+					/* 0x80_2210_0010 */
+					offset = NCP_TARGET_ID(region) + 0x22100000 + (NCA + address); 
+				else if (NCP_TARGET_ID(region) == 0x3)
+					/* 0x80_2300_0000 */ 
+					offset = NCP_TARGET_ID(region) + 0x23000000 + (NCA + address); 
 			} else if(NCP_NODE_ID(region) == 0x109) {
 				offset = (unsigned long)(MME_POKE + address);
 			} else if(NCP_NODE_ID(region) == 0x1d0) {
