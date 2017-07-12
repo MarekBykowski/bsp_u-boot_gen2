@@ -1232,7 +1232,7 @@ ncr_write(ncp_uint32_t region,
 		if (NULL != buffer) {
 			ncp_uint64_t offset = 0;
 
-			if(NCP_NODE_ID(region)) {
+			if(NCP_NODE_ID(region) == 0x101) {
 				if (NCP_TARGET_ID(region) == 0x0)
  					/* 0x80_2008_0000 */
 					offset = NCP_TARGET_ID(region) + (NCA + address); 
