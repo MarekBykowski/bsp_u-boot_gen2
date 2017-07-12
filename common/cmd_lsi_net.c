@@ -118,6 +118,7 @@ do_net(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 extern int __weak take_snapshot(int gmac);
 extern int initialize_task_io(void);
 extern int line_setup(int index);
+extern ncp_st_t tx_rx_task(void);
 
 
 #define DEBUG
@@ -157,6 +158,15 @@ do_net_snapshot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	return -1;
 }
+
+int
+do_eioa(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	printf("ml: trying to receive task\n");
+	tx_rx_task();
+	return 0;
+}
+
 /*
   ======================================================================
   Command Definitions
@@ -176,6 +186,10 @@ U_BOOT_CMD(net, 3, 0, do_net,
 
 U_BOOT_CMD(trace, 1, 0, do_trace,
 	   "run trace for eioa\n",
+	   "");
+
+U_BOOT_CMD(eioa, 1, 0, do_eioa,
+	   "run eioa task command\n",
 	   "");
 
 U_BOOT_CMD(snap, 2, 0, do_net_snapshot,

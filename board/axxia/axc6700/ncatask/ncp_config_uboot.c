@@ -10,25 +10,25 @@
 #include "uboot/ncp_mme_ext.h"
 
 /* AXC6732.Engines.NCAv3.NcaDomainInfo.DomainEntry[id=0].startOffset */
-#define DOMAINBOUNDLE_PA           2181038080   /* 0x82000000 */
+#define DOMAINBOUNDLE_PA           0x82000000   /* 0x82000000 */
 /* AXC6732.Engines.NCAv3.NcaDomainInfo.DomainEntry[id=0].vpIOControlVirtualBaseOffset */
-#define DOMAINBOUNDLE_VA           1879048192   /* 0x70000000 */
+#define DOMAINBOUNDLE_VA           0x82000000   /* 0x70000000 */
 /* AXC6732.Engines.NCAv3.NcaDomainInfo.DomainEntry[id=0].size */
 #define DOMAINBOUNDLE_SIZE             524288   /* 0x80000 */
 
 
 
 /* AXC6732.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].physicalBaseAddress */
-#define POOL_2_PA                 2608857088 /* 0x9B800000 */
+#define POOL_2_PA                 0x9B800000 /* 0x9B800000 */
 
 /* AXC6732.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].actualSize */
 #define POOL_2_SIZE               268409088 /* 0xFFF9900 */
 
 /* AXC6732.Engines.MME.MemoryPoolMap.SharedMemoryPools.SharedMemoryPool[id=2].virtualBaseAddress */
-#define POOL_2_VA                 1879572480 /* 0x70080000 */
+#define POOL_2_VA                 0x9B800000 /* 0x70080000 */
 
 /* virtual address + actual size */
-#define POOL_2_VA_END             2147981568 /* 0x80079900 */
+#define POOL_2_VA_END             0xAB7F9900 /* 0x80079900 */
 
 /* AXC6732.Engines.NCAv3.ApplicationProfiles.taskTransmitQueue0Depth */
 #define TASK_QUEUE_TX0_DEPTH      8
@@ -130,12 +130,15 @@ ncav3_map_domain_memory(ncp_t *ncp, ncp_ncav3_hdl_t *nca, ncp_dev_hdl_t dev)
     pNcpTaskSwState->domainMemMap.domainBundle_PA = domInfo->physBase;
     pNcpTaskSwState->domainMemMap.domainBundle_VA = domInfo->virtBase;
     pNcpTaskSwState->domainMemMap.domainBundle_Size = domInfo->size;
-
+/* LAPAJ */
+#if 0
     taskIOMem = ncp_mem_mmap(
         dev,
         (void *)pNcpTaskSwState->domainMemMap.domainBundle_VA,
         pNcpTaskSwState->domainMemMap.domainBundle_Size,
         pNcpTaskSwState->domainMemMap.domainBundle_PA);
+#endif
+	taskIOMem = (void *) pNcpTaskSwState->domainMemMap.domainBundle_PA;
 
     if (NULL == (void *)pNcpTaskSwState->domainMemMap.domainBundle_VA)
     {
@@ -204,15 +207,15 @@ mme_config(ncp_t *ncp)
     memPool[SHARED_BUFFER_POOL2].blockSize[2] = 2048;
     memPool[SHARED_BUFFER_POOL2].blockSize[3] = 256;
 
-    memPool[SHARED_BUFFER_POOL2].virtBase[3]  = 2121138176;
+    memPool[SHARED_BUFFER_POOL2].virtBase[3]  = 2850422784;
     memPool[SHARED_BUFFER_POOL2].physBase[3]  = 2850422784;
     memPool[SHARED_BUFFER_POOL2].numBlocks[3] = 104857;
     
-    memPool[SHARED_BUFFER_POOL2].virtBase[2]  = 2054029312;
+    memPool[SHARED_BUFFER_POOL2].virtBase[2]  = 2783313920;
     memPool[SHARED_BUFFER_POOL2].physBase[2]  = 2783313920;
     memPool[SHARED_BUFFER_POOL2].numBlocks[2] = 32768;
     
-    memPool[SHARED_BUFFER_POOL2].virtBase[1]  = 1986920448;
+    memPool[SHARED_BUFFER_POOL2].virtBase[1]  = 2716205056;
     memPool[SHARED_BUFFER_POOL2].physBase[1]  = 2716205056;
     memPool[SHARED_BUFFER_POOL2].numBlocks[1] = 4096;
     
@@ -314,9 +317,9 @@ ncav3_config_hw(ncp_t *ncp)
 
     p_mPCQ = &pAllocator->mPCQ[0];
     p_mPCQ->nEntries = 16;
-    p_mPCQ->pPCQbase = (void*)0x70000200;
-    p_mPCQ->pConsumerIdx = (void*)0x70000080;
-    p_mPCQ->pProducerIdx = (void*)0x700000c0;
+    p_mPCQ->pPCQbase = (void*)0x82000200;
+    p_mPCQ->pConsumerIdx = (void*)0x82000080;
+    p_mPCQ->pProducerIdx = (void*)0x820000c0;
     p_mPCQ->nEntriesMinusOne = p_mPCQ->nEntries - 1;
     p_mPCQ->nEntriesMinusTwo = p_mPCQ->nEntries - 2;
     p_mPCQ->nEntriesDiv2     = p_mPCQ->nEntries / 2;
@@ -331,9 +334,9 @@ ncav3_config_hw(ncp_t *ncp)
 
     p_mPCQ = &pAllocator->mPCQ[1];
     p_mPCQ->nEntries = 8;
-    p_mPCQ->pPCQbase = (void*)0x70000280;
-    p_mPCQ->pConsumerIdx = (void*)0x70000081;
-    p_mPCQ->pProducerIdx = (void*)0x700000c1;
+    p_mPCQ->pPCQbase = (void*)0x82000280;
+    p_mPCQ->pConsumerIdx = (void*)0x82000081;
+    p_mPCQ->pProducerIdx = (void*)0x820000c1;
     p_mPCQ->nEntriesMinusOne = p_mPCQ->nEntries - 1;
     p_mPCQ->nEntriesMinusTwo = p_mPCQ->nEntries - 2;
     p_mPCQ->nEntriesDiv2     = p_mPCQ->nEntries / 2;
@@ -348,9 +351,9 @@ ncav3_config_hw(ncp_t *ncp)
 
     p_mPCQ = &pAllocator->mPCQ[2];
     p_mPCQ->nEntries = 8;
-    p_mPCQ->pPCQbase = (void*)0x700002c0;
-    p_mPCQ->pConsumerIdx = (void*)0x70000082;
-    p_mPCQ->pProducerIdx = (void*)0x700000c2;
+    p_mPCQ->pPCQbase = (void*)0x820002c0;
+    p_mPCQ->pConsumerIdx = (void*)0x82000082;
+    p_mPCQ->pProducerIdx = (void*)0x820000c2;
     p_mPCQ->nEntriesMinusOne = p_mPCQ->nEntries - 1;
     p_mPCQ->nEntriesMinusTwo = p_mPCQ->nEntries - 2;
     p_mPCQ->nEntriesDiv2     = p_mPCQ->nEntries / 2;
@@ -365,9 +368,9 @@ ncav3_config_hw(ncp_t *ncp)
 
     p_mPCQ = &pAllocator->mPCQ[3];
     p_mPCQ->nEntries = 4;
-    p_mPCQ->pPCQbase = (void*)0x70000300;
-    p_mPCQ->pConsumerIdx = (void*)0x70000083;
-    p_mPCQ->pProducerIdx = (void*)0x700000c3;
+    p_mPCQ->pPCQbase = (void*)0x82000300;
+    p_mPCQ->pConsumerIdx = (void*)0x82000083;
+    p_mPCQ->pProducerIdx = (void*)0x820000c3;
     p_mPCQ->nEntriesMinusOne = p_mPCQ->nEntries - 1;
     p_mPCQ->nEntriesMinusTwo = p_mPCQ->nEntries - 2;
     p_mPCQ->nEntriesDiv2     = p_mPCQ->nEntries / 2;
@@ -570,8 +573,8 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
 	pNcpTaskSwState->uMode = TRUE;
 
 	// to check
-  	pNcpTaskSwState->tqsSwState[0].pCpuPgit = (void*)0x70000080;
-  	pNcpTaskSwState->tqsSwState[0].pNcaPgit = (void*)0x700000c0;
+  	pNcpTaskSwState->tqsSwState[0].pCpuPgit = (void*)0x82000080;
+  	pNcpTaskSwState->tqsSwState[0].pNcaPgit = (void*)0x820000c0;
 
 	ncp_task_process_info_t **pidArray;
 	pidArray = malloc(sizeof(ncp_task_process_info_t*) * 10);
