@@ -160,6 +160,19 @@ do_net_snapshot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 int
+do_uboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	unsigned ih_magic = 0x27051956;  /* Image Magic Number*/
+	
+	if (ih_magic == be32_to_cpu(*(volatile unsigned*)0))
+		memmove((void*)0, (void*)0x40, 0x200000/*Size up to 2M*/);
+
+	void (*entry)(void*, void*) = (void(*)(void*,void*)) 0;
+	entry(NULL, NULL);
+	return -1;
+}
+
+int
 do_eioa(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	printf("ml: trying to receive task\n");
@@ -188,6 +201,10 @@ U_BOOT_CMD(trace, 1, 0, do_trace,
 	   "run trace for eioa\n",
 	   "");
 
+U_BOOT_CMD(uboot, 1, 0, do_uboot,
+	   "boot uboot from uboot from address 0\n",
+	   "");
+
 U_BOOT_CMD(eioa, 1, 0, do_eioa,
 	   "run eioa task command\n",
 	   "");
@@ -195,6 +212,7 @@ U_BOOT_CMD(eioa, 1, 0, do_eioa,
 U_BOOT_CMD(snap, 2, 0, do_net_snapshot,
 	   "macstat gmac[no]\n",
 	   " run snapshot for a gmac[no]\n");
+
 U_BOOT_CMD(mmd, 2, 0, do_mmd,
 	   "\n",
 	   "\n");
