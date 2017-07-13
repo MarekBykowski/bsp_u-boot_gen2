@@ -162,12 +162,26 @@ do_net_snapshot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 int
 do_uboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	unsigned ih_magic = 0x27051956;  /* Image Magic Number*/
+	unsigned magic = 0x27051956;  /* Image Magic Number*/
+	unsigned word0 = 0x1400000a;
+	unsigned *ih = (unsigned*) (volatile unsigned long)0;
+	unsigned ih_magic = be32_to_cpu(*ih);
+	unsigned ih_size = be32_to_cpu(*(ih+3)); /* Image Data Size */
 	
-	if (ih_magic == be32_to_cpu(*(volatile unsigned*)0))
-		memmove((void*)0, (void*)0x40, 0x200000/*Size up to 2M*/);
+	printf("word#0 (magic, Uboot, nok) 0x%x size 0x%xi\n", ih_magic, ih_size);
+
+	if (magic == ih_magic) {
+		printf("Found Uboot mkimage 0x%x\n", ih_magic);
+		memmove((void*)0, (void*)0x40, ih_size);
+	} else if (*ih == word0) {
+		printf("Found Uboot binary (word#0) 0x%x\n", word0);
+	} else {
+		printf("Not Uboot. Giving up\n");
+		return -1;
+	}
 
 	void (*entry)(void*, void*) = (void(*)(void*,void*)) 0;
+	cleanup_before_linux();	
 	entry(NULL, NULL);
 	return -1;
 }
