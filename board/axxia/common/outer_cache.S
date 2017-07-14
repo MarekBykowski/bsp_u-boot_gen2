@@ -16,6 +16,28 @@
   0b11 - FULL
 */
 
+.macro dgb_set value tagdata 
+	/* tagdata: 0b01 L3 data read. 0b10 L3 tag read */
+	mov x9, x30
+	mov	x10, 0x20
+1:	mov	x11, 0x10000
+	mul	x11, x10, x11
+	ldr	x12, =(DICKENS + 0x300) /*HN_CFG_L3SF_DBGRD*/
+	add x11, x11, x12
+	ldr x13, \value
+	orr x13, x13, \tagdata << 24
+	str x13, [x11]		/*store to HN_CFG_L3SF_DBGRD*/
+	add	w10, w10, 1
+	cmp	w10, 0x27
+	ble	1b
+	mov x30, x9
+	ret
+.endm
+
+ENTRY(__asm_dbg_set_tag_l3)
+	dgb_set 0x888 0x2
+ENDPROC(__asm_dbg_set_tag_l3)
+
 ENTRY(__diable_ecc_parity_l3)
 	mov x9, x30
 	mov	x10, 0x20
@@ -29,7 +51,6 @@ ENTRY(__diable_ecc_parity_l3)
 	add	w10, w10, 1
 	cmp	w10, 0x27
 	ble	1b
-
 	mov x30, x9
 	ret
 ENDPROC(__diable_ecc_parity_l3)

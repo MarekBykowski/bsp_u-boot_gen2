@@ -4276,6 +4276,7 @@ int gpdma_xfer(void *, void *, size_t, int);
 void __asm_disable_l3_cache(void);
 void __asm_enable_l3_cache(void);
 int __diable_ecc_parity_l3(void);
+void __asm_dbg_set_tag_l3(void);
 #endif	/* __ASSEMBLY__ */
 
 #ifndef __ASSEMBLY__

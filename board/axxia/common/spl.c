@@ -816,6 +816,8 @@ jtag_jump_to_monitor(void)
 */
 
 #ifdef SYSCACHE_ONLY_MODE
+extern void mmu_configure(u64 *, unsigned int flags);
+extern void ncr_l3tags(void); 
 static __attribute__((noclone)) void display_mapping(unsigned long address);
 void static
 display_mapping(unsigned long address)
@@ -850,8 +852,6 @@ display_mapping(unsigned long address)
 
     return;
 }
-
-extern void mmu_configure(u64 *, unsigned int flags);
 
 static void
 load_image(void)
@@ -1527,6 +1527,11 @@ board_init_f(ulong dummy)
 		unsigned int buffer[64] __attribute__ ((aligned(16)));
 		unsigned long output = 0;
 		int ret = 0;
+
+__asm_disable_l3_cache();
+__asm_dbg_set_tag_l3();
+__asm_enable_l3_cache();
+
 		memset(buffer, 0, sizeof(buffer));
 		for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {
 			ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), 1);
@@ -1540,6 +1545,7 @@ board_init_f(ulong dummy)
 			printf("disabling ECC and parity for L3 failed\n");
 		__asm_enable_l3_cache();
 #endif
+	
 		printf("pgt are at %p\n", (void*) pgt);
 
 		mmu_configure((u64*)pgt, DISABLE_DCACHE);
@@ -1561,7 +1567,6 @@ board_init_f(ulong dummy)
 		isb();                                                           
 
 		display_mapping(0);
-																	 
 		/* TODO: Fine grain mmu mapping */
 		/*configure_mmu_el3(LSM, SZ_256K, 
 					0x0000008031000000, 0x000000803101ab3c);*/

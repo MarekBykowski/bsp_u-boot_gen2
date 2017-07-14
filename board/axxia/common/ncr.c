@@ -1548,8 +1548,6 @@ ncr_modify32( ncp_uint32_t region, ncp_uint32_t offset,
 	return 0;
 }
 
-#ifdef SYSCACHE_ONLY_MODE
-
 /*
   -------------------------------------------------------------------------------
   ncr_l3tags
@@ -1560,6 +1558,12 @@ ncr_l3tags(void)
 {
 	int i;
 	ncp_uint32_t address;
+
+	__asm_flush_l3_cache();
+
+	/* Tags are only accessible through the 0x0308 offset register
+ * 	on secure Access
+ * 		*/
 
 	/*
 	  Set up cdar_memory
@@ -1572,12 +1576,10 @@ ncr_l3tags(void)
 	  Write it
 	*/
 
-	address = 0;
+	address = 0x800000;
 
-	for (i = 0; i < (8 * 1024 * 1024) / 256; ++i, address += 256)
+	for (i = 0; i < (SYSCACHE_SIZE/256); ++i, address += 256)
 		ncr_write(NCP_REGION_ID(0x200, 1), 0, address, 256, NULL);
 
 	return;
 }
-
-#endif
