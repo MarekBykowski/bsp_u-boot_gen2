@@ -912,6 +912,7 @@ ncp_task_send(
 
     if (1 == numTasks)
     {
+		printf("single task send");
         ncpStatus = ncp_task_single_task_send(
                 pvtTqsHdl,
                 p_oPCQ,
@@ -1232,6 +1233,7 @@ ncp_task_buffer_alloc(
     void **pTaskBuffers, 
     ncp_bool_t wait) 
 {
+	printf("ML_alloc1");
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
     ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl = (ncp_task_pvt_tqsHdl_data_t *)tqsHdl;
     ncp_task_pool_t         *pPool;
@@ -1269,6 +1271,7 @@ ncp_task_buffer_alloc(
     {
         if (NULL == (pPool = pvtTqsHdl->cpuPoolHdl))
         {
+			printf("1");
             NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);    
         }    
         if (TRUE == pPool->disabledForReinit)
@@ -1424,6 +1427,7 @@ ncp_task_buffer_free(
     {
         if (NULL == pvtTqsHdl->cpuPoolHdl)
         {
+			printf("2");
             NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);    
         }    
         if (TRUE == pvtTqsHdl->cpuPoolHdl->disabledForReinit)

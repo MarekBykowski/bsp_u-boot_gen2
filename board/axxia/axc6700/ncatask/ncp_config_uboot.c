@@ -570,6 +570,8 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
   	pNcpTaskSwState->tqsSwState[0].pAppProfile = malloc(sizeof(ncp_ncav3_application_profile_t));
 	memset(pNcpTaskSwState->tqsSwState[0].pAppProfile,0,sizeof(ncp_ncav3_application_profile_t));
 	pNcpTaskSwState->tqsSwState[0].pAppProfile->baseProfile.uMode = TRUE;
+	pNcpTaskSwState->tqsSwState[0].pAppProfile->baseProfile.completionMode = NCP_TASK_AUTO_COMPLETION_MODE;
+    pNcpTaskSwState->tqsSwState[0].pAppProfile->baseProfile.consumptionMode = NCP_TASK_IMMEDIATE_CONSUMPTION_MODE;
 	pNcpTaskSwState->uMode = TRUE;
 
 	// to check

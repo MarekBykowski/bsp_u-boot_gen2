@@ -1522,7 +1522,134 @@ NCP_RETURN_LABEL
 #if 0
 int
 initialize_task_io(struct eth_device *dev)
-#else 
+#else
+
+	ncp_hdl_t             ncpHdl;
+
+
+#define PACKET_ECHO_SIZE 97
+static ncp_uint8_t packet_echo[PACKET_ECHO_SIZE];
+
+
+
+void initPacketEcho(void)
+{
+    /*
+    0000   da c2 93 8a 17 0c 00 05 1b 00 5f bf 08 00 45 00
+    0010   00 54 43 a7 40 00 40 01 f1 a5 c0 a8 42 01 c0 a8
+    0020   42 0a 08 00 42 a2 3c a8 00 01 cd 52 5b 59 00 00
+    0030   00 00 8a 35 07 00 00 00 00 00 10 11 12 13 14 15
+    0040   16 17 18 19 1a 1b 1c 1d 1e 1f 20 21 22 23 24 25
+    0050   26 27 28 29 2a 2b 2c 2d 2e 2f 30 31 32 33 34 35
+    0060   36
+    */
+        
+    packet_echo[0] = 0xda;
+    packet_echo[1] = 0xc2;
+    packet_echo[2] = 0x93;
+    packet_echo[3] = 0x8a;
+    packet_echo[4] = 0x17;
+    packet_echo[5] = 0x0c;
+    packet_echo[6] = 0x00;
+    packet_echo[7] = 0x05;
+    packet_echo[8] = 0x1b;
+    packet_echo[9] = 0x00;
+    packet_echo[10] = 0x5f;
+    packet_echo[11] = 0xbf;
+    packet_echo[12] = 0x08;
+    packet_echo[13] = 0x00;
+    packet_echo[14] = 0x45;
+    packet_echo[15] = 0x00;
+
+    packet_echo[16] = 0x00;
+    packet_echo[17] = 0x54;
+    packet_echo[18] = 0x43;
+    packet_echo[19] = 0xa7;
+    packet_echo[20] = 0x40;
+    packet_echo[21] = 0x00;
+    packet_echo[22] = 0x40;
+    packet_echo[23] = 0x01;
+    packet_echo[24] = 0xf1;
+    packet_echo[25] = 0xa5;
+    packet_echo[26] = 0xc0;
+    packet_echo[27] = 0xa8;
+    packet_echo[28] = 0x42;
+    packet_echo[29] = 0x01;
+    packet_echo[30] = 0xc0;
+    packet_echo[31] = 0xa8;
+
+    packet_echo[32] = 0x42;
+    packet_echo[33] = 0x0a;
+    packet_echo[34] = 0x08;
+    packet_echo[35] = 0x00;
+    packet_echo[36] = 0x42;
+    packet_echo[37] = 0xa2;
+    packet_echo[38] = 0x3c;
+    packet_echo[39] = 0xa8;
+    packet_echo[40] = 0x00;
+    packet_echo[41] = 0x01;
+    packet_echo[42] = 0xcd;
+    packet_echo[43] = 0x52;
+    packet_echo[44] = 0x5b;
+    packet_echo[45] = 0x59;
+    packet_echo[46] = 0x00;
+    packet_echo[47] = 0x00;
+
+    packet_echo[48] = 0x00;
+    packet_echo[49] = 0x00;
+    packet_echo[50] = 0x8a;
+    packet_echo[51] = 0x35;
+    packet_echo[52] = 0x07;
+    packet_echo[53] = 0x00;
+    packet_echo[54] = 0x00;
+    packet_echo[55] = 0x00;
+    packet_echo[56] = 0x00;
+    packet_echo[57] = 0x00;
+    packet_echo[58] = 0x10;
+    packet_echo[59] = 0x11;
+    packet_echo[60] = 0x12;
+    packet_echo[61] = 0x13;
+    packet_echo[62] = 0x14;
+    packet_echo[63] = 0x15;
+
+    packet_echo[64] = 0x16;
+    packet_echo[65] = 0x17;
+    packet_echo[66] = 0x18;
+    packet_echo[67] = 0x19;
+    packet_echo[68] = 0x1a;
+    packet_echo[69] = 0x1b;
+    packet_echo[70] = 0x1c;
+    packet_echo[71] = 0x1d;
+    packet_echo[72] = 0x1e;
+    packet_echo[73] = 0x1f;
+    packet_echo[74] = 0x20;
+    packet_echo[75] = 0x21;
+    packet_echo[76] = 0x22;
+    packet_echo[77] = 0x23;
+    packet_echo[78] = 0x24;
+    packet_echo[79] = 0x25;
+
+    packet_echo[80] = 0x26;
+    packet_echo[81] = 0x27;
+    packet_echo[82] = 0x28;
+    packet_echo[83] = 0x29;
+    packet_echo[84] = 0x2a;
+    packet_echo[85] = 0x2b;
+    packet_echo[86] = 0x2c;
+    packet_echo[87] = 0x2d;
+    packet_echo[88] = 0x2e;
+    packet_echo[89] = 0x2f;
+    packet_echo[90] = 0x30;
+    packet_echo[91] = 0x31;
+    packet_echo[92] = 0x32;
+    packet_echo[93] = 0x33;
+    packet_echo[94] = 0x34;
+    packet_echo[95] = 0x35;
+
+    packet_echo[96] = 0x36;
+}
+
+
 int
 initialize_task_io(void)
 #endif
@@ -1586,10 +1713,124 @@ initialize_task_io(void)
 /* enable ipcq */
 #endif
 
+	ncp_uint32_t          devNum = 0;
+    printf("trying to attach...\n");
+	NCP_CALL(ncp_config_uboot_attach(devNum, &ncpHdl));
+	initPacketEcho();
+
 
 NCP_RETURN_LABEL
     return ncpStatus;
 }
+
+
+void printTask(ncp_task_header_t *task)
+{
+    int i;
+
+    printf("----- task start -------\n");
+
+    printf("task 0x%p\n", task);
+
+    /*
+    for (i = 0; i < 32; i++){
+        printf("task->params[%d] 0x%x\n",i,task->params[i]);
+    }
+    */
+
+    printf("task->ID 0x%x\n",task->ID);
+    printf("task->templateId 0x%x\n",task->templateId);
+    printf("task->headerPool 0x%x\n",task->headerPool);
+    printf("task->headerPoolMref 0x%x\n",task->headerPoolMref);
+    printf("task->combinedHeader 0x%x\n",task->combinedHeader);
+    printf("task->pduSize %d\n",task->pduSize);
+    printf("task->pool0 0x%x\n",task->pool0);
+    printf("task->pool0Mref 0x%x\n",task->pool0Mref);
+    printf("task->ptrCnt 0x%x\n",task->ptrCnt);
+    printf("task->pduSegSize0 = %d\n",task->pduSegSize0);
+    printf("task->pduSegAddr0 = 0x%llx\n", task->pduSegAddr0);
+
+    printf("-- data start --\n");
+    int j = 0;
+    for (i = 0; i < task->pduSegSize0; i++)
+    {
+        printf("%04x   ", i);
+        for (j = i; j < (i + 16) && j < task->pduSegSize0; j++)
+        {
+            printf("%02x ", ((char *)task->pduSegAddr0)[j]);
+        }
+        printf("\n");
+        i += 15;
+    }
+    printf("-- data end --\n");
+
+    printf("----- task end -------\n");
+}
+
+void myCreateTask(ncp_task_tqs_hdl_t tqsHdl,
+                ncp_uint8_t vpId,
+                ncp_task_header_t **ppTask)
+{
+    ncp_st_t ncpStatus = NCP_ST_ERROR;
+    ncp_task_header_t *task;
+    ncp_uint32_t size;
+    ncp_uint32_t num;
+    void *pData[6];
+    ncp_uint64_t combinedHeader = 1;
+    int pduSize = PACKET_ECHO_SIZE;
+    int i = 0;
+
+    size = 128 + pduSize;
+	printf("before alloc\n");
+    NCP_CALL(ncp_task_buffer_alloc(tqsHdl, 1, &num, &size, 2, (void **) &task, 1));
+	printf("after alloc\n");
+    task->params[0] = 0x14;
+    task->headerPool = 2;
+    task->pool0 = 2;
+    task->pool0Mref = 0;
+    task->pduSegSize0 = pduSize;
+    task->pduSize = pduSize;
+
+    if (!combinedHeader)
+    {
+        size = pduSize;
+		printf("before combined alloc\n");
+        NCP_CALL(ncp_task_buffer_alloc(tqsHdl, 1, &num, &size, 2, (void **) &pData[0], 1));
+		printf("after combined alloc\n");
+        task->pduSize += size;
+    }
+                                         ;
+    if (combinedHeader)
+    {
+        task->pduSegAddr0 = ((ncp_uint64_t) task) + 128;
+    }
+    else
+    {
+        task->pduSegAddr0 = (ncp_uint64_t) pData[0];
+    }
+
+    ncp_uint8_t *pdus[6];
+    pdus[0] = (ncp_uint8_t *) task->pduSegAddr0;
+    /* pdus[0][0] = 0; */
+    for (i = 0; i < PACKET_ECHO_SIZE; i++)
+    {
+        pdus[0][i] = packet_echo[i];
+    }
+
+    task->ptrCnt = 1;
+    task->combinedHeader = combinedHeader;
+    task->priority = 0;
+    task->ID = 0;
+    task->templateId = vpId;
+
+    *ppTask = task;
+
+    return;
+ ncp_return:
+    printf("myCreateTask:90:ERROR: %d", ncpStatus);
+}
+
+
 
 
 ncp_st_t tx_rx_task(void){
@@ -1606,9 +1847,8 @@ ncp_st_t tx_rx_task(void){
 #if 1
 	/* NCAv3 code begin */
 	ncp_task_send_meta_t    meta_data;
+    ncp_task_free_meta_t     meta_task;
 	ncp_task_tqs_hdl_t       tqsHdl = NULL;
-	ncp_uint32_t          devNum = 0;
-	ncp_hdl_t             ncpHdl;
 	ncp_uint32_t numSent;
 	int i = 0;
 
@@ -1616,8 +1856,6 @@ ncp_st_t tx_rx_task(void){
 	ncp_uint8_t              vpId = 0;
 	ncp_uint8_t              vpTxId = 1;
 
-    printf("trying to attach...\n");
-	NCP_CALL(ncp_config_uboot_attach(devNum, &ncpHdl));
 	ncp_task_resource_name_t processName;
 	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
 
@@ -1636,25 +1874,36 @@ ncp_st_t tx_rx_task(void){
 	NCP_CALL(ncp_task_tqs_bind(ncpHdl, RECV_PGIT, &params, &processName, &processName, &tqsHdl));
 
 	ncp_task_header_t        *task;
+	ncp_task_header_t        *newTask;
 	ncp_uint32_t             numRx;
     printf("before receive loop...\n");
-	//while (true)
+	int j = 0;
+	while (true)
 	{
 		ncpStatus = ncp_task_recv(tqsHdl, 1, &numRx, &task, FALSE);
 		if(NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
 		{
-			printf("empty");
 			/* sleep(10); */
-	//		continue;
+			continue;
 		}
 		else{
-			printf("rx status %d",ncpStatus);
-			memset(&meta_data, 0x0, sizeof(ncp_task_send_meta_t));
-			task->templateId = vpTxId;
-
-			/* myCreateTask(tqsHdl, vpTxId, &newTask); */
+			if (j > 10) {break;}
+			j = j + 1;
+			printTask(task);
+			printf("rx status %d\n",ncpStatus);
+			memset(&meta_data, 0x0, sizeof(ncp_task_free_meta_t));
+			meta_task.freeDoneFn = NULL;
+			meta_task.freeDoneArg = NULL;
+			meta_task.task = task;
+			meta_task.freeHeader = TRUE;
+			meta_task.issueCompletion = FALSE;
+			ncp_uint32_t numFree = 0;
+			ncpStatus = ncp_task_free(tqsHdl, 1, numRx, &numFree, &meta_task, TRUE);
+			printf("free status %d freed %d\n",ncpStatus,numFree);
+#if 1
+			myCreateTask(tqsHdl, vpTxId, &newTask);
 			printf("sending task...\n");
-			/* printTask(newTask); */
+			printTask(newTask);
 
 			/* Fill meta data fields */
 			meta_data.sendDoneFn = NULL;
@@ -1662,12 +1911,16 @@ ncp_st_t tx_rx_task(void){
 			meta_data.freeHeader = TRUE;
 			meta_data.freeDataPointers = TRUE;
 			meta_data.issueCompletion = FALSE;
-			meta_data.taskHeader = task;
+			meta_data.taskHeader = newTask;
 
-			ncp_task_send(tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
+			ncpStatus = ncp_task_send(tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
+			printf("tx status %d",ncpStatus);
+#endif
 		}
 		/* NCAv3 code end */
 	}
+	ncpStatus = ncp_task_tqs_unbind(tqsHdl);
+	printf("unbind status %d\n",ncpStatus);
 #endif
 
 	NCP_RETURN_LABEL

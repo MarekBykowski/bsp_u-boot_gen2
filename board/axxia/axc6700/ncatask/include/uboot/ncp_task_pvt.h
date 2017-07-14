@@ -899,6 +899,7 @@ typedef struct ncp_task_tbr_params_s {
                 _pState,                                         \
                 (ncp_uint16_t)_pTbr->expectedState,              \
                 (ncp_uint16_t)*_pState);                         \
+			printf("Lapaj1");\
             NCP_CALL(NCP_ST_TASK_TBR_FATAL_POOL_CORRUPTION);     \
         }                                                        \
                                                                  \
@@ -935,6 +936,7 @@ typedef struct ncp_task_tbr_params_s {
                 _pState,                                      \
                 (ncp_uint16_t)_pTbr->expectedState,           \
                 (ncp_uint16_t)*_pState);                      \
+			printf("Lapaj2");\
             NCP_CALL(NCP_ST_TASK_TBR_FATAL_POOL_CORRUPTION);  \
         }                                                     \
                                                               \
@@ -985,6 +987,7 @@ typedef struct ncp_task_tbr_params_s {
                 (ncp_uint16_t)*_pState,                          \
                 mrefBit);                                        \
                                                                  \
+			printf("Lapaj3");\
             NCP_CALL(NCP_ST_TASK_TBR_FATAL_POOL_CORRUPTION);     \
         }                                                        \
                                                                  \
@@ -1036,6 +1039,7 @@ typedef struct ncp_task_tbr_params_s {
                 (ncp_uint16_t)*_pState,                          \
                 mrefBit);                                        \
                                                                  \
+			printf("Lapaj4");\
             NCP_CALL(NCP_ST_TASK_TBR_FATAL_POOL_CORRUPTION);     \
         }                                                        \
                                                                  \

@@ -567,6 +567,7 @@ ncp_task_tbr_task_buffer_pid_get( ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
                               ncp_xlf_task_tbr_task_buffer_pid_get_blocksVAStartEnd,
                               NCP_MSG_ERROR, "blocksVA[%d] start=%p, end=%p\r\n",
                               3, (void *)pPool->blocksVA[3], (void *)pPool->blocksVAend[3]);
+		printf("ML1");
         NCP_CALL(NCP_ST_TASK_TBR_INVALID_BUFFER);
     }
     
@@ -1334,11 +1335,13 @@ ncp_task_validate_output_task(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
             poolId = thisHeader->pool5;
             if (0 == (validPoolsMask & (1<<poolId)))
             {
+			    printf("3");
                 NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);             
             }        
             if (0 == poolId) 
             {   if (NULL == pCpuPool)
                 {
+					printf("4");
                     NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);
                 }
                 if (TRUE == pCpuPool->disabledForReinit)
@@ -1361,11 +1364,13 @@ ncp_task_validate_output_task(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
             poolId = thisHeader->pool4;
             if (0 == (validPoolsMask & (1<<poolId)))
             {
+				printf("5");
                 NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);             
             }        
             if (0 == poolId) 
             {   if (NULL == pCpuPool)
                 {
+					printf("6");
                     NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);
                 }
                 if (TRUE == pCpuPool->disabledForReinit)
@@ -1388,11 +1393,13 @@ ncp_task_validate_output_task(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
             poolId = thisHeader->pool3;
             if (0 == (validPoolsMask & (1<<poolId)))
             {
+				printf("7");
                 NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);             
             }        
             if (0 == poolId) 
             {   if (NULL == pCpuPool)
                 {
+				    printf("8");
                     NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);
                 }
                 if (TRUE == pCpuPool->disabledForReinit)
@@ -1415,11 +1422,13 @@ ncp_task_validate_output_task(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
             poolId = thisHeader->pool2;
             if (0 == (validPoolsMask & (1<<poolId)))
             {
+				printf("9");
                 NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);             
             }        
             if (0 == poolId) 
             {   if (NULL == pCpuPool)
                 {
+    				printf("10");
                     NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);
                 }
                 if (TRUE == pCpuPool->disabledForReinit)
@@ -1442,11 +1451,13 @@ ncp_task_validate_output_task(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
             poolId = thisHeader->pool1;
             if (0 == (validPoolsMask & (1<<poolId)))
             {
+				printf("11");
                 NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);             
             }        
             if (0 == poolId) 
             {   if (NULL == pCpuPool)
                 {
+				printf("12");
                     NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);
                 }
                 if (TRUE == pCpuPool->disabledForReinit)
@@ -1469,11 +1480,13 @@ ncp_task_validate_output_task(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
             poolId = thisHeader->pool0;
             if (0 == (validPoolsMask & (1<<poolId)))
             {
+				printf("13");
                 NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);             
             }        
             if (0 == poolId) 
             {   if (NULL == pCpuPool)
                 {
+				printf("14");
                     NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);
                 }
                 if (TRUE == pCpuPool->disabledForReinit)
@@ -1544,11 +1557,13 @@ ncp_task_validate_output_task(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
             poolId = thisHeader->headerPool;
             if (0 == (validPoolsMask & (1<<poolId)))
             {
+				printf("15: poolId %d", poolId);
                 NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);             
             }        
             if (0 == poolId) 
             {   if (NULL == pCpuPool)
                 {
+				printf("16");
                     NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);
                 }
                 if (TRUE == pCpuPool->disabledForReinit)
@@ -1740,6 +1755,7 @@ ncp_task_bulk_cpu_pool_buffer_free(
         
     if (NULL == (pPool = pvtTqsHdl->cpuPoolHdl))
     {
+		printf("17");
         NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);    
     }    
     if (TRUE == pPool->disabledForReinit)
@@ -2627,6 +2643,8 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
     ncp_task_tqs_swState_t *pTqs = &pNcpTaskSwState->tqsSwState[tqsId];
+	printf("get tqs: %d", tqsId);
+    printf("valid pools mask %d",pTqs->validPoolsMask);
     int poolId;
     
     /* First validate permissions/usage */
@@ -2667,8 +2685,10 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
     {
         if (pParams->useAllocator[poolId])
         {
+			
             if (0 == (pTqs->validPoolsMask & (1<<poolId)))
             {
+				printf("18 poolId %d valid pools %d",poolId,pTqs->validPoolsMask);
                 NCP_CALL(NCP_ST_TASK_TQS_INVALID_POOL);
             }        
             if (((pTqs->shareCtl.allocatorUseCnt[poolId] + 1) > 1) 

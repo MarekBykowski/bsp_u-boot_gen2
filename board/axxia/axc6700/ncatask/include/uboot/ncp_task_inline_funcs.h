@@ -25,7 +25,7 @@ ncp_task_tbr_buffer_state_prefetch(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
     ncp_task_pool_t *pPool;
     ncp_task_pid_t *tbrArray;
     ncp_uint64_t tbrOffset = pBuffer;
-    
+	printf("ML offset %llx", tbrOffset); 
     pPool = &pNcpTaskSwState->taskPools[poolId];
     if ((tbrOffset >= pPool->blocksVA[0]) && (tbrOffset < pPool->blocksVAend[0]))
     {
@@ -89,6 +89,7 @@ ncp_task_tbr_buffer_state_prefetch(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
                               ncp_xlf_task_tbr_buffer_state_prefetch_blocksVAStartEnd,
                               NCP_MSG_ERROR, "blocksVA[%d] start=%p, end=%p\r\n",
                               3, (void *)pPool->blocksVA[3], (void *)pPool->blocksVAend[3]);
+		printf("ML2");
         NCP_CALL(NCP_ST_TASK_TBR_INVALID_BUFFER);
     }
 
@@ -241,6 +242,7 @@ ncp_task_tbr_cpu_pool_buffer_state_prefetch(ncp_task_pvt_tqsHdl_data_t *pvtTqsHd
                               ncp_xlf_task_tbr_cpu_pool_buffer_state_prefetch_blocksVAStartEnd,
                               NCP_MSG_ERROR, "blocksVA[%d] start=%p, end=%p\r\n",
                               3, (void *)pPool->blocksVA[3], (void *)pPool->blocksVAend[3]);
+		printf("ML3");
         NCP_CALL(NCP_ST_TASK_TBR_INVALID_BUFFER);
     }
 
@@ -745,7 +747,6 @@ ncp_task_recv_normal(
     {
         ncp_task_header_t         *pTaskHeader;
         ncp_uint64_t taskAddr64 = NCP_TASK_TASKADDR64_GET(pIPCQentry, tmp_isZero); /* implements addr dependency, if enabled */
-        
         pTaskHeader = pTasks[numReceivedTasks] = (void *)(ncp_uintptr_t)taskAddr64;
 
         NCP_TASK_TBR_STATE_PTRS_INIT();
@@ -882,18 +883,22 @@ ncp_task_bulk_MMEpool_alloc(
             size--;
             if (pAllocator->mPCQ[0].nEntries      && (0 == (size & 0xFFFFFF00))) /* <= 256 */
             {
+				printf("using mpcq0");
                 p_mPCQ = &pAllocator->mPCQ[0];
             }
             else if (pAllocator->mPCQ[1].nEntries && (0 == (size & 0xFFFFF800))) /* <= 2K */
             {
+				printf("using mpcq1");
                 p_mPCQ = &pAllocator->mPCQ[1];
             }    
             else if (pAllocator->mPCQ[2].nEntries && (0 == (size & 0xFFFFC000))) /* <= 16K */
             {
+				printf("using mpcq2");
                 p_mPCQ = &pAllocator->mPCQ[2];
             }        
             else if (pAllocator->mPCQ[3].nEntries && (0 == (size & 0xFFFF0000))) /* <= 64K */
             {
+				printf("using mpcq3");
                 p_mPCQ = &pAllocator->mPCQ[3];
             }                                        
             else
@@ -1013,6 +1018,7 @@ ncp_task_bulk_MMEpool_alloc(
 
             /* Store buffer address for caller */
             *pRetBuffers = (void *)p_mPCQ->u.mpcq_info.pMPCQentry->address;
+			printf("ret addr %llx",*pRetBuffers);
 
             NCP_TASK_TBR_BUFFER_STATE_PREFETCH(
                 pvtTqsHdl,
@@ -1057,6 +1063,7 @@ ncp_task_bulk_MMEpool_alloc(
                     }
                     else
                     {
+						printf("lapajc");
                         NCP_CALL(NCP_ST_TASK_TBR_FATAL_POOL_CORRUPTION);
                     }
                     *_pState = pTbr->newState;
@@ -1851,7 +1858,7 @@ ncp_task_single_task_send(
           
     *pCompletionsIssued = completionsIssued;
     *pNumTasksSent = 1;
-    
+    printf("non typical early return");
     return(NCP_ST_SUCCESS);   /* Non-typical early return */
         
 NCP_RETURN_LABEL
@@ -1861,7 +1868,7 @@ NCP_RETURN_LABEL
      * so this code is structured as such in order to shave a few cycles in this 
      * performance critical API support function!
      */
-     
+    printf("error path ncp status %d\n",ncpStatus);
     *pCompletionsIssued = *pNumTasksSent = 0;                
     return(ncpStatus);
          
