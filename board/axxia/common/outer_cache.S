@@ -16,26 +16,36 @@
   0b11 - FULL
 */
 
-.macro dgb_set value tagdata 
-	/* tagdata: 0b01 L3 data read. 0b10 L3 tag read */
-	mov x9, x30
+dgb_set:
+	/* x0: set, x1: way, x2: tag
+	   value: set address for L3
+	   tag: 0b01 L3 data read. 0b10 L3 tag read 
+	 */
 	mov	x10, 0x20
 1:	mov	x11, 0x10000
 	mul	x11, x10, x11
-	ldr	x12, =(DICKENS + 0x300) /*HN_CFG_L3SF_DBGRD*/
+	ldr	x12, =(DICKENS + 0x300) /*hn_cfg_l3sf_dbgrd*/
 	add x11, x11, x12
-	ldr x13, \value
-	orr x13, x13, \tagdata << 24
-	str x13, [x11]		/*store to HN_CFG_L3SF_DBGRD*/
+	mov x13, x0
+	orr x13, x13, x1
+	orr x13, x13, x2
+	orr x13, x13, x3, lsl #24
+	str x13, [x11]		/*store to hn_cfg_l4sf_dbgrd*/
 	add	w10, w10, 1
 	cmp	w10, 0x27
 	ble	1b
-	mov x30, x9
 	ret
-.endm
 
 ENTRY(__asm_dbg_set_tag_l3)
-	dgb_set 0x888 0x2
+	mov x9, x30
+	bic x0, x0, 0xfffffffffffff000
+	bic x1, x1, 0xfffffffffffffff0
+	lsl x1, x1, #16
+	bic x2, x2, 0xfffffffffffffff8
+	lsl x2, x2, #20
+	bl dgb_set
+	mov x30, x9
+	ret
 ENDPROC(__asm_dbg_set_tag_l3)
 
 ENTRY(__diable_ecc_parity_l3)

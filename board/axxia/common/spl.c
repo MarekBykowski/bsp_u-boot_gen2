@@ -1527,10 +1527,9 @@ board_init_f(ulong dummy)
 		unsigned int buffer[64] __attribute__ ((aligned(16)));
 		unsigned long output = 0;
 		int ret = 0;
+		int set=0xfff, way=0x0, chunk=0/*[22:20]*/, type=0x1;
 
-__asm_disable_l3_cache();
-__asm_dbg_set_tag_l3();
-__asm_enable_l3_cache();
+__asm_dbg_set_tag_l3(set, way, chunk, type);
 
 		memset(buffer, 0, sizeof(buffer));
 		for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {

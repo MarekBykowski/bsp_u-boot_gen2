@@ -47,9 +47,23 @@
   setup_security
 */
 
+int bar(int kkk)
+{
+	return kkk++;
+}
+
+int foo(int l)
+{
+	int k=4, ll;
+	ll = bar(k);
+	return ll+l;
+}
+
 int
 setup_security(void)
 {
+		int ret = foo(5);
+		ret = 0;
         /*
           For now, allow access from anywhere, to anywhere.
 	*/
@@ -94,5 +108,5 @@ setup_security(void)
         /* 0x1d2.0.0x114 = 0xffffffff */
         writel(0xffffffff, (TZC + 0x114));
 
-	return 0;
+	return ret;
 }
