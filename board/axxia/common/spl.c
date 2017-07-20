@@ -1543,23 +1543,6 @@ board_init_f(ulong dummy)
 
 		/* Upon L3 init invalidate data cache l1 through l2 */
 		init_l3();
-#if 0
-		unsigned int buffer[64] __attribute__ ((aligned(16)));
-		unsigned long output = 0;
-		int ret = 0;
-		memset(buffer, 0, sizeof(buffer));
-		for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {
-			ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), 1);
-			if (ret != 0)
-				printf("gpdma_xfer failed %d\n", ret);
-		}
-#endif
-#if 0
-		__asm_disable_l3_cache();
-		if (__diable_ecc_parity_l3() != 0)
-			printf("disabling ECC and parity for L3 failed\n");
-		__asm_enable_l3_cache();
-#endif
 		printf("pgt are at %p\n", (void*) pgt);
 
 		mmu_configure((u64*)pgt, DISABLE_DCACHE);
@@ -1569,26 +1552,23 @@ board_init_f(ulong dummy)
 		address = 0x8001000000ULL; /*AXI_MMAP part 1*/
 		junk = readl(address);
 		junk = junk;
+		address = 0x8020000000ULL; /*AXI_MMAP part 2 incl. LSM */ 
+		junk = readl(address);                                    
+		junk = junk;                                              
 		address = 0x8080000000ULL; /*AXI_PERIPH*/
 		junk = readl(address);
 		junk = junk;
 
 		/* Enable dcache */
 		set_sctlr(get_sctlr() | CR_C);
-		isb();                                                           
 		invalidate_dcache_all();
-
 		display_mapping(0);
-																	 
 		/* TODO: Fine grain mmu mapping */
 		/*configure_mmu_el3(LSM, SZ_256K, 
 					0x0000008031000000, 0x000000803101ab3c);*/
 		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
 		entry = (void (*)(void *, void *))0x0;
-		flush_dcache_range((unsigned long) LSM, (unsigned long) (LSM+SZ_256K));
-#if 1
 		load_image_mem();
-#endif
 		invalidate_icache_all();
 		__asm_flush_dcache_all();
 		/* Jump to Uboot at address 0x0 */
