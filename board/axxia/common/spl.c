@@ -946,7 +946,7 @@ load_image_mem(void)
 
 	if (!image_check_target_arch(&header)) {
 		puts("\tWrong Architecture!\n");
-		hang();
+		//hang();
 	}
 
 	offset += sizeof(struct image_header);
