@@ -44,4 +44,4 @@ endif
 ################################################################################
 ## All Builds
 
-obj-y += ncp_l3lock_region_init.o failure.o version.o spi.o
+obj-y += ncp_l3lock_region_init.o failure.o version.o spi.o l3_coherency.o

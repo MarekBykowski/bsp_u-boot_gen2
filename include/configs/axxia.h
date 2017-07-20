@@ -4267,10 +4267,12 @@ int voltage_init(void);
 void spl_diagnostics(void);
 #endif
 
+#if 0 /*what for in here. Is already in axc6700.h and axm5600.h*/
 #ifndef __ASSEMBLY__
 int gpdma_reset(void);
 int gpdma_xfer(void *, void *, size_t, int);
 #endif	/* __ASSEMBLY__ */
+#endif
 
 #ifndef __ASSEMBLY__
 void __asm_disable_l3_cache(void);

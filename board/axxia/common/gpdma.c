@@ -50,6 +50,29 @@ gwritel(unsigned int value, unsigned long address)
 	writel(value, address);
 }
 
+#define MAREK_DBG
+static unsigned int
+mreadl(unsigned long address)
+{
+#ifdef MAREK_DBG
+	unsigned int v;
+	v = readl(address);
+	printf("GPDMA Read: 0x%llx contains 0x%x\n", (address - GPDMA0), v);
+	return v;
+#else
+	return readl(address);
+#endif
+}
+
+static void
+mwritel(unsigned int value, unsigned long address)
+{
+#ifdef MAREK_DBG
+	printf("GPDMA Write: Writing 0x%x to 0x%llx\n",
+	       value, (address - GPDMA0));
+#endif
+	writel(value, address);
+}
 /*
   ==============================================================================
   ==============================================================================
@@ -194,12 +217,12 @@ _gpdma(void *dest, size_t dest_size, void *src, size_t src_size, int secure)
 		GPDMA0 + DMA_STATUS);
 
 	/* Set gpdma0_axprot_override to secure or non-secure. */
-	gpdma0_axprot_override = readl(MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
+	gpdma0_axprot_override = greadl(MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
 
 	if (0 == secure)
-		writel(3, MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
+		gwritel(3, MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
 	else
-		writel(2, MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
+		gwritel(2, MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
 
 	/* Set up the segment registers (top 8 bits of address). */
 	gwritel((((unsigned long)dest & 0xff00000000) >> 32),
@@ -247,7 +270,7 @@ _gpdma(void *dest, size_t dest_size, void *src, size_t src_size, int secure)
 	}
 
 	/* Restore gpdma0_axprot_override. */
-	writel(gpdma0_axprot_override, MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
+	gwritel(gpdma0_axprot_override, MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
 
 	if (0 >= retries)
 		return -2;
@@ -269,13 +292,51 @@ _gpdma(void *dest, size_t dest_size, void *src, size_t src_size, int secure)
 */
 
 int
-gpdma_reset(void)
+gpdma_reset(int secure)
 {
+	unsigned status, retries = 1000;
+	int gpdma0_axprot_override;
+
+	/* Set gpdma0_axprot_override to secure or non-secure. */
+	gpdma0_axprot_override = mreadl(MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
+	if (0 == secure)
+		mwritel(3, MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
+	else
+		mwritel(2, MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
+
+	/* write 1 to DMA_STATUS_CH_PAUSE and DMA_STATUS_CH_PAUS_WR_EN */
+	status = mreadl(GPDMA0 + DMA_STATUS);
+	status |= (DMA_STATUS_CH_PAUSE|DMA_STATUS_CH_PAUS_WR_EN);
+	mwritel(status, GPDMA0 + DMA_STATUS);
+
+	/* loop until DMA_STATUS_CH_PAUSE 1 and DMA_STATUS_CH_PAUS_WR_EN 0 */
+	while (0 < retries--) {
+		if ( ((mreadl(GPDMA0 + DMA_STATUS) & 0x80) >> 7) == 1 &&
+			 ((mreadl(GPDMA0 + DMA_STATUS) & 0x10000) >> 16) == 0)
+			break;
+		udelay(1);
+	}
+
+	/* write 0 to DMA_CONFIG_CHAN_EN */
+	status = mreadl(GPDMA0 + DMA_CHANNEL_CONFIG);
+	status &= ~DMA_CONFIG_CHAN_EN;	
+	mwritel(status, GPDMA0 + DMA_CHANNEL_CONFIG);
+
+	/* loop until DMA_STATUS_CH_ACTIVE 0 */
+	retries = 1000;
+	while (0 < retries--) {
+		if ( ((mreadl(GPDMA0 + DMA_STATUS) & 0x10) >> 4) == 0 )
+			break;
+		udelay(1);
+	}
+
 	/*
 	  Use the full reset of all changes.
 	*/
+	mwritel(GPDMA_MAGIC, GPDMA0 + SOFT_RESET);
 
-	writel(GPDMA_MAGIC, GPDMA0 + SOFT_RESET);
+	/* Restore gpdma0_axprot_override. */
+	mwritel(gpdma0_axprot_override, MMAP_SCB + GPDMA0_AXPROT_OVERRIDE);
 
 	return 0;
 }

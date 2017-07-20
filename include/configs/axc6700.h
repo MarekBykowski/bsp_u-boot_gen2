@@ -608,7 +608,7 @@ void display_va_attr(void *);
 
 #ifdef SYSCACHE_ONLY_MODE
 #ifndef __ASSEMBLY__
-int gpdma_reset(void);
+int gpdma_reset(int);
 int gpdma_xfer(void *, void *, size_t, int);
 int gpdma_fill(void *, unsigned char, size_t, int);
 #endif

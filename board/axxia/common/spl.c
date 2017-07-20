@@ -817,7 +817,8 @@ jtag_jump_to_monitor(void)
 
 #ifdef SYSCACHE_ONLY_MODE
 static __attribute__((noclone)) void display_mapping(unsigned long address);
-void static
+extern int set_cluster_coherency(unsigned cluster, unsigned state);
+static void
 display_mapping(unsigned long address)
 {
     unsigned long par_el1;
@@ -892,7 +893,7 @@ load_image(void)
 
 	if (!image_check_target_arch(&header)) {
 		puts("\tWrong Architecture!\n");
-		hang();
+//		hang();
 	}
 
 	offset += sizeof(struct image_header);
@@ -915,6 +916,21 @@ load_image(void)
 		bytes_written += 256;
 		output += 256;
 		offset += 256;
+	}
+
+	return;
+}
+
+void  init_l3(void)
+{
+	unsigned int buffer[64] __attribute__ ((aligned(16)));
+	unsigned long output = 0;
+	int ret = 0;
+	memset(buffer, 0, sizeof(buffer));
+	for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {
+		ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), 1);
+		if (ret != 0)
+			printf("gpdma_xfer failed %d\n", ret);
 	}
 	return;
 }
@@ -946,7 +962,7 @@ load_image_mem(void)
 
 	if (!image_check_target_arch(&header)) {
 		puts("\tWrong Architecture!\n");
-		hang();
+//		hang();
 	}
 
 	offset += sizeof(struct image_header);
@@ -956,7 +972,7 @@ load_image_mem(void)
 	   So we need to split up and move first part */
 	spi_flash_read(flash, offset, 4, (void*)0x100);
 	*(uint32_t *)0 = *(uint32_t *)0x100;
-	spi_flash_read(flash, offset+4, size-4, (void*)4);
+	spi_flash_read(flash, offset+5, size-4, (void*)4);
 	return;
 }
 
@@ -1523,36 +1539,50 @@ board_init_f(ulong dummy)
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
 
-#if 1
-		unsigned int buffer[64] __attribute__ ((aligned(16)));
-		unsigned long output = 0;
-		int ret = 0;
-		memset(buffer, 0, sizeof(buffer));
-		for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {
-			ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), 1);
-			if (ret != 0)
-				printf("gpdma_xfer failed %d\n", ret);
-		}
-#endif
 #if 0
-		__asm_disable_l3_cache();
-		if (__diable_ecc_parity_l3() != 0)
-			printf("disabling ECC and parity for L3 failed\n");
-		__asm_enable_l3_cache();
+	unsigned int buffer[64] __attribute__ ((aligned(16)));
+	unsigned long output = 0;
+	int ret = 0;
+	memset(buffer, 0, sizeof(buffer));
+	for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {
+		ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), 1);
+		if (ret != 0)
+			printf("gpdma_xfer failed %d\n", ret);
+	}
 #endif
+
+#if 0
+		if (0 != set_cluster_coherency(3/*1 by John*/, 1))
+			acp_failure(__FILE__, __func__, __LINE__);
+#endif
+
+		init_l3();
+		/*gpdma_reset(1);*/
+		/*load_image();*/
+
 		printf("pgt are at %p\n", (void*) pgt);
 
+#if 1
 		mmu_configure((u64*)pgt, DISABLE_DCACHE);
-
+#else
+		extern void mmu_setup(void);
+		gd->arch.tlb_addr = (u64)pgt;
+		gd->arch.tlb_size = SZ_64K;
+		__asm_invalidate_tlb_all();
+		mmu_setup();
+#endif
 		display_mapping(0);
 
-		address = 0x8001000000ULL; /*AXI_MMAP part 1*/
-		junk = readl(address);
-		junk = junk;
 		address = 0x8020000000ULL; /*AXI_MMAP part 2 incl. LSM */
 		junk = readl(address);
 		junk = junk;
+		address = 0x8001000000ULL; /*AXI_MMAP part 1*/
+		junk = readl(address);
+		junk = junk;
 		address = 0x8080000000ULL; /*AXI_PERIPH*/
+		junk = readl(address);
+		junk = junk;
+		address = 0x4000000000ULL; /*AXI_PERIPH*/
 		junk = readl(address);
 		junk = junk;
 
@@ -1565,12 +1595,13 @@ board_init_f(ulong dummy)
 		/* TODO: Fine grain mmu mapping */
 		/*configure_mmu_el3(LSM, SZ_256K, 
 					0x0000008031000000, 0x000000803101ab3c);*/
-		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
 		entry = (void (*)(void *, void *))0x0;
 		flush_dcache_range((unsigned long) LSM, (unsigned long) (LSM+SZ_256K));
 #if 1
 		load_image_mem();
 #endif
+		/*printf("dump addr 0: 0x%x\n", *(unsigned*)(volatile unsigned long)0);*/
+		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
 		invalidate_icache_all();
 		__asm_flush_dcache_all();
 		/* Jump to Uboot at address 0x0 */
