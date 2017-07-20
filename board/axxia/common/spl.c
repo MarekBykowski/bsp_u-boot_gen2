@@ -919,6 +919,20 @@ load_image(void)
 	return;
 }
 
+void init_l3(void)
+{
+	unsigned int buffer[64] __attribute__ ((aligned(16)));
+	unsigned long output = 0;
+	int ret = 0;
+	memset(buffer, 0, sizeof(buffer));
+	for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {
+		   ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), 1);
+		   if (ret != 0)
+				   printf("gpdma_xfer failed %d\n", ret);
+	}
+	return;
+}
+
 void
 load_image_mem(void)
 {
@@ -1522,8 +1536,8 @@ board_init_f(ulong dummy)
 
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
-
-#if 1
+		init_l3();
+#if 0
 		unsigned int buffer[64] __attribute__ ((aligned(16)));
 		unsigned long output = 0;
 		int ret = 0;
