@@ -1546,26 +1546,21 @@ board_init_f(ulong dummy)
 		printf("pgt are at %p\n", (void*) pgt);
 
 		mmu_configure((u64*)pgt, DISABLE_DCACHE);
-
 		display_mapping(0);
 
-		address = 0x8001000000ULL; /*AXI_MMAP part 1*/
-		junk = readl(address);
-		junk = junk;
 		address = 0x8020000000ULL; /*AXI_MMAP part 2 incl. LSM */ 
 		junk = readl(address);                                    
 		junk = junk;                                              
+		address = 0x8001000000ULL; /*AXI_MMAP part 1*/
+		junk = readl(address);
+		junk = junk;
 		address = 0x8080000000ULL; /*AXI_PERIPH*/
 		junk = readl(address);
 		junk = junk;
 
-		/* Enable dcache */
 		set_sctlr(get_sctlr() | CR_C);
 		invalidate_dcache_all();
 		display_mapping(0);
-		/* TODO: Fine grain mmu mapping */
-		/*configure_mmu_el3(LSM, SZ_256K, 
-					0x0000008031000000, 0x000000803101ab3c);*/
 		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
 		entry = (void (*)(void *, void *))0x0;
 		load_image_mem();
@@ -1573,10 +1568,6 @@ board_init_f(ulong dummy)
 		__asm_flush_dcache_all();
 		/* Jump to Uboot at address 0x0 */
 		(*entry)(NULL, NULL);
-
-		/* Should never get here! */           
-		printf("Jump to Address 0 Failed!\n");  
-		acp_failure(__FILE__, __func__, __LINE__);
 	}
 #endif	/* SYSCACHE_ONLY_MODE */
 
