@@ -852,6 +852,7 @@ display_mapping(unsigned long address)
 }
 
 extern void mmu_configure(u64 *, unsigned int flags);
+extern int set_cluster_coherency(unsigned cluster, unsigned state); 
 
 static void
 load_image(void)
@@ -1536,6 +1537,11 @@ board_init_f(ulong dummy)
 
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
+
+		if (0 != set_cluster_coherency(3/*1 by John*/, 1)) 
+	        acp_failure(__FILE__, __func__, __LINE__); 
+
+		/* Upon L3 init invalidate data cache l1 through l2 */
 		init_l3();
 #if 0
 		unsigned int buffer[64] __attribute__ ((aligned(16)));
@@ -1563,9 +1569,6 @@ board_init_f(ulong dummy)
 		address = 0x8001000000ULL; /*AXI_MMAP part 1*/
 		junk = readl(address);
 		junk = junk;
-		address = 0x8020000000ULL; /*AXI_MMAP part 2 incl. LSM */
-		junk = readl(address);
-		junk = junk;
 		address = 0x8080000000ULL; /*AXI_PERIPH*/
 		junk = readl(address);
 		junk = junk;
@@ -1573,6 +1576,7 @@ board_init_f(ulong dummy)
 		/* Enable dcache */
 		set_sctlr(get_sctlr() | CR_C);
 		isb();                                                           
+		invalidate_dcache_all();
 
 		display_mapping(0);
 																	 
