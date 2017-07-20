@@ -935,11 +935,10 @@ void init_l3(void)
 }
 
 void
-load_image_mem(void)
+load_image_mem(unsigned int offset)
 {
 	struct spi_flash *flash;
 	struct image_header header;
-	unsigned int offset = CONFIG_UBOOT_OFFSET;
 	unsigned int size;
 
 	flash = spi_flash_probe(CONFIG_SPL_SPI_BUS, CONFIG_SPL_SPI_CS,
@@ -1538,8 +1537,10 @@ board_init_f(ulong dummy)
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
 
-		if (0 != set_cluster_coherency(3/*1 by John*/, 1)) 
+#if 0
+		if (0 != set_cluster_coherency(3/*or 1 by John*/, 1)) 
 	        acp_failure(__FILE__, __func__, __LINE__); 
+#endif
 
 		/* Upon L3 init invalidate data cache l1 through l2 */
 		init_l3();
@@ -1558,14 +1559,19 @@ board_init_f(ulong dummy)
 		junk = readl(address);
 		junk = junk;
 
-		set_sctlr(get_sctlr() | CR_C);
+		set_sctlr(get_sctlr() | CR_C); 
 		invalidate_dcache_all();
 		display_mapping(0);
 		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
 		entry = (void (*)(void *, void *))0x0;
-		load_image_mem();
-		invalidate_icache_all();
+		unsigned int offset = CONFIG_UBOOT_OFFSET;
+		load_image_mem(offset); 
 		__asm_flush_dcache_all();
+		printf("loaded Uboot from 0x%x\n", offset);
+		load_image_mem(SZ_4M); /*override*/
+		__asm_flush_dcache_all();
+		printf("loaded Uboot from 0x%x\n", SZ_4M);
+		invalidate_icache_all();
 		/* Jump to Uboot at address 0x0 */
 		(*entry)(NULL, NULL);
 	}
