@@ -151,6 +151,7 @@ ENDPROC(__asm_flush_dcache_range)
  */
 ENTRY(__asm_invalidate_icache_all)
 	ic	ialluis
+	dsb sy
 	isb	sy
 	ret
 ENDPROC(__asm_invalidate_icache_all)
