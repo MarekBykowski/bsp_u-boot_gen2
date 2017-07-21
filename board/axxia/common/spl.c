@@ -1564,13 +1564,15 @@ board_init_f(ulong dummy)
 		display_mapping(0);
 		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
 		entry = (void (*)(void *, void *))0x0;
-		unsigned int offset = CONFIG_UBOOT_OFFSET;
-		load_image_mem(offset); 
-		__asm_flush_dcache_all();
-		printf("loaded Uboot from 0x%x\n", offset);
-		load_image_mem(SZ_4M); /*override*/
+
+		load_image_mem(SZ_4M); /*Michales*/
 		__asm_flush_dcache_all();
 		printf("loaded Uboot from 0x%x\n", SZ_4M);
+
+		load_image_mem(CONFIG_UBOOT_OFFSET); 
+		__asm_flush_dcache_all();
+		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
+
 		invalidate_icache_all();
 		/* Jump to Uboot at address 0x0 */
 		(*entry)(NULL, NULL);
