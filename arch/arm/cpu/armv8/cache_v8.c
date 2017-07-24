@@ -17,7 +17,7 @@ inline void set_pgtable_section(u64 *page_table, u64 index, u64 section,
 {
 	u64 value;
 
-	value = section | PMD_TYPE_SECT | PMD_SECT_INNER_SHARE | PMD_SECT_AF;
+	value = section | PMD_TYPE_SECT | /*PMD_SECT_INNER_SHARE |*/ PMD_SECT_AF;
 	value |= PMD_ATTRINDX(memory_type);
 	value |= share;
 	page_table[index] = value;
@@ -51,7 +51,7 @@ inline void set_pgtable_table(u64 *page_table, u64 index, u64 *table_addr)
 		for (j = start >> SECTION_SHIFT;
 		     j < end >> SECTION_SHIFT; j++) {
 			set_pgtable_section(page_table, j, j << SECTION_SHIFT,
-					    MT_NORMAL, PMD_SECT_NON_SHARE);
+					    MT_NORMAL, PMD_SECT_INNER_SHARE);
 		}
 	}
 
@@ -88,12 +88,13 @@ void mmu_configure(u64 *addr, int flags)
 				    MT_DEVICE_NGNRNE, PMD_SECT_NON_SHARE);
 	}
 
+asm volatile("mb2: b mb2\n");
 	ulong start = 0;
 	ulong end = 0x40000000;
 	for (j = start >> SECTION_SHIFT;
 		 j < end >> SECTION_SHIFT; j++) {
 		set_pgtable_section(page_table, j, j << SECTION_SHIFT,
-					MT_NORMAL, PMD_SECT_NON_SHARE);
+					MT_NORMAL, PMD_SECT_OUTER_SHARE);
 	}
 
 

@@ -5,13 +5,14 @@
 # SPDX-License-Identifier:	GPL-2.0+
 #
 
+obj-$(CONFIG_ZLIB) += zlib/
+obj-$(CONFIG_GZIP) += gunzip.o
 ifndef CONFIG_SPL_BUILD
 
 obj-$(CONFIG_EFI) += efi/
 obj-$(CONFIG_RSA) += rsa/
 obj-$(CONFIG_LZMA) += lzma/
 obj-$(CONFIG_LZO) += lzo/
-obj-$(CONFIG_ZLIB) += zlib/
 obj-$(CONFIG_BZIP2) += bzip2/
 obj-$(CONFIG_TIZEN) += tizen/
 obj-$(CONFIG_OF_LIBFDT) += libfdt/
@@ -29,7 +30,6 @@ obj-$(CONFIG_FIT) += fdtdec_common.o
 obj-$(CONFIG_$(SPL_)OF_CONTROL) += fdtdec_common.o
 obj-$(CONFIG_$(SPL_)OF_CONTROL) += fdtdec.o
 obj-$(CONFIG_TEST_FDTDEC) += fdtdec_test.o
-obj-$(CONFIG_GZIP) += gunzip.o
 obj-$(CONFIG_GZIP_COMPRESSED) += gzip.o
 obj-y += initcall.o
 obj-$(CONFIG_LMB) += lmb.o

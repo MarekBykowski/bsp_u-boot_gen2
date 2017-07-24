@@ -963,6 +963,7 @@ load_image_mem(unsigned int offset)
 		//hang();
 	}
 
+
 	offset += sizeof(struct image_header);
 	size = spl_image.size - sizeof(struct image_header);
 
@@ -971,6 +972,18 @@ load_image_mem(unsigned int offset)
 	spi_flash_read(flash, offset, 4, (void*)0x100);
 	*(uint32_t *)0 = *(uint32_t *)0x100;
 	spi_flash_read(flash, offset+4, size-4, (void*)4);
+
+	if (IH_COMP_GZIP == image_get_comp(&header)){
+		printf("Unpacking the image with gzip... ");
+
+		memmove((void*)0x400000, (void*)0, 0x200000);
+		if (gunzip((void *)0x0, 0x200000, (void *)0x400000, (unsigned long*)(volatile unsigned long)size)) {
+			printf("ERROR!\n");
+		}
+
+		printf("OK\n");
+	}
+
 	return;
 }
 
@@ -1537,10 +1550,11 @@ board_init_f(ulong dummy)
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
 
-#if 0
 		if (0 != set_cluster_coherency(3/*or 1 by John*/, 1)) 
 	        acp_failure(__FILE__, __func__, __LINE__); 
-#endif
+
+		if (0 != set_cluster_coherency(1/*or 1 by John*/, 1)) 
+	        acp_failure(__FILE__, __func__, __LINE__); 
 
 		/* Upon L3 init invalidate data cache l1 through l2 */
 		init_l3();
@@ -1566,13 +1580,30 @@ board_init_f(ulong dummy)
 		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
 		entry = (void (*)(void *, void *))0x0;
 
+		load_image_mem(CONFIG_UBOOT_OFFSET); 
+		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
+
 		load_image_mem(SZ_4M); /*Michaels*/
 		printf("loaded Uboot from 0x%x\n", SZ_4M);
 
 		load_image_mem(CONFIG_UBOOT_OFFSET); 
 		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
-		__asm_flush_dcache_all();
 
+		load_image_mem(SZ_4M); /*Michaels*/
+		printf("loaded Uboot from 0x%x\n", SZ_4M);
+
+		load_image_mem(CONFIG_UBOOT_OFFSET); 
+		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
+
+		load_image_mem(SZ_4M); /*Michaels*/
+		printf("loaded Uboot from 0x%x\n", SZ_4M);
+
+		load_image_mem(CONFIG_UBOOT_OFFSET); 
+		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
+
+		memmove((void*)0x600000,(void*)LSM,256*1024);
+
+		/*__asm_flush_dcache_all();*/
 		__asm_invalidate_icache_all();
 		(*entry)(NULL, NULL);
 	}
