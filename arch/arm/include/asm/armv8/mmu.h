@@ -105,7 +105,7 @@
 
 /* PTWs cacheable, inner/outer WBWA and inner shareable */
 #define TCR_FLAGS		(TCR_TG0_64K |		\
-				TCR_SHARED_INNER |	\
+				TCR_SHARED_OUTER/*TCR_SHARED_INNER*/ |	\
 				TCR_ORGN_WBWA |		\
 				TCR_IRGN_WBWA |		\
 				TCR_T0SZ(VA_BITS))

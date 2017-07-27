@@ -55,6 +55,7 @@ obj-y += sysmem_bist.o cmem_bist.o
 obj-y += lsi.o ncr.o sysmem_size.o parameters.o sbb.o axxia_clocks.o
 obj-y += cache.o outer_cache.o gpdma.o lowlevel.o
 obj-y += ncp_elm.o ncp_sm_denali_2041_init_56xx.o ncp_sysmem_init_synopphy.o sysmem_asic.o 
+obj-y += l3_cache.o
 #obj-y += xlat_tables.o mem_map.o
 
 ifdef CONFIG_HW_WATCHDOG

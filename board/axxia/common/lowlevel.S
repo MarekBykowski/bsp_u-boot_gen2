@@ -13,7 +13,7 @@
 
 do_attributes:
 
-	ldr	x5, =(PMD_TYPE_SECT | PMD_SECT_INNER_SHARE | PMD_SECT_AF)
+	ldr	x5, =(PMD_TYPE_SECT | PMD_SECT_OUTER_SHARE | PMD_SECT_AF)
 	orr	x1, x1, x5
 
 	/* retreive an output addr[47-29] */

@@ -37,7 +37,13 @@ int cleanup_before_linux(void)
 	 * dcache_disable() in turn flushes the d-cache and disables MMU
 	 */
 	dcache_disable();
+	__asm_disable_l3_cache();
 	invalidate_dcache_all();
+	/* Maybe we should invalidate the L3 too.
+ 	   I don't think it is necessary. We have rather no
+	   chances any entries between dcache flush and disable 
+	   will get written to L3. If any it will be L1-L2 */
+	
 
 	return 0;
 }

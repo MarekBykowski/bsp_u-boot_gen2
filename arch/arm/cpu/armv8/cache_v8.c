@@ -88,7 +88,6 @@ void mmu_configure(u64 *addr, int flags)
 				    MT_DEVICE_NGNRNE, PMD_SECT_NON_SHARE);
 	}
 
-asm volatile("mb2: b mb2\n");
 	ulong start = 0;
 	ulong end = 0x40000000;
 	for (j = start >> SECTION_SHIFT;
@@ -190,6 +189,12 @@ void dcache_disable(void)
 {
 	uint32_t sctlr;
 
+	/* Flush first then disable dcaches */
+	__asm_flush_dcache_all();
+	/*__asm_flush_l3_cache();*/
+	/*Flush and disable*/
+	__asm_disable_l3_cache();
+
 	sctlr = get_sctlr();
 
 	/* if cache isn't enabled no need to disable */
@@ -197,16 +202,6 @@ void dcache_disable(void)
 		return;
 
 	set_sctlr(sctlr & ~(CR_C|CR_M));
-
-	/*
-	 * At this point, the previous contents of the stack are cached.
-	 * If anything gets written to the stack before the caches are
-	 * cleaned and invalidated, it will be written to memory.  Then,
-	 * when the cache is cleaned, it will get overwritten.
-	 */
-
-	__asm_flush_dcache_all();
-	__asm_flush_l3_cache();
 
 	__asm_invalidate_tlb_all();
 }

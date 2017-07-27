@@ -853,6 +853,9 @@ display_mapping(unsigned long address)
 
 extern void mmu_configure(u64 *, unsigned int flags);
 extern int set_cluster_coherency(unsigned cluster, unsigned state); 
+extern void calc_hnf_num_tgt(unsigned long addr, int *hnf_num, int *hnf_tgt);
+extern int calc_set(unsigned long addr);
+
 
 static void
 load_image(void)
@@ -1560,6 +1563,14 @@ board_init_f(ulong dummy)
 		init_l3();
 		printf("pgt are at %p\n", (void*) pgt);
 
+#if 0
+{
+int addr=0, hnf_num, hnf_tgt;
+calc_hnf_num_tgt(addr, hnf_num, hnf_tgt); 
+calc_set(0);
+}
+#endif
+
 		mmu_configure((u64*)pgt, DISABLE_DCACHE);
 		display_mapping(0);
 
@@ -1604,6 +1615,7 @@ board_init_f(ulong dummy)
 		memmove((void*)0x600000,(void*)LSM,256*1024);
 
 		/*__asm_flush_dcache_all();*/
+		__asm_flush_dcache_level(0/*L1*/,0/*clean&inv*/);
 		__asm_invalidate_icache_all();
 		(*entry)(NULL, NULL);
 	}

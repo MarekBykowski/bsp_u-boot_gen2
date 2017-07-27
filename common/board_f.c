@@ -875,6 +875,7 @@ int switch_to_EL2_non_secure(void)
 	axxia_configuration->per_clock_hz *= 1000;
 	axxia_configuration->baud_rate = gd->baudrate;
 	entry = (void (*)(void *, void *))(LSM+/*by John J.*/0x1000);
+asm volatile("mb1: b mb1\n");
 	cleanup_before_linux();
 	/* Inormatively pass the addr Uboot enteres the Secire Monitor with 
  	   and print it in the Secure Monitor */
