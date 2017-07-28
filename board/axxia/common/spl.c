@@ -1603,9 +1603,11 @@ board_init_f(ulong dummy)
 
 		memmove((void*)0x600000,(void*)LSM,256*1024);
 
-		/*__asm_flush_dcache_all();*/
+		__asm_flush_dcache_level(0/*L1*/,0/*clean&inval*/);
 		__asm_invalidate_icache_all();
+
 		(*entry)(NULL, NULL);
+		acp_failure(__FILE__, __func__, __LINE__);
 	}
 #endif	/* SYSCACHE_ONLY_MODE */
 
