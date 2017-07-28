@@ -88,7 +88,6 @@ void mmu_configure(u64 *addr, int flags)
 				    MT_DEVICE_NGNRNE, PMD_SECT_NON_SHARE);
 	}
 
-asm volatile("mb2: b mb2\n");
 	ulong start = 0;
 	ulong end = 0x40000000;
 	for (j = start >> SECTION_SHIFT;
