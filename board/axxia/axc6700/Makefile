@@ -23,14 +23,17 @@
 
 ifndef CONFIG_SPL_BUILD
 
-
-include $(srctree)/board/axxia/axc6700/ncatask/Makefile
-
 ################################################################################
 ## Normal Build
 
-#ccflags-y += -Wno-unused-but-set-variable -Wno-unused-variable -Wno-maybe-uninitialized -Wno-error=int-conversion
-obj-y += qos.o mdio.o eioa.o
+ccflags-y += -Wno-unused-but-set-variable -Wno-unused-variable -Wno-maybe-uninitialized -Wno-error=int-conversion
+
+obj-y += qos.o 
+ifdef CONFIG_AXXIA_EIOA
+CFLAGS_eioa.o += -I$(src)/ncatask/include
+obj-y += ncatask/
+obj-y += mdio.o eioa.o
+endif
 else
 
 ################################################################################

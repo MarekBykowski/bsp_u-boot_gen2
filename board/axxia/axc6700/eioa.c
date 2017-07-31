@@ -32,8 +32,6 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 /* task NCAv3 */
-/*#include "../common/ncp_sysmem_lsiphy.h"*/ /* for macros and stuff mainly. Must go first */
-#include "uboot/ncp_task_basetypes.h"
 #include "uboot/ncp_task_pvt.h"
 #include "uboot/ncp_mme_ext.h"
 #include "ncp_timer_regions.h"
