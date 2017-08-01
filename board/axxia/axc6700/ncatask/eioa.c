@@ -21,12 +21,11 @@
  */
 
 #define DEBUG
-#include <config.h>
-
 #include <common.h>
 #include <malloc.h>
 #include <net.h>
 #include <miiphy.h>
+#include <asm/io.h> /*writel, readl*/
 
 DECLARE_GLOBAL_DATA_PTR;
 

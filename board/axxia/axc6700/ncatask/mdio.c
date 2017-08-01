@@ -26,10 +26,10 @@
 
 /*#define DEBUG*/
 
-#include <config.h>
 #include <common.h>
 #include <miiphy.h>
 #include <malloc.h>
+#include <asm/io.h>
 
 #undef BZ33327_WA
 /*#define BZ33327_WA*/
