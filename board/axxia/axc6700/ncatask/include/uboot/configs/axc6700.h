@@ -1651,7 +1651,7 @@ extern unsigned *phyRegs;
   ==============================================================================
 */
 
-#include "uboot/configs/axxia.h"
+#include <config.h>
 
 
 #endif /* __CONFIG_H */

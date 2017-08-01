@@ -19,18 +19,6 @@
 #ifndef NCP_TASK_BASETYPES_H
 #define NCP_TASK_BASETYPES_H
 
-/*
-#include <config.h>
-#include <common.h>
-#include <asm/string.h>
-#include <ubi_uboot.h>
-*/
-
-/* RWXXX */
-//#include <unistd.h>
-
-/* #include "uboot/axxia.h" */
-
 
 #include <ncp_sal_types_linux.h>
 

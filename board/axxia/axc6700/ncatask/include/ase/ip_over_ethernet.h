@@ -12,10 +12,10 @@
 #ifndef _IP_OVER_ETHERNET_H_   
 #define _IP_OVER_ETHERNET_H_
 
+#include <config.h>
 #include "uboot/ncp_sal_types_linux.h"
 #include "uboot/ncp_task_basetypes.h"
 #include "uboot/ncp_status.h"
-#include "uboot/axxia.h"
 #include "uboot/ncp_types.h"
 #include "uboot/ncp_vpm.h"
 /* #include "uboot/ncp_config.h" */

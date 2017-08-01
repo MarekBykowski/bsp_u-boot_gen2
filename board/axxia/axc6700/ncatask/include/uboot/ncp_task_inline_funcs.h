@@ -1018,7 +1018,7 @@ ncp_task_bulk_MMEpool_alloc(
 
             /* Store buffer address for caller */
             *pRetBuffers = (void *)p_mPCQ->u.mpcq_info.pMPCQentry->address;
-			printf("ret addr %llx",*pRetBuffers);
+			printf("ret addr %p", (void*) pRetBuffers);
 
             NCP_TASK_TBR_BUFFER_STATE_PREFETCH(
                 pvtTqsHdl,

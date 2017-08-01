@@ -26,9 +26,13 @@ ifndef CONFIG_SPL_BUILD
 ################################################################################
 ## Normal Build
 
+ccflags-y += -D_GNU_SOURCE -DNCP_USE_NVM -DNCP_MULTI_THREAD -DNCP_LINUX -DUSE_NCAV3 
+ccflags-y += -Wno-implicit-function-declaration 
+ccflags-y += -Wno-unused-but-set-variable 
+ccflags-y += -Wno-unused-variable -Wno-implicit-int -Wno-unused-label
+ccflags-y += -I$(srctree)/board/axxia/axc6700/ncatask/include -I$(srctree)/board/axxia/axc6700/ncatask/include/uboot/
 
-ccflags-y += -D_GNU_SOURCE -I./include -DNCP_USE_NVM -DNCP_MULTI_THREAD -DNCP_LINUX -DUSE_NCAV3 -Wno-implicit-function-declaration -Wno-unused-but-set-variable -Wno-unused-variable -Wno-implicit-int -Wno-unused-label -I$(srctree)/board/axxia/axc6700/ncatask/include -I$(srctree)/board/axxia/axc6700/ncatask/include/uboot/
-
+obj-y += mdio.o eioa.o
 obj-y += ncp.o mp_free.o mp_malloc.o mp_mstats.o mp_realloc.o ncp_vpm.o 
 obj-y += ncp_sal.o ncp_task.o ncp_config_uboot.o ncp_task_pvt.o ncp_task_pvt_user.o
 obj-y += ncp_sal_linux.o ncp_dev_linux_user.o
