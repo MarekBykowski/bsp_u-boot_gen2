@@ -25,7 +25,6 @@
 
 #include <common.h>
 #include <malloc.h>
-#include <asm/io.h>
 #include <net.h>
 #include <miiphy.h>
 
@@ -1352,7 +1351,7 @@ test_write_32_64(void)
 	printf("word 		-> addr %p val 0x%x\n"
 		   "double word -> addr %p val 0x%llx\n",
 			(void*)addr, readl(addr),
-			(void*)addr+4, readq(addr+4));
+			(void*)addr+4, (unsigned long long) readq(addr+4));
 
 	return;
 }

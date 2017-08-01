@@ -28,7 +28,6 @@
 
 #include <config.h>
 #include <common.h>
-#include <asm/io.h>
 #include <miiphy.h>
 #include <malloc.h>
 

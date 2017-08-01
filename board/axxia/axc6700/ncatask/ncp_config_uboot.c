@@ -3,6 +3,7 @@
  **    Copyright (c) 2001-2015, Intel Corporation.              *
  **                                                                       *
  **************************************************************************/
+#include <common.h>
 #include <malloc.h>
 #include "main.h"
 #include "uboot/ncp_task_pvt.h"
@@ -504,7 +505,7 @@ ncav3_config_hw(ncp_t *ncp)
     return NCP_ST_SUCCESS;
 
  ncp_return:
-    printf("ncp_config_uboot_attach:90:ERROR: %s\n", ncp_status_get(ncpStatus));
+    printf("ncp_config_uboot_attach:90:ERROR: %s\n", (char*) (unsigned long) ncp_status_get(ncpStatus));
     return ncpStatus;
 
 }
@@ -609,7 +610,7 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
 	return NCP_ST_SUCCESS;
 
  ncp_return:
-    printf("ncp_config_uboot_attach:90:ERROR: %s\n", ncp_status_get(ncpStatus));
+    printf("ncp_config_uboot_attach:90:ERROR: %s\n", (char*) (unsigned long) ncp_status_get(ncpStatus));
     return ncpStatus;
 }
 

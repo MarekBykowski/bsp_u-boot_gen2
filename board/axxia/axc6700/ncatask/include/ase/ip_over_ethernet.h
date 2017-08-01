@@ -18,7 +18,6 @@
 #include "uboot/ncp_status.h"
 #include "uboot/ncp_types.h"
 #include "uboot/ncp_vpm.h"
-/* #include "uboot/ncp_config.h" */
 #include "uboot/ncp_task.h"
 
 

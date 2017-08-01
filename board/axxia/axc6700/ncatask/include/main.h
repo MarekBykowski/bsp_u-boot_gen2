@@ -3,7 +3,7 @@
 #ifndef _NCP_MAIN_H_
 #define _NCP_MAIN_H_
 
-#include <config.h>
+#include <common.h>
 #include "uboot/ncp_sal_types_linux.h"
 #include "uboot/ncp_status.h"
 #include "uboot/ncp_task_basetypes.h"
