@@ -1039,7 +1039,6 @@ typedef struct ncp_task_tbr_params_s {
                 (ncp_uint16_t)*_pState,                          \
                 mrefBit);                                        \
                                                                  \
-			printf("Lapaj4");\
             NCP_CALL(NCP_ST_TASK_TBR_FATAL_POOL_CORRUPTION);     \
         }                                                        \
                                                                  \
@@ -1568,6 +1567,7 @@ ncp_task_fill_per_opcq_aux_data(_pvtTqsHdl,             \
 #define NCP_TASK_VALIDATE_RESOURCE_NAME(_name, _ec)
 #define NCP_VALIDATE_TQS_HDL(_tqsHdl)
 #endif
+
 
 #if !defined(NCP_KERNEL) && !defined(NCP_CHECK_DISABLED)
 #define NCP_VALIDATE_NCP_HDL(ncpHdl)     ncp_validate_handle(ncpHdl)

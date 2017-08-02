@@ -946,8 +946,8 @@ NCP_RETURN_LABEL
     NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                           ncp_xlf_task_send_txCompletionInfo, NCP_MSG_DEBUG,
                           "in send: TxQ_%d completions issued incremented by %d, total = 0x%"PRIx64"\r\n",
-                          txQueueId,
-                          completionsIssued,
+                          (unsigned) txQueueId,
+                          (unsigned) completionsIssued,
                           pvtTqsHdl->completionsIssued[txQueueId]);
 
     if (NCP_ST_SUCCESS == ncpStatus)

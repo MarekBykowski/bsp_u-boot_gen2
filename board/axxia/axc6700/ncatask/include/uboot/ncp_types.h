@@ -468,7 +468,7 @@ typedef struct {
 #ifndef NCP_CHECK_DISABLED
 #define NCP_CHECK(_condition, _err) NCP_ASSERT((_condition), (_err))  
 #else
-#define NCP_CHECK(_condition, _err) 
+#define NCP_CHECK(_condition, _err) ((void)(_condition),(void)(_err))
 #endif
 
 #ifndef NCP_TASKIO_CHECK_DISABLED

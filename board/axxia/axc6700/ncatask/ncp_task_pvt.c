@@ -207,8 +207,8 @@ ncp_task_tbr_global_pool_refill_recovery(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl)
                                   NCP_MSG_INFO,
                                   "Attempting to issue %d refills for buffer size=%d when recovering pool %d\r\n",
                                   (int)(refillsOwed[i]),
-                                  buffSizes[i],
-                                  pCpuPool->poolId);
+                                  (int)buffSizes[i],
+                                  (int)pCpuPool->poolId);
 
             do
             {
@@ -260,7 +260,7 @@ NCP_RETURN_LABEL
                                   (int)(refillsOwed[1]),
                                   (int)(refillsOwed[2]),
                                   (int)(refillsOwed[3]),
-                                  pCpuPool->poolId);
+                                  (int)pCpuPool->poolId);
         }
     }        
     return(ncpStatus);
@@ -550,7 +550,7 @@ ncp_task_tbr_task_buffer_pid_get( ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
         NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                               ncp_xlf_task_tbr_task_buffer_pid_get_pool,
                               NCP_MSG_ERROR, "pool=%d\r\n",
-                              pPool->poolId);
+                              (int)pPool->poolId);
         NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                               ncp_xlf_task_tbr_task_buffer_pid_get_blocksVAStartEnd,
                               NCP_MSG_ERROR, "blocksVA[%d] start=%p, end=%p\r\n",
@@ -904,7 +904,7 @@ ncp_task_pool_mutex_reset_default(ncp_task_pool_t *pPool, ncp_pid_t pid)
                                       ncp_xlf_task_pool_mutex_reset_default_pid_mismatch,
                                       NCP_MSG_ERROR,
                                       "Attempt to reset pool=%d lock, but owner PID=%d mismatch callers PID=%d\n",
-                                      pPool->poolId, NCP_TASK_V3_MUTEX_HDL_PID(&(pPool->poolLock)), pid
+                                      (int)pPool->poolId, NCP_TASK_V3_MUTEX_HDL_PID(&(pPool->poolLock)), pid
                     );
                 NCP_RETURN(NCP_ST_TASK_BAD_POOL_OWNER_PROCESS);
             }
@@ -1298,7 +1298,7 @@ NCP_RETURN_LABEL
     {
         NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                               ncp_xlf_task_buffer_overrun_check_pool,
-                              NCP_MSG_ERROR, "pool=%d\r\n", pPool->poolId);
+                              NCP_MSG_ERROR, "pool=%d\r\n", (int)pPool->poolId);
         NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                               ncp_xlf_task_buffer_overrun_check_blocksVAStartEnd,
                               NCP_MSG_ERROR, "blocksVA[%d] start=%p, end=%p\r\n",
@@ -2548,10 +2548,7 @@ ncp_st_t ncp_task_unmap_pools(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
         {    
             if (1 == ncpTaskPoolMapCnt[mapCntIdx])
             {    
-#if 0
-LAPAJ TODO
 				munmap(pPool->poolVA, pPool->poolSize);
-#endif
             }
             (pvtTqsHdl->mappedPools &= ~(1<<poolId));
             ncpTaskPoolMapCnt[mapCntIdx]--;
@@ -2801,7 +2798,7 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
                           ncp_xlf_task_attach_tqs_addedTqsHdlInstance1,
                           NCP_MSG_DEBUG,
                           "Added tqsHdl (instance 1) %p fom client list for tqsId=%d, new useCnt=%d, clientHdlsBase=%p\r\n",
-                          pvtTqsHdl, pTqs->tqsId, pTqs->tqsUseCnt,
+                          pvtTqsHdl, (int)pTqs->tqsId, (int)pTqs->tqsUseCnt,
                           pTqs->clientTqsHdls);
 
     pvtTqsHdl->cookie = NCP_TASK_TQS_HDL_COOKIE;
@@ -2854,7 +2851,7 @@ ncp_task_detach_tqs(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl)
                               ncp_xlf_task_detach_tqs_removedTqsHdlInstance1,
                               NCP_MSG_DEBUG,
                               "Removed tqsHdl (instance 1) %p fom client list for tqsId=%d, new useCnt=%d, clientHdlsBase = %p\r\n",
-                              pvtTqsHdl, pTqs->tqsId, pTqs->tqsUseCnt,
+                              pvtTqsHdl, (int)pTqs->tqsId, pTqs->tqsUseCnt,
                               pTqs->clientTqsHdls);
 
     }
@@ -2871,7 +2868,7 @@ ncp_task_detach_tqs(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl)
                                       ncp_xlf_task_detach_tqs_removedTqsHdlInstance2,
                                       NCP_MSG_DEBUG,
                                       "Removed tqsHdl (instance 2) %p fom client list for tqsId=%d, , new useCnt=%d, clientHdlsBase = %p\r\n",
-                                      pvtTqsHdl, pTqs->tqsId, pTqs->tqsUseCnt,
+                                      pvtTqsHdl, (int)pTqs->tqsId, pTqs->tqsUseCnt,
                                       pTqs->clientTqsHdls);
 
                 break;
@@ -4677,7 +4674,7 @@ _ncp_task_buffer_size_get(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
                               (void *)pBuffer);
         NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                               ncp_xlf_task_buffer_size_get_pool, NCP_MSG_ERROR,
-                              "pool=%d\r\n", pPool->poolId);
+                              "pool=%d\r\n", (int)pPool->poolId);
         NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                               ncp_xlf_task_buffer_size_get_blocksVAStartEnd,
                               NCP_MSG_ERROR, "blocksVA[%d] start=%p, end=%p\r\n",
@@ -4818,7 +4815,7 @@ _ncp_task_buffer_size_and_start_get(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
                               (void *)pBuffer);
         NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                               ncp_xlf_task_buffer_size_and_start_get_pool,
-                              NCP_MSG_ERROR, "pool=%d\r\n", pPool->poolId);
+                              NCP_MSG_ERROR, "pool=%d\r\n", (int)pPool->poolId);
         NCP_TASKIO_TRACEPOINT(Intel_AXXIA_ncp_nca,
                               ncp_xlf_task_buffer_size_and_start_get_blocksVAStartEnd,
                               NCP_MSG_ERROR,

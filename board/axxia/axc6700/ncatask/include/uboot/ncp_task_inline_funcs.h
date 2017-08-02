@@ -8,6 +8,7 @@
 #ifndef __ncp_task_inline_funcs__
 #define __ncp_task_inline_funcs__
 
+#include <common.h>
 #include "uboot/arm64/ncp_sal_memory.h"
 #include "uboot/arm64/ncp_sal_barrier.h"
 

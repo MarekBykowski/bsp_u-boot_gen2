@@ -28,7 +28,6 @@ ifndef CONFIG_SPL_BUILD
 
 ccflags-y += -D_GNU_SOURCE -DNCP_USE_NVM -DNCP_MULTI_THREAD -DNCP_LINUX -DUSE_NCAV3 
 ccflags-y += -Wno-implicit-function-declaration 
-ccflags-y += -Wno-unused-but-set-variable 
 ccflags-y += -Wno-unused-variable -Wno-implicit-int -Wno-unused-label
 ccflags-y += -I$(srctree)/board/axxia/axc6700/ncatask/include -I$(srctree)/board/axxia/axc6700/ncatask/include/uboot/
 

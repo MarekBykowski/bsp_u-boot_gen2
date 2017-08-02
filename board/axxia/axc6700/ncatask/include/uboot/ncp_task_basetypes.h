@@ -19,9 +19,9 @@
 #ifndef NCP_TASK_BASETYPES_H
 #define NCP_TASK_BASETYPES_H
 
+#include <common.h>
 /*
 #include <config.h>
-#include <common.h>
 #include <asm/string.h>
 #include <ubi_uboot.h>
 */
@@ -243,19 +243,6 @@ typedef ncp_uint32_t ncp_region_id_t;
 
 
 /*
- * API parameter checking can be disabled by defining NCP_CHECK_DISABLED.   Time-critical APIs
- * may be converted to use this new macro.
- */
-#define NCP_CHECK_DISABLED
-
-#ifndef NCP_CHECK_DISABLED
-#define NCP_CHECK(_condition, _err) NCP_ASSERT((_condition), (_err))
-#else
-#define NCP_CHECK(_condition, _err)
-#endif
-
- 
-/*
  * A general purpose way to eliminate warnings due the the label not being referenced.
  *
  */
@@ -278,8 +265,8 @@ ncp_return:
 /* #define NCP_MEM_MMAP(_dev, _startVA, _size, _physAddr) (_physAddr) */
 /* #define NCP_MEM_UNMAP(...) */
 /* #define NCP_USER_MEM_UNMAP(...) */
-/* #define munmap(...) */
-
+#define __munmap(_a, _b) ((void)(_a), (void)(_b))
+#define munmap(_a, _b) ({__munmap(_a, _b); 0; })
 /* RWXXX */
 /* #define udelay(s) usleep(s) */
 /* #define ncp_nvm_malloc(_sz) malloc(_sz) */
@@ -293,6 +280,7 @@ ncp_return:
  */
  
 
+#define NCP_CHECK_DISABLED
 #if !defined(NCP_KERNEL) && !defined(NCP_CHECK_DISABLED)
 #define NCP_VALIDATE_NCP_HDL(ncpHdl)     ncp_validate_handle(ncpHdl)
 #define NCP_VP_VALIDATE_HANDLE(vpHdl)        ncp_vp_validate_handle(vpHdl)
@@ -308,8 +296,13 @@ ncp_return:
 /* #define ncp_vpm_task_param_encode(vpHdl, to, from)  \ */
 /*     memcpy(to, from, 32) */
 
-#define NCP_TRACEPOINT(...) /*debug("Trace")*/
-#define NCP_TASKIO_TRACEPOINT(a_,b_,c_,d_, ...) /* debug(#b_ "TR"); */ /*debug(d_, ## __VA_ARGS__ )*/
+#define NCP_TRACEPOINT(...) debug("Trace")
+#define cond 0
+#define NCP_TASKIO_TRACEPOINT(_a, _b, _c, fmt, args...) \
+	do { \
+		if (cond) \
+			printf(pr_fmt(fmt), ##args); \
+	} while(0)	\
 
 /* #define ncp_comment(...) */
 
