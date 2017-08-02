@@ -48,6 +48,11 @@ DECLARE_GLOBAL_DATA_PTR;
   ==============================================================================
 */
 
+static int initialized = 0;
+static int loopback = 0;
+static int rxtest = 0;
+static ncp_task_tqs_hdl_t tqsHdl = NULL;
+static ncp_hdl_t ncpHdl;
 
 #define ALL_TRACES
 #define NCP_EIOA_GEN_CFG_REG_OFFSET(portIndex)                                  \
@@ -66,7 +71,6 @@ int phy_by_index[21] =
 	0x1, 0x17, 0x1b, 0x2, 0x3 /* EIOA1 */
 };
 
-int static initialized = 0;
 
 typedef enum {
 	NCR_COMMAND_NULL,
@@ -1359,7 +1363,6 @@ test_write_32_64(void)
 /*
   -------------------------------------------------------------------------------
   line_setup
-  Itis weak as a Waco has internal PHYs that do not require programming. 
 */
 
 int
@@ -1512,17 +1515,8 @@ line_setup(int index) {
 NCP_RETURN_LABEL
     return ncpStatus;
 }
-/*
-  -------------------------------------------------------------------------------
-  initialize_task_io
-*/
 
-#if 0
-int
-initialize_task_io(struct eth_device *dev)
-#else
 
-	ncp_hdl_t             ncpHdl;
 
 
 #define PACKET_ECHO_SIZE 97
@@ -1647,12 +1641,21 @@ void initPacketEcho(void)
     packet_echo[96] = 0x36;
 }
 
+/*
+  -------------------------------------------------------------------------------
+  initialize_task_io
+*/
 
+#if 0
+int
+initialize_task_io(struct eth_device *dev)
+#else
 int
 initialize_task_io(void)
 #endif
 {
     ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
+	ncp_uint32_t          devNum = 0;
 
     debug("Resetting device...");
 	if (0 != ncp_dev_reset()) {
@@ -1708,14 +1711,27 @@ initialize_task_io(void)
 				return -1;
 		}
 	debug("done\n");
-/* enable ipcq */
 #endif
 
-	ncp_uint32_t          devNum = 0;
     printf("trying to attach...\n");
 	NCP_CALL(ncp_config_uboot_attach(devNum, &ncpHdl));
-	initPacketEcho();
 
+{
+#define RECV_PGIT             0
+	ncp_task_tqs_usage_t     params;
+	ncp_task_resource_name_t processName;
+	int i;
+	for (i = 0; i < 8; i++)
+		params.useAllocator[i] = FALSE;
+#define SHARED_BUFFER_POOL2   2
+	params.useAllocator[SHARED_BUFFER_POOL2] = TRUE;
+	params.useRxQueue  = TRUE;
+	params.useTxQueue0 = TRUE;
+	params.useTxQueue1 = TRUE;
+	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
+	printf("trying to bind\n");
+	NCP_CALL(ncp_task_tqs_bind(ncpHdl, RECV_PGIT, &params, &processName, &processName, &tqsHdl));
+}
 
 NCP_RETURN_LABEL
     return ncpStatus;
@@ -1823,15 +1839,12 @@ void myCreateTask(ncp_task_tqs_hdl_t tqsHdl,
 
     *ppTask = task;
 
-    return;
- ncp_return:
-    printf("myCreateTask:90:ERROR: %d", ncpStatus);
+ncp_return:
+	return;
 }
 
-
-
-
-ncp_st_t tx_rx_task(void){
+ncp_st_t 
+tx_rx_task(void){
 
 	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
 	/* enable ipcq */
@@ -1858,7 +1871,6 @@ ncp_st_t tx_rx_task(void){
 	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
 
 	ncp_task_tqs_usage_t     params;
-#define RECV_PGIT             0
 	params.useRxQueue  = TRUE;
 	params.useTxQueue0 = TRUE;
 	params.useTxQueue1 = TRUE;
@@ -1931,7 +1943,6 @@ int getpid(void){
 	return 0;
 }
 
-
 int pthread_mutex_lock(void *mutex){
 	return 1;
 }
@@ -1940,7 +1951,6 @@ int pthread_mutex_unlock(void *mutex){
 	return 1;
 }
 
-
 int pthread_mutex_destroy(void *mutex){
 
 	return 1;
@@ -1948,15 +1958,18 @@ int pthread_mutex_destroy(void *mutex){
 
 
 
-/*
-  -------------------------------------------------------------------------------
-  initialize_task_io
-*/
 
 static int
 finalize_task_io(void)
 {
-	return 0;
+	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
+	ncpStatus = ncp_task_tqs_unbind(tqsHdl);
+	printf("unbind status %d\n",ncpStatus);
+ncp_return:
+    if(ncpStatus != NCP_ST_SUCCESS) {
+        printf("Failed to unbind. status=%d\n", ncpStatus);
+    }
+	return ncpStatus;
 }
  
 /*
@@ -1990,11 +2003,18 @@ lsi_eioa_eth_halt(struct eth_device *dev)
 int
 lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
 {
-	if (0 == initialized)
-		if (0 != initialize_task_io()) {
-			printf("Failed to Initialize TaskIO Lite!\n");
-			return -1;
-		}
+	if (0 != initialized) 
+		return 0;
+
+	if (0 != initialize_task_io()) {
+		printf("Failed to Initialize TaskIO Lite!\n");
+		return -1;
+	}
+	if (0 != line_setup(20)) {
+		printf("Failed to setup line\n");
+		return -1;
+	}
+	take_snapshot(20);
 
 	initialized = 1;
 	return 0;
@@ -2005,10 +2025,52 @@ lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
   lsi_eioa_eth_send
 */
 
-int __weak
+int 
 lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 {
-	return 0;
+	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
+	/* enable ipcq */
+#define NCP_NCA_ITP_IPCQ_ONLINE00 0x0017FF40
+#define NCP_NCA_ITP_IPCQ_VALID00  0x0017FF60
+	NCP_CALL(ncr_write32(NCP_REGION_NCAV3_CORE,
+				NCP_NCA_ITP_IPCQ_ONLINE00, 0x1));
+	NCP_CALL(ncr_write32(NCP_REGION_NCAV3_CORE,
+				NCP_NCA_ITP_IPCQ_VALID00, 0x1));
+
+	/* NCAv3 code begin */
+	ncp_task_send_meta_t    meta_data;
+    ncp_task_free_meta_t     meta_task;
+	ncp_task_tqs_hdl_t       tqsHdl = NULL;
+	ncp_uint32_t numSent;
+	int i = 0;
+
+	/* VP id - hardcoded*/
+	ncp_uint8_t              vpId = 0;
+	ncp_uint8_t              vpTxId = 1;
+	ncp_task_header_t        *newTask;
+	initPacketEcho();
+	myCreateTask(tqsHdl, vpTxId, &newTask);
+	printf("sending task...\n");
+	printTask(newTask);
+
+	/* Fill meta data fields */
+	meta_data.sendDoneFn = NULL;
+	meta_data.sendDoneArg = NULL;
+	meta_data.freeHeader = TRUE;
+	meta_data.freeDataPointers = TRUE;
+	meta_data.issueCompletion = FALSE;
+	meta_data.taskHeader = newTask;
+
+	ncpStatus = ncp_task_send(tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
+	printf("tx status %d",ncpStatus);
+
+
+ncp_return:
+    if(ncpStatus != NCP_ST_SUCCESS) {
+        printf("Failed to send packet. status=%d\n", ncpStatus);
+    }
+#define PACKET_ECHO_SIZE 97
+	return /*bytes_sent*/ 128 + PACKET_ECHO_SIZE;
 }
 
 /*
@@ -2016,10 +2078,68 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
   lsi_eioa_eth_rx
 */
 
-int __weak
+int
 lsi_eioa_eth_rx(struct eth_device *dev)
 {
-	return 0;
+    int bytes_received = 0;
+	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
+	unsigned char *pkt;
+	/* enable ipcq */
+#define NCP_NCA_ITP_IPCQ_ONLINE00 0x0017FF40
+#define NCP_NCA_ITP_IPCQ_VALID00  0x0017FF60
+	NCP_CALL(ncr_write32(NCP_REGION_NCAV3_CORE,
+				NCP_NCA_ITP_IPCQ_ONLINE00, 0x1));
+	NCP_CALL(ncr_write32(NCP_REGION_NCAV3_CORE,
+				NCP_NCA_ITP_IPCQ_VALID00, 0x1));
+
+	/* NCAv3 code begin */
+	ncp_task_send_meta_t    meta_data;
+    ncp_task_free_meta_t     meta_task;
+	ncp_task_tqs_hdl_t       tqsHdl = NULL;
+	ncp_uint32_t numSent;
+	int i = 0;
+
+	/* VP id - hardcoded*/
+	ncp_uint8_t              vpId = 0;
+	ncp_uint8_t              vpTxId = 1;
+	ncp_task_header_t        *task;
+	ncp_task_header_t        *newTask;
+	ncp_uint32_t             numRx;
+    printf("before receive loop...\n");
+
+	ncpStatus = ncp_task_recv(tqsHdl, 1, &numRx, &task, FALSE);
+	if(NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
+		return 0; 
+
+	printTask(task);
+	printf("rx status %d\n",ncpStatus);
+
+	bytes_received = task->pduSegSize0;
+	pkt = (unsigned char *)/*le64_to_cpu*/(task->pduSegAddr0);
+	/* copy the received packet to the up layer buffer */
+	if (0 == loopback && 0 == rxtest)
+		net_process_received_packet(pkt, bytes_received);
+
+	memset(&meta_data, 0x0, sizeof(ncp_task_free_meta_t));
+	meta_task.freeDoneFn = NULL;
+	meta_task.freeDoneArg = NULL;
+	meta_task.task = task;
+	meta_task.freeHeader = TRUE;
+	meta_task.issueCompletion = FALSE;
+	ncp_uint32_t numFree = 0;
+	ncpStatus = ncp_task_free(tqsHdl, 1, numRx, &numFree, &meta_task, TRUE);
+	printf("free status %d freed %d\n",ncpStatus,numFree);
+	ncpStatus = ncp_task_tqs_unbind(tqsHdl);
+	printf("unbind status %d\n",ncpStatus);
+
+ ncp_return:
+	if (NCP_ST_SUCCESS != ncpStatus) {
+		printf("%s:%d - NCP_CALL() Failed: 0x%08x\n",
+		       __FILE__, __LINE__, ncpStatus);
+		return 0;
+	}
+
+	return bytes_received;
 }
 
 /*
