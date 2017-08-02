@@ -1731,6 +1731,7 @@ initialize_task_io(void)
 	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
 	printf("trying to bind\n");
 	NCP_CALL(ncp_task_tqs_bind(ncpHdl, RECV_PGIT, &params, &processName, &processName, &tqsHdl));
+	printf("tqsHdl %p\n", (void*) tqsHdl);
 }
 
 NCP_RETURN_LABEL
@@ -1764,6 +1765,7 @@ void printTask(ncp_task_header_t *task)
     printf("task->pduSegSize0 = %d\n",task->pduSegSize0);
     printf("task->pduSegAddr0 = 0x%llx\n", task->pduSegAddr0);
 
+#if 0
     printf("-- data start --\n");
     int j = 0;
     for (i = 0; i < task->pduSegSize0; i++)
@@ -1777,8 +1779,72 @@ void printTask(ncp_task_header_t *task)
         i += 15;
     }
     printf("-- data end --\n");
+#endif
 
     printf("----- task end -------\n");
+}
+
+void CreateTask(ncp_task_tqs_hdl_t tqsHdl,
+                ncp_uint8_t vpId,
+                ncp_task_header_t **ppTask, 
+				void *packet, int length)
+{
+    ncp_st_t ncpStatus = NCP_ST_ERROR;
+    ncp_task_header_t *task;
+    ncp_uint32_t size;
+    ncp_uint32_t num;
+    void *pData[6];
+    ncp_uint64_t combinedHeader = 1;
+    int pduSize = length;
+    int i = 0;
+
+    size = 128 + pduSize;
+	printf("before alloc tqsHdl %p\n"
+			"num %d, size %d\n",
+			tqsHdl, num, size);
+    NCP_CALL(ncp_task_buffer_alloc(tqsHdl, 1, &num, &size, 2, (void **) &task, 1));
+	printf("after alloc\n");
+    task->params[0] = 0x14;
+    task->headerPool = 2;
+    task->pool0 = 2;
+    task->pool0Mref = 0;
+    task->pduSegSize0 = pduSize;
+    task->pduSize = pduSize;
+
+    if (!combinedHeader)
+    {
+        size = pduSize;
+		printf("before combined alloc\n");
+        NCP_CALL(ncp_task_buffer_alloc(tqsHdl, 1, &num, &size, 2, (void **) &pData[0], 1));
+		printf("after combined alloc\n");
+        task->pduSize += size; /*mb: effectively 2x pduSize???*/
+    }
+                                         ;
+    if (combinedHeader)
+    {
+        task->pduSegAddr0 = ((ncp_uint64_t) task) + 128;
+    }
+    else
+    {
+        task->pduSegAddr0 = (ncp_uint64_t) pData[0];
+    }
+
+	/* copy buffer to the task */
+	memcpy((void*)task->pduSegAddr0, (void*)packet, length);
+
+    task->ptrCnt = 1;
+    task->combinedHeader = combinedHeader;
+    task->priority = 0;
+    task->ID = 0;
+    task->templateId = vpId;
+
+    *ppTask = task;
+
+ncp_return:
+    if(ncpStatus != NCP_ST_SUCCESS) {
+        printf("Failed to CreateTask. status=%d\n", ncpStatus);
+    }
+	return;
 }
 
 void myCreateTask(ncp_task_tqs_hdl_t tqsHdl,
@@ -2049,7 +2115,7 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 	ncp_uint8_t              vpTxId = 1;
 	ncp_task_header_t        *newTask;
 	initPacketEcho();
-	myCreateTask(tqsHdl, vpTxId, &newTask);
+	CreateTask(tqsHdl, vpTxId, &newTask, packet, length);
 	printf("sending task...\n");
 	printTask(newTask);
 
@@ -2070,7 +2136,7 @@ ncp_return:
         printf("Failed to send packet. status=%d\n", ncpStatus);
     }
 #define PACKET_ECHO_SIZE 97
-	return /*bytes_sent*/ 128 + PACKET_ECHO_SIZE;
+	return length;
 }
 
 /*
@@ -2105,7 +2171,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	ncp_task_header_t        *task;
 	ncp_task_header_t        *newTask;
 	ncp_uint32_t             numRx;
-    printf("before receive loop...\n");
+    printf("before receive...\n");
 
 	ncpStatus = ncp_task_recv(tqsHdl, 1, &numRx, &task, FALSE);
 	if(NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
