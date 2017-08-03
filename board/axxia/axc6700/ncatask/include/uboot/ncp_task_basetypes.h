@@ -297,7 +297,7 @@ ncp_return:
 /*     memcpy(to, from, 32) */
 
 #define NCP_TRACEPOINT(...) debug("Trace")
-#define cond 0
+#define cond 1
 #define NCP_TASKIO_TRACEPOINT(_a, _b, _c, fmt, args...) \
 	do { \
 		if (cond) \

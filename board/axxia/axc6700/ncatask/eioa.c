@@ -55,6 +55,8 @@ static ncp_task_tqs_hdl_t tqsHdl = NULL;
 static ncp_hdl_t ncpHdl;
 
 #define ALL_TRACES
+#define SNAPSHOT /*define if you want a snapshot*/
+
 #define NCP_EIOA_GEN_CFG_REG_OFFSET(portIndex)                                  \
     0x100000 +                                                                  \
     ((portIndex > 0) ? 0x10000 : 0) +                                           \
@@ -1646,13 +1648,8 @@ void initPacketEcho(void)
   initialize_task_io
 */
 
-#if 0
 int
 initialize_task_io(struct eth_device *dev)
-#else
-int
-initialize_task_io(void)
-#endif
 {
     ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
 	ncp_uint32_t          devNum = 0;
@@ -1729,13 +1726,18 @@ initialize_task_io(void)
 	params.useTxQueue0 = TRUE;
 	params.useTxQueue1 = TRUE;
 	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
-	printf("trying to bind\n");
+	printf("mb: trying to bind\n");
 	NCP_CALL(ncp_task_tqs_bind(ncpHdl, RECV_PGIT, &params, &processName, &processName, &tqsHdl));
-	printf("tqsHdl %p\n", (void*) tqsHdl);
+	printf("\nmb: tqsHdl %p\n", (void*) tqsHdl);
 }
 
-NCP_RETURN_LABEL
-    return ncpStatus;
+ ncp_return:
+	if (NCP_ST_SUCCESS != ncpStatus) {
+        printf("ERROR: status=%d\n", ncpStatus);
+		lsi_eioa_eth_halt(dev);
+		return -1;
+	} else 
+		return 0;
 }
 
 
@@ -1799,9 +1801,6 @@ void CreateTask(ncp_task_tqs_hdl_t tqsHdl,
     int i = 0;
 
     size = 128 + pduSize;
-	printf("before alloc tqsHdl %p\n"
-			"num %d, size %d\n",
-			tqsHdl, num, size);
     NCP_CALL(ncp_task_buffer_alloc(tqsHdl, 1, &num, &size, 2, (void **) &task, 1));
 	printf("after alloc\n");
     task->params[0] = 0x14;
@@ -1911,7 +1910,6 @@ ncp_return:
 
 ncp_st_t 
 tx_rx_task(void){
-
 	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
 	/* enable ipcq */
 #define NCP_NCA_ITP_IPCQ_ONLINE00 0x0017FF40
@@ -2055,9 +2053,10 @@ ncp_return:
 void
 lsi_eioa_eth_halt(struct eth_device *dev)
 {
-	if (0 != initialized)
+	if (initialized)
 		finalize_task_io();
 
+	initialized = 0;
 	return;
 }
 
@@ -2069,18 +2068,23 @@ lsi_eioa_eth_halt(struct eth_device *dev)
 int
 lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
 {
+	printf("mb: %s() -> initialized %d\n", __func__, initialized);
 	if (0 != initialized) 
 		return 0;
 
-	if (0 != initialize_task_io()) {
+	if (0 != initialize_task_io(dev)) {
 		printf("Failed to Initialize TaskIO Lite!\n");
 		return -1;
 	}
+
 	if (0 != line_setup(20)) {
 		printf("Failed to setup line\n");
 		return -1;
 	}
+
+#ifdef SNAPSHOT
 	take_snapshot(20);
+#endif
 
 	initialized = 1;
 	return 0;
@@ -2106,7 +2110,6 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 	/* NCAv3 code begin */
 	ncp_task_send_meta_t    meta_data;
     ncp_task_free_meta_t     meta_task;
-	ncp_task_tqs_hdl_t       tqsHdl = NULL;
 	ncp_uint32_t numSent;
 	int i = 0;
 
@@ -2114,7 +2117,6 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 	ncp_uint8_t              vpId = 0;
 	ncp_uint8_t              vpTxId = 1;
 	ncp_task_header_t        *newTask;
-	initPacketEcho();
 	CreateTask(tqsHdl, vpTxId, &newTask, packet, length);
 	printf("sending task...\n");
 	printTask(newTask);
@@ -2161,7 +2163,6 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	/* NCAv3 code begin */
 	ncp_task_send_meta_t    meta_data;
     ncp_task_free_meta_t     meta_task;
-	ncp_task_tqs_hdl_t       tqsHdl = NULL;
 	ncp_uint32_t numSent;
 	int i = 0;
 
@@ -2195,8 +2196,6 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	ncp_uint32_t numFree = 0;
 	ncpStatus = ncp_task_free(tqsHdl, 1, numRx, &numFree, &meta_task, TRUE);
 	printf("free status %d freed %d\n",ncpStatus,numFree);
-	ncpStatus = ncp_task_tqs_unbind(tqsHdl);
-	printf("unbind status %d\n",ncpStatus);
 
  ncp_return:
 	if (NCP_ST_SUCCESS != ncpStatus) {
@@ -2213,9 +2212,33 @@ lsi_eioa_eth_rx(struct eth_device *dev)
   lsi_eioa_receive_test
 */
 
-void __weak
+void
 lsi_eioa_receive_test(struct eth_device *dev)
 {
+	long int packets_received = 0;
+
+	eth_halt();
+
+	if (0 != eth_init()) {
+        rxtest = 0;
+		eth_halt();
+		return;
+	}
+
+	for (;;) {
+        int packet_len = eth_rx();
+		if (0 != packet_len) {
+			++packets_received;
+        }
+
+		if (ctrlc())
+			break;
+	}
+
+   	rxtest = 0;
+	eth_halt();
+	printf("EIOA Receive Test Interrupted.  Received %ld packets.\n",
+	       packets_received);
 	return;
 }
 
