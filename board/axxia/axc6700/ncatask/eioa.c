@@ -595,11 +595,11 @@ ncp_dev_reset_hw(void)
 
 	{
 		p = (ncp_uint32_t *)&resetAxisReg;
-		printf("resetAxisReg addr %p -> %08x %08x %08x %08x\n", 
+		debug("resetAxisReg addr %p -> %08x %08x %08x %08x\n", 
 					(void*)p, *p, *(p+1), *(p+2), *(p+3));
 
 		p = (ncp_uint32_t *)&resetReg;
-		printf("resetReg addr %p -> %08x %08x %08x %08x\n", 
+		debug("resetReg addr %p -> %08x %08x %08x %08x\n", 
 					(void*)p, *p, *(p+1), *(p+2), *(p+3));
 	}
 
@@ -724,7 +724,7 @@ ncp_dev_reset_hw(void)
 
 	{
 		p = (ncp_uint32_t *)&resetReg;
-		printf("resetReg (post) addr %p -> %08x %08x %08x %08x\n", 
+		debug("resetReg (post) addr %p -> %08x %08x %08x %08x\n", 
 					(void*)p, *p, *(p+1), *(p+2), *(p+3));
 	}
 
@@ -751,7 +751,7 @@ ncp_dev_reset_hw(void)
 	/*resetAxisReg.axi2ser9_rst = 1; */
 	{
 		p = (ncp_uint32_t *)&resetAxisReg;
-		printf("resetAxisReg (post) addr %p -> %08x %08x %08x %08x\n", 
+		debug("resetAxisReg (post) addr %p -> %08x %08x %08x %08x\n", 
 					(void*)p, *p, *(p+1), *(p+2), *(p+3));
 	}
 
@@ -1037,21 +1037,6 @@ ncp_dev_do_write(ncr_command_t *command)
 
 			return -1;
 		}
-#if 0
-		if (NCP_NODE_ID(command->region) == 0x168) {
-			unsigned int read_back;
-			if ( 0 != ncr_read32(command->region, command->offset, &read_back) )
-				return -1;
-			if (read_back != command->value) {
-				debug("mb: read_back != write: n=0x%x t=0x%x o=0x%x "
-					"v=0x%x\n",
-					NCP_NODE_ID(command->region),
-					NCP_TARGET_ID(command->region),
-					command->offset, command->value);
-				return -1;                                  
-			}
-		}
-#endif
 		break;
 	}
 	
