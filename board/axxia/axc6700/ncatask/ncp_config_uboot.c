@@ -489,7 +489,7 @@ ncav3_config_hw(ncp_t *ncp)
 
 
 ncp_st_t
-ncav3_free_hw(ncp_t *ncp)
+ncav3_free_hw(void)
 {
 	// free malloc from ncp_task_initialize_tbr_arrays();
 	int i = 0, j =0;;
@@ -608,7 +608,7 @@ ncp_config_uboot_detach(ncp_hdl_t *ncpHdl)
     ncp_ncav3_hdl_t *nca = (ncp_ncav3_hdl_t *) ncpHdl;
 
     mme_destroy(ncp);
-    ncav3_destroy_hw();
+    ncav3_free_hw();
 	free(ncp->ncaHdl);
 	free(pNvmLock);
 	free(pNvmActive);
