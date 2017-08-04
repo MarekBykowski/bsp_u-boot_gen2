@@ -20,7 +20,6 @@
  * MA 02111-1307 USA
  */
 
-#define DEBUG
 #include <common.h>
 #include <malloc.h>
 #include <net.h>
@@ -56,6 +55,7 @@ static ncp_hdl_t ncpHdl;
 
 #define ALL_TRACES
 #define SNAPSHOT /*define if you want a snapshot*/
+/*#define PHY*/ /*We don't have ext. PHYs on a Waco */
 
 #define NCP_EIOA_GEN_CFG_REG_OFFSET(portIndex)                                  \
     0x100000 +                                                                  \
@@ -984,21 +984,27 @@ ncp_dev_reset(void)
 static int
 ncp_dev_do_read(ncr_command_t *command, unsigned *value)
 {
-	if (NCP_REGION_ID(0x200, 1) == command->region) {
+	switch (command->region) {
+	case NCP_REGION_ID(0x200, 0x0):
+	{
 		*value = *(volatile unsigned*)(unsigned long)command->offset;
-	} else if (0 != ncr_read32(command->region, command->offset, value)) {
-		debug("READ ERROR: n=0x%x t=0x%x o=0x%x\n",
-			    NCP_NODE_ID(command->region),
-			    NCP_TARGET_ID(command->region), command->offset);
-		return -1;
+	}
+	/* We have them in the traces but ignoring */
+	case NCP_REGION_ID(0x301, 0x0): /*NCP_REGION_DRIVER_CFG*/
+	case NCP_REGION_ID(0x147, 0x0): /*MDIO*/
+	{
+		return 0;
+	}
+	default:
+		if (0 != ncr_read32(command->region, command->offset, value)) {
+			debug("READ ERROR: n=0x%x t=0x%x o=0x%x\n",
+					NCP_NODE_ID(command->region),
+					NCP_TARGET_ID(command->region), command->offset);
+			return -1;
+		}
+		return 0;
 	}
 
-#ifdef NCR_DEBUG
-	debug("Read 0x%08x from n=0x%x t=0x%x o=0x%x\n",
-		    *value, NCP_NODE_ID(command->region),
-		    NCP_TARGET_ID(command->region),
-		    command->offset);
-#endif
 	return 0;
 }
 
@@ -1026,6 +1032,12 @@ ncp_dev_do_write(ncr_command_t *command)
 		}
 		break;
 	}
+	/* We have them in the traces but ignoring */
+	case NCP_REGION_ID(0x301, 0x0): /*NCP_REGION_DRIVER_CFG*/
+	case NCP_REGION_ID(0x147, 0x0): /*MDIO*/
+	{
+		return 0;
+	}
 	default:
 		if (0 != ncr_write32(command->region, command->offset,
 					 command->value)) {
@@ -1048,15 +1060,15 @@ ncp_dev_do_write(ncr_command_t *command)
   ncp_dev_do_write_64
 	
   This is only for the memory writes. Most likely not necessary as the current 
-  traces do not use the values over 1 word (32 bits) but maybe they will in future
-  so keeping.
+  traces do not use the values over 1 word (32 bits) but may be they will in future
+  so leaving in.
 */
 
 static int
 ncp_dev_do_write_64(ncr_command_t *command)
 {
 	if (NCP_REGION_ID(0x200, 1) == command->region) {
-		printf("val 0x%lx @ addr 0x%lx\n", 
+		debug("val 0x%lx @ addr 0x%lx\n", 
 				(unsigned long)command->value,  (unsigned long)command->offset);
 
  		*(volatile unsigned long*)(unsigned long)(command->offset) = (unsigned long) command->value;
@@ -1380,7 +1392,7 @@ line_setup(int index) {
 	if (0 != gmac_set_region_offset(index, &eioaRegion, &hwPortGmac, &gmacRegion, &gmacPortOffset))
 		return -1;
 
-	printf("eioaRegion 0x%08x, hwPortGmac 0x%08x, gmacRegion 0x%08x, gmacPortOffset 0x%08x\n",
+	debug("eioaRegion 0x%08x, hwPortGmac 0x%08x, gmacRegion 0x%08x, gmacPortOffset 0x%08x\n",
 				eioaRegion, hwPortGmac, gmacRegion, gmacPortOffset);
 
 	/* 
@@ -1711,9 +1723,9 @@ initialize_task_io(struct eth_device *dev)
 	params.useTxQueue0 = TRUE;
 	params.useTxQueue1 = TRUE;
 	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
-	printf("mb: trying to bind\n");
+	printf("trying to bind\n");
 	NCP_CALL(ncp_task_tqs_bind(ncpHdl, RECV_PGIT, &params, &processName, &processName, &tqsHdl));
-	printf("\nmb: tqsHdl %p\n", (void*) tqsHdl);
+	printf("\ntqsHdl %p\n", (void*) tqsHdl);
 }
 
  ncp_return:
@@ -1725,7 +1737,7 @@ initialize_task_io(struct eth_device *dev)
 		return 0;
 }
 
-
+static __maybe_unused
 void printTask(ncp_task_header_t *task)
 {
     int i;
@@ -1798,9 +1810,9 @@ void CreateTask(ncp_task_tqs_hdl_t tqsHdl,
     if (!combinedHeader)
     {
         size = pduSize;
-		printf("before combined alloc\n");
+		debug("before combined alloc\n");
         NCP_CALL(ncp_task_buffer_alloc(tqsHdl, 1, &num, &size, 2, (void **) &pData[0], 1));
-		printf("after combined alloc\n");
+		debug("after combined alloc\n");
         task->pduSize += size; /*mb: effectively 2x pduSize???*/
     }
                                          ;
@@ -2105,7 +2117,6 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 	ncp_task_header_t        *newTask;
 	CreateTask(tqsHdl, vpTxId, &newTask, packet, length);
 	printf("sending task...\n");
-	printTask(newTask);
 
 	/* Fill meta data fields */
 	meta_data.sendDoneFn = NULL;
@@ -2116,7 +2127,7 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 	meta_data.taskHeader = newTask;
 
 	ncpStatus = ncp_task_send(tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
-	printf("tx status %d",ncpStatus);
+	debug("tx status %d",ncpStatus);
 
 
 ncp_return:
@@ -2164,8 +2175,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	if(NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
 		return 0; 
 
-	printTask(task);
-	printf("rx status %d\n",ncpStatus);
+	debug("rx status %d\n",ncpStatus);
 
 	bytes_received = task->pduSegSize0;
 	pkt = (unsigned char *)/*le64_to_cpu*/(task->pduSegAddr0);
@@ -2181,7 +2191,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	meta_task.issueCompletion = FALSE;
 	ncp_uint32_t numFree = 0;
 	ncpStatus = ncp_task_free(tqsHdl, 1, numRx, &numFree, &meta_task, TRUE);
-	printf("free status %d freed %d\n",ncpStatus,numFree);
+	debug("free status %d freed %d\n",ncpStatus,numFree);
 
  ncp_return:
 	if (NCP_ST_SUCCESS != ncpStatus) {
