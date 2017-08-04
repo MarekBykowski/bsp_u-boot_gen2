@@ -131,16 +131,8 @@ ncav3_map_domain_memory(ncp_t *ncp, ncp_ncav3_hdl_t *nca, ncp_dev_hdl_t dev)
     pNcpTaskSwState->domainMemMap.domainBundle_PA = domInfo->physBase;
     pNcpTaskSwState->domainMemMap.domainBundle_VA = domInfo->virtBase;
     pNcpTaskSwState->domainMemMap.domainBundle_Size = domInfo->size;
-/* LAPAJ */
-#if 0
-    taskIOMem = ncp_mem_mmap(
-        dev,
-        (void *)pNcpTaskSwState->domainMemMap.domainBundle_VA,
-        pNcpTaskSwState->domainMemMap.domainBundle_Size,
-        pNcpTaskSwState->domainMemMap.domainBundle_PA);
-#endif
-	taskIOMem = (void *) pNcpTaskSwState->domainMemMap.domainBundle_PA;
 
+	taskIOMem = (void *) pNcpTaskSwState->domainMemMap.domainBundle_PA;
     if (NULL == (void *)pNcpTaskSwState->domainMemMap.domainBundle_VA)
     {
         pNcpTaskSwState->domainMemMap.domainBundle_VA = (ncp_uintptr_t) taskIOMem;
@@ -154,31 +146,7 @@ NCP_RETURN_LABEL
     return ncpStatus;
 }
 
-#define MAX_DEV_NAME_LEN    (25)
 
-static ncp_st_t
-dev_open(
-    ncp_uint32_t devNum,            /* IN: Device instance number */
-    ncp_uint32_t flags,             /* IN: Open flags (not used; set to zero) */
-    ncp_dev_hdl_t *devHdl)          /* OUT: Return location for NCP handle */
-{
-#if 0
-	no files in uboot
-    int  fd;
-    char devName[MAX_DEV_NAME_LEN] = {'\0'};
-
-    sprintf(devName, "/dev/ncp%d", devNum);
-
-    fd = open(devName, O_RDWR);
-    if(fd == -1)
-    {
-        return status_code();
-    }
-
-    *devHdl = (void *)((intptr_t)fd);
-#endif
-    return NCP_ST_SUCCESS;
-}
 
 ncp_st_t
 mme_config(ncp_t *ncp)
@@ -190,7 +158,7 @@ mme_config(ncp_t *ncp)
 
     mme = malloc(sizeof(ncp_mme_t));
     memset(mme, 0, sizeof(ncp_mme_t));
- 
+
     ncp->mmeHdl = (ncp_mme_t *)mme;
     mme->cookie = NCP_MME_HANDLE_COOKIE;
     /* NCP_CALL(NCP_MUTEX_INIT(&mme->lock, TRUE)); */
@@ -202,7 +170,7 @@ mme_config(ncp_t *ncp)
     memPool[SHARED_BUFFER_POOL2].poolPhysBase = POOL_2_PA;
     memPool[SHARED_BUFFER_POOL2].maxDynamic   = 268409087;
     memPool[SHARED_BUFFER_POOL2].poolSize     = POOL_2_SIZE;
-        
+
     memPool[SHARED_BUFFER_POOL2].blockSize[0] = 65536;
     memPool[SHARED_BUFFER_POOL2].blockSize[1] = 16384;
     memPool[SHARED_BUFFER_POOL2].blockSize[2] = 2048;
@@ -211,15 +179,15 @@ mme_config(ncp_t *ncp)
     memPool[SHARED_BUFFER_POOL2].virtBase[3]  = 2850422784;
     memPool[SHARED_BUFFER_POOL2].physBase[3]  = 2850422784;
     memPool[SHARED_BUFFER_POOL2].numBlocks[3] = 104857;
-    
+
     memPool[SHARED_BUFFER_POOL2].virtBase[2]  = 2783313920;
     memPool[SHARED_BUFFER_POOL2].physBase[2]  = 2783313920;
     memPool[SHARED_BUFFER_POOL2].numBlocks[2] = 32768;
-    
+
     memPool[SHARED_BUFFER_POOL2].virtBase[1]  = 2716205056;
     memPool[SHARED_BUFFER_POOL2].physBase[1]  = 2716205056;
     memPool[SHARED_BUFFER_POOL2].numBlocks[1] = 4096;
-    
+
     memPool[SHARED_BUFFER_POOL2].virtBase[0]  = POOL_2_VA;
     memPool[SHARED_BUFFER_POOL2].physBase[0]  = POOL_2_PA;
     memPool[SHARED_BUFFER_POOL2].numBlocks[0] = 1638;
@@ -244,6 +212,15 @@ mme_config(ncp_t *ncp)
 }
 
 ncp_st_t
+mme_destroy(ncp_t *ncp)
+{
+	free(ncp->mmeHdl);
+	return NCP_ST_SUCCESS;
+}
+
+
+
+ncp_st_t
 ncav3_config_hw(ncp_t *ncp)
 {
     ncp_st_t         ncpStatus           = NCP_ST_SUCCESS;
@@ -266,9 +243,9 @@ ncav3_config_hw(ncp_t *ncp)
     myNcpHdl = (ncp_hdl_t) ncp;
     mme = (ncp_mme_t *)(ncp->mmeHdl);
     pTqs = &pNcpTaskSwState->tqsSwState[0];
-    
+
     ncav3_map_domain_memory(ncp, nca, dev);
-        
+
     pMMEpoolInfo = &(mme->mmePool[0]);
 
     pNcpTaskSwState->taskPools[SHARED_BUFFER_POOL2].valid = pMMEpoolInfo[SHARED_BUFFER_POOL2].valid;
@@ -311,7 +288,7 @@ ncav3_config_hw(ncp_t *ncp)
 
 
     /* set up any shared pool allocators used by this TQS */
-    
+
     pAllocator = &pTqs->mmeAllocator[SHARED_BUFFER_POOL2];
     pAllocator->id = SHARED_BUFFER_POOL2;
     pAllocator->valid = TRUE;
@@ -391,7 +368,7 @@ ncav3_config_hw(ncp_t *ncp)
     ncp_task_initialize_tbr_arrays();
 
     tqsControl = (ncp_ncav3_tqs_control_t *) &nca->tqsArray[0];
-    
+
     /* OPCQ_0 */
     memset(&pTqs->txQ0, 0, sizeof(ncp_pcq_info_t));
 
@@ -405,10 +382,10 @@ ncav3_config_hw(ncp_t *ncp)
                               (tqsControl->tqs.control.opcq0_offset << 4));
     p_oPCQ->nEntries = tqsControl->tqs.control.opcq0_depth;
     p_oPCQ->nEntriesMinusOne = p_oPCQ->nEntries - 1;
-    p_oPCQ->nEntriesMinusTwo = p_oPCQ->nEntries - 2;    
-    p_oPCQ->nEntriesDiv2     = p_oPCQ->nEntries / 2;        
-    p_oPCQ->cookie = NCP_TASK_PCQ_COOKIE; 
-    p_oPCQ->u.opcq_info.pOPCQentry = p_oPCQ->pPCQbase; 
+    p_oPCQ->nEntriesMinusTwo = p_oPCQ->nEntries - 2;
+    p_oPCQ->nEntriesDiv2     = p_oPCQ->nEntries / 2;
+    p_oPCQ->cookie = NCP_TASK_PCQ_COOKIE;
+    p_oPCQ->u.opcq_info.pOPCQentry = p_oPCQ->pPCQbase;
     p_oPCQ->u.opcq_info.pPrefetchEntry = p_oPCQ->u.opcq_info.pOPCQentry + 1;
     p_oPCQ->u.opcq_info.pLastEntry = p_oPCQ->u.opcq_info.pOPCQentry + p_oPCQ->nEntries - 1;
     p_oPCQ->u.opcq_info.relId = NCP_TASK_TXQ_0;
@@ -420,14 +397,14 @@ ncav3_config_hw(ncp_t *ncp)
     {
         p_oPCQ->shared = TRUE;
         /* NCP_CALL(ncp_task_v3_create_lock(&pTqs->txQ0.qLock, mtxAttr)); */
-    }    
+    }
 
     /* OPCQ_1 */
     memset(&pTqs->txQ1, 0, sizeof(ncp_pcq_info_t));
 
     tqsControl->tqs.control.opcq1_depth = TASK_QUEUE_TX1_DEPTH;
     tqsControl->tqs.control.opcq1_offset = TASK_QUEUE_TX1_OFFSET;
-    
+
     p_oPCQ = &pTqs->txQ1;
     p_oPCQ->pProducerIdx = &tqsControl->tqs.cputable.op1_index;
     p_oPCQ->pConsumerIdx = &tqsControl->tqs.ncatable.oc1_index;
@@ -435,10 +412,10 @@ ncav3_config_hw(ncp_t *ncp)
                               (tqsControl->tqs.control.opcq1_offset << 4));
     p_oPCQ->nEntries = tqsControl->tqs.control.opcq1_depth;
     p_oPCQ->nEntriesMinusOne = p_oPCQ->nEntries - 1;
-    p_oPCQ->nEntriesMinusTwo = p_oPCQ->nEntries - 2;    
-    p_oPCQ->nEntriesDiv2     = p_oPCQ->nEntries / 2;        
-    p_oPCQ->cookie = NCP_TASK_PCQ_COOKIE; 
-    p_oPCQ->u.opcq_info.pOPCQentry = p_oPCQ->pPCQbase; 
+    p_oPCQ->nEntriesMinusTwo = p_oPCQ->nEntries - 2;
+    p_oPCQ->nEntriesDiv2     = p_oPCQ->nEntries / 2;
+    p_oPCQ->cookie = NCP_TASK_PCQ_COOKIE;
+    p_oPCQ->u.opcq_info.pOPCQentry = p_oPCQ->pPCQbase;
     p_oPCQ->u.opcq_info.pPrefetchEntry = p_oPCQ->u.opcq_info.pOPCQentry + 1;
     p_oPCQ->u.opcq_info.pLastEntry = p_oPCQ->u.opcq_info.pOPCQentry + p_oPCQ->nEntries - 1;
     p_oPCQ->u.opcq_info.relId = NCP_TASK_TXQ_1;
@@ -450,7 +427,7 @@ ncav3_config_hw(ncp_t *ncp)
     {
         p_oPCQ->shared = TRUE;
         /* NCP_CALL(ncp_task_v3_create_lock(&pTqs->txQ0.qLock, mtxAttr)); */
-    }    
+    }
 
 
     /* IPCQ */
@@ -458,7 +435,7 @@ ncav3_config_hw(ncp_t *ncp)
     profile  = &pNcpTaskSwState->tqsSwState[0].pAppProfile->baseProfile;
     tqsControl->tqs.control.ipcq_depth = TASK_QUEUE_RX0_DEPTH;
     tqsControl->tqs.control.ipcq_offset = TASK_QUEUE_RX0_OFFSET;
-    
+
     p_iPCQ = &pTqs->rxQ;
     p_iPCQ->pProducerIdx = &tqsControl->tqs.ncatable.ip_index;
     p_iPCQ->pConsumerIdx = &tqsControl->tqs.cputable.ic_index;
@@ -470,13 +447,13 @@ ncav3_config_hw(ncp_t *ncp)
     p_iPCQ->u.ipcq_info.autoConsumptionMode =
         (profile->consumptionMode == NCP_TASK_IMMEDIATE_CONSUMPTION_MODE);
 
-    pTqs->rxQ.nEntriesMinusOne  = pTqs->rxQ.nEntries - 1;    
-    pTqs->rxQ.nEntriesMinusTwo  = pTqs->rxQ.nEntries - 2;    
+    pTqs->rxQ.nEntriesMinusOne  = pTqs->rxQ.nEntries - 1;
+    pTqs->rxQ.nEntriesMinusTwo  = pTqs->rxQ.nEntries - 2;
     pTqs->rxQ.nEntriesDiv2      = pTqs->rxQ.nEntries / 2;
     pTqs->rxQ.cookie = NCP_TASK_PCQ_COOKIE;
     pTqs->rxQ.u.ipcq_info.pIPCQentry = pTqs->rxQ.pPCQbase;
     pTqs->rxQ.u.ipcq_info.pPrefetchEntry1 = pTqs->rxQ.u.ipcq_info.pIPCQentry + 1;
-    pTqs->rxQ.u.ipcq_info.pPrefetchEntry2 = pTqs->rxQ.u.ipcq_info.pIPCQentry + 2;    
+    pTqs->rxQ.u.ipcq_info.pPrefetchEntry2 = pTqs->rxQ.u.ipcq_info.pIPCQentry + 2;
     pTqs->rxQ.u.ipcq_info.pLastEntry = pTqs->rxQ.u.ipcq_info.pIPCQentry + pTqs->rxQ.nEntries - 1;
     pTqs->rxQ.hwProducerVal = 0;
     pTqs->rxQ.hwConsumerVal = 0;
@@ -488,20 +465,20 @@ ncav3_config_hw(ncp_t *ncp)
     {
         pTqs->rxQ.shared = TRUE;
         /* NCP_CALL(ncp_task_v3_create_lock(&pTqs->rxQ.qLock, mtxAttr)); */
-    } 
+    }
 
-    /* 
-     * All queues (iPCq, oPCQ, mPCQ) in a given TQS use the following two cache lines 
+    /*
+     * All queues (iPCq, oPCQ, mPCQ) in a given TQS use the following two cache lines
      * for PGIT accesses.
      * We can use these values to get a little better cache prefetch distance for the PGITs
      */
     tmp = (ncp_uintptr_t)(((ncp_uintptr_t)pTqs->rxQ.pProducerIdx) & NCP_TASK_A53_CACHE_LINE_MASK);
     pTqs->pNcaPgit = (void *)tmp;
-    
+
     tmp = (ncp_uintptr_t)(((ncp_uintptr_t)pTqs->rxQ.pConsumerIdx) & NCP_TASK_A53_CACHE_LINE_MASK);
     pTqs->pCpuPgit = (void *)tmp;
 
-    
+
     return NCP_ST_SUCCESS;
 
  ncp_return:
@@ -510,6 +487,19 @@ ncav3_config_hw(ncp_t *ncp)
 
 }
 
+
+ncp_st_t
+ncav3_free_hw(ncp_t *ncp)
+{
+	// free malloc from ncp_task_initialize_tbr_arrays();
+	int i = 0, j =0;;
+	for (i = 0; i< NCP_NCAV3_NUM_TASK_MEMORY_POOLS; i++){
+		for (j = 0; j < NCP_TASK_NUM_BUFF_SIZES; j++){
+			free((void *)pNcpTaskSwState->taskPools[i].pTbrArray[j]);
+		}
+	}
+	return NCP_ST_SUCCESS;
+}
 
 ncp_st_t
 ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
@@ -527,42 +517,38 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
     void *pDomainBundle;
     void *mmapResult;
     ncp_task_pool_t *pPool   = NULL;
-    
+
 	printf("Begin U-Boot configuration\n");
 
     ncp = (ncp_t*)malloc(sizeof(ncp_t));
     memset(ncp, 0, sizeof(ncp_t));
     ncp->domainId = 0;
     ncp->domainIsInternal = TRUE;
-        
+
     nca = (ncp_ncav3_hdl_t*)malloc(sizeof(ncp_ncav3_hdl_t));
     memset(nca, 0, sizeof(ncp_ncav3_hdl_t));
 
-    ncp_ncav3_config_info_t *configInfo = (ncp_ncav3_config_info_t*)malloc(sizeof(ncp_ncav3_config_info_t));
-    ncp_ncav3_domain_info_t *domainInfo = (ncp_ncav3_domain_info_t*)malloc(sizeof(ncp_ncav3_domain_info_t));
-    domainInfo[ncp->domainId].virtBase = DOMAINBOUNDLE_VA;
-    domainInfo[ncp->domainId].physBase = DOMAINBOUNDLE_PA;
-    domainInfo[ncp->domainId].size = DOMAINBOUNDLE_SIZE;
 
-    configInfo->domainInfo[ncp->domainId] = *domainInfo;
-    nca->configInfo = *configInfo;
-    
+    nca->configInfo.domainInfo[ncp->domainId].virtBase = DOMAINBOUNDLE_VA;
+    nca->configInfo.domainInfo[ncp->domainId].physBase = DOMAINBOUNDLE_PA;
+    nca->configInfo.domainInfo[ncp->domainId].size = DOMAINBOUNDLE_SIZE;
+
     ncp->ncaHdl = (ncp_ncav3_hdl_t*)nca;
     ncp->cookie = NCP_HANDLE_COOKIE;
     ncp->id = id;
     nca->inConfigurationPhase = TRUE;
-    
+
     pNvmLock = malloc(sizeof(ncp_mutex_t));
     pNvmActive = malloc(sizeof(ncp_bool_t));
 
 
 	pNcpTaskSwState = malloc(sizeof(ncp_task_swState_t));
 	memset(pNcpTaskSwState,0,sizeof(ncp_task_swState_t));
-	
+
 	pNcpTaskSwState->taskIoResourceLock = malloc(sizeof(ncp_task_v3_mutex_t));
 	memset(pNcpTaskSwState->taskIoResourceLock,0,sizeof(ncp_task_v3_mutex_t));
 
-    
+
 	pNcpTaskSwState->tqsSwState[0].tqsEnabled = TRUE;
 	pNcpTaskSwState->tqsSwState[0].configured = TRUE;
     pNcpTaskSwState->tqsSwState[0].staticConfiguration = TRUE;
@@ -586,10 +572,9 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
 	pNcpTaskSwState->pidArray = pidArray;
 
 	devHdl = 0;
-    dev_open(0, 0, &devHdl);
     myDevHdl = devHdl;
     ncp_dev_hdls[0] = devHdl;
-    
+
     *ncpHdl = ncp;
     mme_config(ncp);
     ncav3_config_hw(ncp);
@@ -597,13 +582,13 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
     ncp_task_tqs_swState_t *pTqs     = NULL;
     ncp_task_mme_allocator_t *pAllocator = NULL;
     ncp_task_pcq_t *p_mPCQ;
-    
+
     pTqs = &pNcpTaskSwState->tqsSwState[0];
     pAllocator = &pTqs->mmeAllocator[SHARED_BUFFER_POOL2];
-    
+
     p_mPCQ = &pAllocator->mPCQ[0];
     printf("entries: %d, base: %p\n", p_mPCQ->nEntries, p_mPCQ->pPCQbase);
-    
+
 	pNcpTaskSwState->tqsSwState[0].tqsEnabled = TRUE;
 	pNcpTaskSwState->tqsSwState[0].configured = TRUE;
 
@@ -614,3 +599,27 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
     return ncpStatus;
 }
 
+
+
+ncp_st_t
+ncp_config_uboot_detach(ncp_hdl_t *ncpHdl)
+{
+
+    ncp_ncav3_hdl_t *nca = (ncp_ncav3_hdl_t *) ncpHdl;
+
+    mme_destroy(ncp);
+    ncav3_destroy_hw();
+	free(ncp->ncaHdl);
+	free(pNvmLock);
+	free(pNvmActive);
+
+	free(pNcpTaskSwState->taskIoResourceLock);
+	free(pNcpTaskSwState->tqsSwState[0].pAppProfile);
+	free(pNcpTaskSwState->pidArray);
+	free(pNcpTaskSwState);
+	free(ncp->ncaHdl);
+	free(nca);
+
+	free(ncp);
+	return NCP_ST_SUCCESS;
+}

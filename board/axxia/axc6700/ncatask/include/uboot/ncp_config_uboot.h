@@ -34,4 +34,7 @@ NCP_API ncp_st_t
 ncp_config_uboot_attach( ncp_uint32_t id,
                    ncp_hdl_t *ncpHdl);
 
+NCP_API ncp_st_t
+ncp_config_uboot_deatach(ncp_hdl_t *ncpHdl);
+
 #endif /* __NCP_CONFIG_UBOOT_H__ */
