@@ -2029,6 +2029,7 @@ finalize_task_io(void)
 	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
 	ncpStatus = ncp_task_tqs_unbind(tqsHdl);
 	printf("unbind status %d\n",ncpStatus);
+	ncp_config_uboot_detach(ncpHdl);
 ncp_return:
     if(ncpStatus != NCP_ST_SUCCESS) {
         printf("Failed to unbind. status=%d\n", ncpStatus);
