@@ -604,7 +604,6 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
 ncp_st_t
 ncp_config_uboot_detach(ncp_hdl_t *ncpHdl)
 {
-
     ncp_ncav3_hdl_t *nca = (ncp_ncav3_hdl_t *) ncpHdl;
 
     mme_destroy(ncp);

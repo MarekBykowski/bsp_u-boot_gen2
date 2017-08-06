@@ -2017,21 +2017,18 @@ int pthread_mutex_destroy(void *mutex){
 	return 1;
 }
 
-
-
-
 static int
 finalize_task_io(void)
 {
-	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
-	ncpStatus = ncp_task_tqs_unbind(tqsHdl);
-	printf("unbind status %d\n",ncpStatus);
-	ncp_config_uboot_detach(ncpHdl);
-ncp_return:
-    if(ncpStatus != NCP_ST_SUCCESS) {
-        printf("Failed to unbind. status=%d\n", ncpStatus);
-    }
-	return ncpStatus;
+	if ( 0 != ncp_task_tqs_unbind(tqsHdl)) {
+		printf("Failed to unbind\n");
+		return -1;
+	}
+	if ( 0 != ncp_config_uboot_detach(ncpHdl)) {
+        printf("Failed to detach\n");
+		return -1;
+	}
+	return 0;
 }
  
 /*
@@ -2051,8 +2048,12 @@ ncp_return:
 void
 lsi_eioa_eth_halt(struct eth_device *dev)
 {
-	if (initialized)
-		finalize_task_io();
+	if (0 != initialized)
+		if (0 != finalize_task_io()) {
+			printf("%s failed (file %s line %d)\n",
+					 __func__, __FILE__, __LINE__);
+			return;
+		}
 
 	initialized = 0;
 	return;
@@ -2175,7 +2176,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	if(NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
 		return 0; 
 
-	debug("rx status %d\n",ncpStatus);
+	printf("rx status %d\n",ncpStatus);
 
 	bytes_received = task->pduSegSize0;
 	pkt = (unsigned char *)/*le64_to_cpu*/(task->pduSegAddr0);
@@ -2191,7 +2192,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	meta_task.issueCompletion = FALSE;
 	ncp_uint32_t numFree = 0;
 	ncpStatus = ncp_task_free(tqsHdl, 1, numRx, &numFree, &meta_task, TRUE);
-	debug("free status %d freed %d\n",ncpStatus,numFree);
+	printf("free status %d freed %d\n",ncpStatus,numFree);
 
  ncp_return:
 	if (NCP_ST_SUCCESS != ncpStatus) {
