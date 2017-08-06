@@ -215,6 +215,7 @@ ncp_st_t
 mme_destroy(ncp_t *ncp)
 {
 	free(ncp->mmeHdl);
+	ncp->mmeHdl = 0;
 	return NCP_ST_SUCCESS;
 }
 
@@ -496,6 +497,7 @@ ncav3_free_hw(void)
 	for (i = 0; i< NCP_NCAV3_NUM_TASK_MEMORY_POOLS; i++){
 		for (j = 0; j < NCP_TASK_NUM_BUFF_SIZES; j++){
 			free((void *)pNcpTaskSwState->taskPools[i].pTbrArray[j]);
+			pNcpTaskSwState->taskPools[i].pTbrArray[j] = 0;
 		}
 	}
 	return NCP_ST_SUCCESS;
@@ -604,20 +606,21 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
 ncp_st_t
 ncp_config_uboot_detach(ncp_hdl_t *ncpHdl)
 {
-    ncp_ncav3_hdl_t *nca = (ncp_ncav3_hdl_t *) ncpHdl;
-
     mme_destroy(ncp);
     ncav3_free_hw();
-	free(ncp->ncaHdl);
+
 	free(pNvmLock);
+	pNvmLock = 0;
 	free(pNvmActive);
+	pNvmActive = 0;
 
 	free(pNcpTaskSwState->taskIoResourceLock);
 	free(pNcpTaskSwState->tqsSwState[0].pAppProfile);
 	free(pNcpTaskSwState->pidArray);
 	free(pNcpTaskSwState);
-	free(ncp->ncaHdl);
-	free(nca);
+	free(ncp->ncaHdl); // this will free nca;
+	free(ncp);
+	ncp = 0;
 
 	free(ncp);
 	return NCP_ST_SUCCESS;
