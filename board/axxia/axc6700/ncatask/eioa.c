@@ -2054,6 +2054,7 @@ lsi_eioa_eth_halt(struct eth_device *dev)
 		}
 
 	initialized = 0;
+	printf("mb: %s() called. Initialized to %d\n", __func__, initialized);
 	return;
 }
 
@@ -2065,7 +2066,6 @@ lsi_eioa_eth_halt(struct eth_device *dev)
 int
 lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
 {
-	printf("mb: %s() -> initialized %d\n", __func__, initialized);
 	if (0 != initialized) 
 		return 0;
 
@@ -2084,6 +2084,7 @@ lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
 #endif
 
 	initialized = 1;
+	printf("mb: %s() called. Initilized to %d\n", __func__, initialized);
 	return 0;
 }
 
