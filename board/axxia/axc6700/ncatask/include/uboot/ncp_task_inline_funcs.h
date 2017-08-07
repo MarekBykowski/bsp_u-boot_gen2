@@ -26,7 +26,7 @@ ncp_task_tbr_buffer_state_prefetch(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
     ncp_task_pool_t *pPool;
     ncp_task_pid_t *tbrArray;
     ncp_uint64_t tbrOffset = pBuffer;
-	printf("ML offset %llx", tbrOffset); 
+	debug("ML offset %llx\n", tbrOffset); 
     pPool = &pNcpTaskSwState->taskPools[poolId];
     if ((tbrOffset >= pPool->blocksVA[0]) && (tbrOffset < pPool->blocksVAend[0]))
     {

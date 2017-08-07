@@ -2048,6 +2048,7 @@ finalize_task_io(void)
 void
 lsi_eioa_eth_halt(struct eth_device *dev)
 {
+	printf("\n\n->>>>>> %s() initialized %d >>>>>>\n\n", __func__, initialized);
 	if (0 != initialized)
 		if (0 != finalize_task_io()) {
 			return;
@@ -2066,6 +2067,7 @@ lsi_eioa_eth_halt(struct eth_device *dev)
 int
 lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
 {
+	printf("\n\n->>>>>> %s() initialized %d >>>>>>\n\n", __func__, initialized);
 	if (0 != initialized) 
 		return 0;
 
