@@ -1797,7 +1797,7 @@ ncp_st_t CreateTask(ncp_task_tqs_hdl_t tqsHdl,
     void        *data[2];
     ncp_uint32_t size[2] = {128, pduSize};
 
-	printf("before create task %d\n",pduSize);
+	debug("before create task %d\n",pduSize);
 
 	const int RETRY_LIMIT = 3;
 	while (retries < RETRY_LIMIT) {
@@ -1813,6 +1813,8 @@ ncp_st_t CreateTask(ncp_task_tqs_hdl_t tqsHdl,
 		goto ncp_return;
 	}
 
+	memset(data[0],0,128);
+	memset(data[1],0,pduSize);
 
     ncp_task_header_t *const task = data[0];
     task->params[0] = 0x14;
@@ -1822,8 +1824,7 @@ ncp_st_t CreateTask(ncp_task_tqs_hdl_t tqsHdl,
     task->pduSegSize0 = pduSize;
     task->pduSize = pduSize;
 
-    ncp_uint8_t *const       pdu  = data[1];
-    task->pduSegAddr0    = (ncp_uint64_t)pdu;
+    task->pduSegAddr0    = (ncp_uint64_t) data[1];
 
 
 	/* copy buffer to the task */
@@ -1837,7 +1838,7 @@ ncp_st_t CreateTask(ncp_task_tqs_hdl_t tqsHdl,
 
     *ppTask = task;
 
-	printf("after create task\n");
+	debug("after create task\n");
 
 	return ncpStatus;
 ncp_return:
@@ -2101,6 +2102,7 @@ lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
 int 
 lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 {
+	static fc = 0;
 	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
 	/* enable ipcq */
 #define NCP_NCA_ITP_IPCQ_ONLINE00 0x0017FF40
@@ -2115,6 +2117,7 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 	ncp_uint32_t numSent;
 	int i = 0;
 
+	debug("begin lsi_eioa_eth_send  %d\n",fc);
 	/* VP id - hardcoded*/
 	ncp_uint8_t              vpId = 0;
 	ncp_uint8_t              vpTxId = 1;
@@ -2132,7 +2135,7 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 		meta_data.taskHeader = newTask;
 
 		ncpStatus = ncp_task_send(tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
-		debug("tx status %d",ncpStatus);
+		debug("tx status %d\n",ncpStatus);
 	}
 	else
 	{
@@ -2140,13 +2143,15 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 		goto ncp_return;
 	}
 
+	debug("end lsi_eioa_eth_send  %d\n",fc++);
+	return length;
 
 ncp_return:
     if(ncpStatus != NCP_ST_SUCCESS) {
         printf("Failed to send packet. status=%d\n", ncpStatus);
     }
 #define PACKET_ECHO_SIZE 97
-	return length;
+	return -1;
 }
 
 /*
@@ -2157,9 +2162,10 @@ ncp_return:
 int
 lsi_eioa_eth_rx(struct eth_device *dev)
 {
+	void *data = 0;
+	static fc = 0;
     int bytes_received = 0;
 	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
-	unsigned char *pkt;
 	/* enable ipcq */
 #define NCP_NCA_ITP_IPCQ_ONLINE00 0x0017FF40
 #define NCP_NCA_ITP_IPCQ_VALID00  0x0017FF60
@@ -2177,6 +2183,9 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	ncp_uint8_t              vpId = 0;
 	ncp_uint8_t              vpTxId = 1;
 	ncp_task_header_t        *task;
+
+
+	debug("begin lsi_eioa_eth_rx fc: %d\n",fc);
 	if ((tqsHdl == 0) || (ncpHdl == 0))
 	{
 		debug("NCA is not initialized\n");
@@ -2192,10 +2201,8 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	debug("rx status %d\n",ncpStatus);
 
 	bytes_received = task->pduSegSize0;
-	pkt = (unsigned char *)/*le64_to_cpu*/(task->pduSegAddr0);
+	printf("rx status %d received %d ptrCnt %d segSize0 %d \n",ncpStatus,bytes_received,task->ptrCnt,task->pduSegSize0);
 	/* copy the received packet to the up layer buffer */
-	if (0 == loopback && 0 == rxtest)
-		net_process_received_packet(pkt, bytes_received);
 
 	meta_task.freeDoneFn = NULL;
 	meta_task.freeDoneArg = NULL;
@@ -2203,17 +2210,23 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	meta_task.freeHeader = TRUE;
 	meta_task.issueCompletion = FALSE;
 	ncp_uint32_t numFree = 0;
+	data = malloc(bytes_received);
+	memcpy(data, (void *)task->pduSegAddr0, bytes_received);
 	ncpStatus = ncp_task_free(tqsHdl, 1, numRx, &numFree, &meta_task, TRUE);
 	debug("free status %d freed %d\n",ncpStatus,numFree);
+	debug("end lsi_eioa_eth_rx fc: %d\n",fc++);
 
+	if (0 == loopback && 0 == rxtest)
+		net_process_received_packet(data, bytes_received);
+	free(data);
+	return bytes_received;
  ncp_return:
 	if (NCP_ST_SUCCESS != ncpStatus) {
 		printf("%s:%d - NCP_CALL() Failed: 0x%08x\n",
 		       __FILE__, __LINE__, ncpStatus);
-		return 0;
 	}
 
-	return bytes_received;
+	return 0;
 }
 
 /*
