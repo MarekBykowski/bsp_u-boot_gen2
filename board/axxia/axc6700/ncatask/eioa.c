@@ -2050,8 +2050,6 @@ lsi_eioa_eth_halt(struct eth_device *dev)
 {
 	if (0 != initialized)
 		if (0 != finalize_task_io()) {
-			printf("%s failed (file %s line %d)\n",
-					 __func__, __FILE__, __LINE__);
 			return;
 		}
 
