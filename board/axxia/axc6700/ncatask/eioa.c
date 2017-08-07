@@ -1783,22 +1783,38 @@ void printTask(ncp_task_header_t *task)
     printf("----- task end -------\n");
 }
 
-void CreateTask(ncp_task_tqs_hdl_t tqsHdl,
+ncp_st_t CreateTask(ncp_task_tqs_hdl_t tqsHdl,
                 ncp_uint8_t vpId,
                 ncp_task_header_t **ppTask, 
 				void *packet, int length)
 {
+	ncp_uint32_t how_many = 2;
+	ncp_uint32_t numAllocated = 0;
     ncp_st_t ncpStatus = NCP_ST_ERROR;
-    ncp_task_header_t *task;
-    ncp_uint32_t size;
-    ncp_uint32_t num;
-    void *pData[6];
-    ncp_uint64_t combinedHeader = 1;
     int pduSize = length;
-    int i = 0;
+	int retries = 0;
 
-    size = 128 + pduSize;
-    NCP_CALL(ncp_task_buffer_alloc(tqsHdl, 1, &num, &size, 2, (void **) &task, 1));
+    void        *data[2];
+    ncp_uint32_t size[2] = {128, pduSize};
+
+	printf("before create task %d\n",pduSize);
+
+	const int RETRY_LIMIT = 3;
+	while (retries < RETRY_LIMIT) {
+		ncpStatus = ncp_task_buffer_alloc(tqsHdl, how_many-numAllocated, &numAllocated, &size[numAllocated], 2, &data[numAllocated], TRUE);
+		if (ncpStatus == NCP_ST_NO_MEMORY) {
+			retries ++;
+			continue;
+		} else {
+			break;
+		}
+	}
+    if ((retries >= RETRY_LIMIT) || (ncpStatus != NCP_ST_SUCCESS)) {
+		goto ncp_return;
+	}
+
+
+    ncp_task_header_t *const task = data[0];
     task->params[0] = 0x14;
     task->headerPool = 2;
     task->pool0 = 2;
@@ -1806,40 +1822,29 @@ void CreateTask(ncp_task_tqs_hdl_t tqsHdl,
     task->pduSegSize0 = pduSize;
     task->pduSize = pduSize;
 
-    if (!combinedHeader)
-    {
-        size = pduSize;
-		debug("before combined alloc\n");
-        NCP_CALL(ncp_task_buffer_alloc(tqsHdl, 1, &num, &size, 2, (void **) &pData[0], 1));
-		debug("after combined alloc\n");
-        task->pduSize += size; /*mb: effectively 2x pduSize???*/
-    }
-                                         ;
-    if (combinedHeader)
-    {
-        task->pduSegAddr0 = ((ncp_uint64_t) task) + 128;
-    }
-    else
-    {
-        task->pduSegAddr0 = (ncp_uint64_t) pData[0];
-    }
+    ncp_uint8_t *const       pdu  = data[1];
+    task->pduSegAddr0    = (ncp_uint64_t)pdu;
+
 
 	/* copy buffer to the task */
 	memcpy((void*)task->pduSegAddr0, (void*)packet, length);
 
     task->ptrCnt = 1;
-    task->combinedHeader = combinedHeader;
+    task->combinedHeader = 0;
     task->priority = 0;
     task->ID = 0;
     task->templateId = vpId;
 
     *ppTask = task;
 
+	printf("after create task\n");
+
+	return ncpStatus;
 ncp_return:
     if(ncpStatus != NCP_ST_SUCCESS) {
         printf("Failed to CreateTask. status=%d\n", ncpStatus);
     }
-	return;
+	return ncpStatus;
 }
 
 void myCreateTask(ncp_task_tqs_hdl_t tqsHdl,
@@ -2107,7 +2112,6 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 
 	/* NCAv3 code begin */
 	ncp_task_send_meta_t    meta_data;
-    ncp_task_free_meta_t     meta_task;
 	ncp_uint32_t numSent;
 	int i = 0;
 
@@ -2115,19 +2119,26 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 	ncp_uint8_t              vpId = 0;
 	ncp_uint8_t              vpTxId = 1;
 	ncp_task_header_t        *newTask;
-	CreateTask(tqsHdl, vpTxId, &newTask, packet, length);
-	printf("sending task...\n");
+	if (CreateTask(tqsHdl, vpTxId, &newTask, packet, length) == NCP_ST_SUCCESS)
+	{
+		printf("sending task...\n");
 
-	/* Fill meta data fields */
-	meta_data.sendDoneFn = NULL;
-	meta_data.sendDoneArg = NULL;
-	meta_data.freeHeader = TRUE;
-	meta_data.freeDataPointers = TRUE;
-	meta_data.issueCompletion = FALSE;
-	meta_data.taskHeader = newTask;
+		/* Fill meta data fields */
+		meta_data.sendDoneFn = NULL;
+		meta_data.sendDoneArg = NULL;
+		meta_data.freeHeader = TRUE;
+		meta_data.freeDataPointers = TRUE;
+		meta_data.issueCompletion = FALSE;
+		meta_data.taskHeader = newTask;
 
-	ncpStatus = ncp_task_send(tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
-	debug("tx status %d",ncpStatus);
+		ncpStatus = ncp_task_send(tqsHdl, 0, 1, &numSent, &meta_data, TRUE);
+		debug("tx status %d",ncpStatus);
+	}
+	else
+	{
+		printf("error creating task...\n");
+		goto ncp_return;
+	}
 
 
 ncp_return:
@@ -2158,7 +2169,6 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 				NCP_NCA_ITP_IPCQ_VALID00, 0x1));
 
 	/* NCAv3 code begin */
-	ncp_task_send_meta_t    meta_data;
     ncp_task_free_meta_t     meta_task;
 	ncp_uint32_t numSent;
 	int i = 0;
@@ -2167,7 +2177,6 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	ncp_uint8_t              vpId = 0;
 	ncp_uint8_t              vpTxId = 1;
 	ncp_task_header_t        *task;
-	ncp_task_header_t        *newTask;
 	if ((tqsHdl == 0) || (ncpHdl == 0))
 	{
 		debug("NCA is not initialized\n");
@@ -2188,7 +2197,6 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	if (0 == loopback && 0 == rxtest)
 		net_process_received_packet(pkt, bytes_received);
 
-	memset(&meta_data, 0x0, sizeof(ncp_task_free_meta_t));
 	meta_task.freeDoneFn = NULL;
 	meta_task.freeDoneArg = NULL;
 	meta_task.task = task;
