@@ -1233,7 +1233,6 @@ ncp_task_buffer_alloc(
     void **pTaskBuffers, 
     ncp_bool_t wait) 
 {
-	printf("ML_alloc1");
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
     ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl = (ncp_task_pvt_tqsHdl_data_t *)tqsHdl;
     ncp_task_pool_t         *pPool;
