@@ -912,7 +912,6 @@ ncp_task_send(
 
     if (1 == numTasks)
     {
-		printf("single task send");
         ncpStatus = ncp_task_single_task_send(
                 pvtTqsHdl,
                 p_oPCQ,

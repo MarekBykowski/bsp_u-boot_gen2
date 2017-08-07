@@ -1725,7 +1725,7 @@ initialize_task_io(struct eth_device *dev)
 	strncpy(processName.name, "TaskRecvLoop", sizeof("TaskRecvLoop"));
 	printf("trying to bind\n");
 	NCP_CALL(ncp_task_tqs_bind(ncpHdl, RECV_PGIT, &params, &processName, &processName, &tqsHdl));
-	printf("\ntqsHdl %p\n", (void*) tqsHdl);
+	printf("tqsHdl %p\n", (void*) tqsHdl);
 }
 
  ncp_return:
@@ -2016,21 +2016,20 @@ int pthread_mutex_destroy(void *mutex){
 	return 1;
 }
 
-static int
+static void
 finalize_task_io(void)
 {
 	if ( 0 != ncp_task_tqs_unbind(tqsHdl)) {
 		printf("Failed to unbind\n");
-		return -1;
+		return;
 	}
-	tqsHdl = 0;
+	ncpHdl = 0;
 	if ( 0 != ncp_config_uboot_detach(ncpHdl)) {
         printf("Failed to detach\n");
-		return -1;
+		return;
 	}
-	printf("unbind & detach\n");
-	ncpHdl = 0;
-	return 0;
+	initialized = 0;
+	return; 
 }
  
 /*
@@ -2050,14 +2049,11 @@ finalize_task_io(void)
 void
 lsi_eioa_eth_halt(struct eth_device *dev)
 {
-	printf("\n\n->>>>>> %s() initialized %d >>>>>>\n\n", __func__, initialized);
+	printf("=====> %s() initialized from %d to ======>\n", __func__, initialized);
 	if (0 != initialized)
-		if (0 != finalize_task_io()) {
-			return;
-		}
+		finalize_task_io();
 
-	initialized = 0;
-	printf("mb: %s() called. Initialized to %d\n", __func__, initialized);
+	printf("=====> %s() to %d ======>\n", __func__, initialized);
 	return;
 }
 
@@ -2069,7 +2065,7 @@ lsi_eioa_eth_halt(struct eth_device *dev)
 int
 lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
 {
-	printf("\n\n->>>>>> %s() initialized %d >>>>>>\n\n", __func__, initialized);
+	printf("=====> %s() initialized from %d to ======>\n", __func__, initialized);
 	if (0 != initialized) 
 		return 0;
 
@@ -2088,7 +2084,7 @@ lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
 #endif
 
 	initialized = 1;
-	printf("mb: %s() called. Initilized to %d\n", __func__, initialized);
+	printf("=====> %s() to %d ======>\n", __func__, initialized);
 	return 0;
 }
 
@@ -2174,7 +2170,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	ncp_task_header_t        *newTask;
 	if ((tqsHdl == 0) || (ncpHdl == 0))
 	{
-		printf("NCA is not initialized\n");
+		debug("NCA is not initialized\n");
 		return -1;
 	}
 	ncp_uint32_t             numRx;
@@ -2184,7 +2180,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	if(NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
 		return 0;
 
-	printf("rx status %d\n",ncpStatus);
+	debug("rx status %d\n",ncpStatus);
 
 	bytes_received = task->pduSegSize0;
 	pkt = (unsigned char *)/*le64_to_cpu*/(task->pduSegAddr0);
@@ -2200,7 +2196,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	meta_task.issueCompletion = FALSE;
 	ncp_uint32_t numFree = 0;
 	ncpStatus = ncp_task_free(tqsHdl, 1, numRx, &numFree, &meta_task, TRUE);
-	printf("free status %d freed %d\n",ncpStatus,numFree);
+	debug("free status %d freed %d\n",ncpStatus,numFree);
 
  ncp_return:
 	if (NCP_ST_SUCCESS != ncpStatus) {

@@ -2616,10 +2616,9 @@ ncp_st_t ncp_task_map_pools(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
      
         if (0 == ncpTaskPoolMapCnt[mapCntIdx])
         {   
-			printf("mmap memory pool");
+			debug("mmap memory pool\n");
 			pPool->poolVA = pPool->poolPA;
 #if 0 
-			TODO LAPAJ
 			mmapResult = mmap((void *)pPool->poolVA, pPool->poolSize, (PROT_READ | PROT_WRITE), MAP_SHARED,
                            (intptr_t)myDevHdl, (off_t) pPool->poolPA);
             NCP_ASSERT((mmapResult == (void *)pPool->poolVA),
@@ -2640,8 +2639,8 @@ ncp_task_attach_tqs(ncp_hdl_t *ncpHdl, ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,  n
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
     ncp_task_tqs_swState_t *pTqs = &pNcpTaskSwState->tqsSwState[tqsId];
-	printf("get tqs: %d", tqsId);
-    printf("valid pools mask %d",pTqs->validPoolsMask);
+	debug("get tqs: %d\t", tqsId);
+    debug("valid pools mask %d\n",pTqs->validPoolsMask);
     int poolId;
     
     /* First validate permissions/usage */

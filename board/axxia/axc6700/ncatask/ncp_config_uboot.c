@@ -589,7 +589,7 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
     pAllocator = &pTqs->mmeAllocator[SHARED_BUFFER_POOL2];
 
     p_mPCQ = &pAllocator->mPCQ[0];
-    printf("entries: %d, base: %p\n", p_mPCQ->nEntries, p_mPCQ->pPCQbase);
+    debug("entries: %d, base: %p\n", p_mPCQ->nEntries, p_mPCQ->pPCQbase);
 
 	pNcpTaskSwState->tqsSwState[0].tqsEnabled = TRUE;
 	pNcpTaskSwState->tqsSwState[0].configured = TRUE;
@@ -597,7 +597,7 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
 	return NCP_ST_SUCCESS;
 
  ncp_return:
-    printf("ncp_config_uboot_attach:90:ERROR: %s\n", (char*) (unsigned long) ncp_status_get(ncpStatus));
+    printf("ncp_config_uboot_attach: ERROR: %s\n", (char*) (unsigned long) ncp_status_get(ncpStatus));
     return ncpStatus;
 }
 
