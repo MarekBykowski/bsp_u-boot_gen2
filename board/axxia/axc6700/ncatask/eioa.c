@@ -51,7 +51,7 @@ static int initialized = 0;
 static int loopback = 0;
 static int rxtest = 0;
 static ncp_task_tqs_hdl_t tqsHdl = NULL;
-static ncp_hdl_t ncpHdl;
+static ncp_hdl_t ncpHdl = NULL;
 
 #define ALL_TRACES
 #define SNAPSHOT /*define if you want a snapshot*/
@@ -1799,7 +1799,6 @@ void CreateTask(ncp_task_tqs_hdl_t tqsHdl,
 
     size = 128 + pduSize;
     NCP_CALL(ncp_task_buffer_alloc(tqsHdl, 1, &num, &size, 2, (void **) &task, 1));
-	printf("after alloc\n");
     task->params[0] = 0x14;
     task->headerPool = 2;
     task->pool0 = 2;
@@ -2024,10 +2023,13 @@ finalize_task_io(void)
 		printf("Failed to unbind\n");
 		return -1;
 	}
+	tqsHdl = 0;
 	if ( 0 != ncp_config_uboot_detach(ncpHdl)) {
         printf("Failed to detach\n");
 		return -1;
 	}
+	printf("unbind & detach\n");
+	ncpHdl = 0;
 	return 0;
 }
  
@@ -2170,12 +2172,17 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	ncp_uint8_t              vpTxId = 1;
 	ncp_task_header_t        *task;
 	ncp_task_header_t        *newTask;
+	if ((tqsHdl == 0) || (ncpHdl == 0))
+	{
+		printf("NCA is not initialized\n");
+		return -1;
+	}
 	ncp_uint32_t             numRx;
-    printf("before receive...\n");
+
 
 	ncpStatus = ncp_task_recv(tqsHdl, 1, &numRx, &task, FALSE);
 	if(NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
-		return 0; 
+		return 0;
 
 	printf("rx status %d\n",ncpStatus);
 

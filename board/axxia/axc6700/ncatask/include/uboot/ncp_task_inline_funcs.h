@@ -884,22 +884,18 @@ ncp_task_bulk_MMEpool_alloc(
             size--;
             if (pAllocator->mPCQ[0].nEntries      && (0 == (size & 0xFFFFFF00))) /* <= 256 */
             {
-				printf("using mpcq0");
                 p_mPCQ = &pAllocator->mPCQ[0];
             }
             else if (pAllocator->mPCQ[1].nEntries && (0 == (size & 0xFFFFF800))) /* <= 2K */
             {
-				printf("using mpcq1");
                 p_mPCQ = &pAllocator->mPCQ[1];
             }    
             else if (pAllocator->mPCQ[2].nEntries && (0 == (size & 0xFFFFC000))) /* <= 16K */
             {
-				printf("using mpcq2");
                 p_mPCQ = &pAllocator->mPCQ[2];
             }        
             else if (pAllocator->mPCQ[3].nEntries && (0 == (size & 0xFFFF0000))) /* <= 64K */
             {
-				printf("using mpcq3");
                 p_mPCQ = &pAllocator->mPCQ[3];
             }                                        
             else
@@ -1019,7 +1015,6 @@ ncp_task_bulk_MMEpool_alloc(
 
             /* Store buffer address for caller */
             *pRetBuffers = (void *)p_mPCQ->u.mpcq_info.pMPCQentry->address;
-			printf("ret addr %p", (void*) pRetBuffers);
 
             NCP_TASK_TBR_BUFFER_STATE_PREFETCH(
                 pvtTqsHdl,
@@ -1859,7 +1854,6 @@ ncp_task_single_task_send(
           
     *pCompletionsIssued = completionsIssued;
     *pNumTasksSent = 1;
-    printf("non typical early return");
     return(NCP_ST_SUCCESS);   /* Non-typical early return */
         
 NCP_RETURN_LABEL
