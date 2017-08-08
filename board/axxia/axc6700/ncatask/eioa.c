@@ -2213,14 +2213,14 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	if (0 == loopback && 0 == rxtest)
 		net_process_received_packet(data, bytes_received);
 	free(data);
-	return bytes_received;
+
  ncp_return:
 	if (NCP_ST_SUCCESS != ncpStatus) {
 		printf("%s:%d - NCP_CALL() Failed: 0x%08x\n",
 		       __FILE__, __LINE__, ncpStatus);
-	}
-
-	return 0;
+		return 0;
+	} else 
+		return bytes_received;
 }
 
 /*
