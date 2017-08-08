@@ -2022,6 +2022,9 @@ int pthread_mutex_destroy(void *mutex){
 	return 1;
 }
 
+extern ncp_st_t                                   
+ncp_config_uboot_detach(ncp_hdl_t *ncpHdl);
+
 static void
 finalize_task_io(void)
 {

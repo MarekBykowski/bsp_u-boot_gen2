@@ -302,6 +302,8 @@ NCP_API double ncp_gettime_elapsed(ncp_timespec_t *t1, ncp_timespec_t *t2);
 
 typedef pid_t ncp_pid_t;
 
+extern int getpid(void);
+
 #define ncp_get_pid()   \
     getpid()
 
@@ -325,10 +327,8 @@ ncp_st_t ncp_daemonize_self(void);
 #define kmemleak_not_leak(p)
 
 #endif /* #ifdef __KERNEL__ */
-// LAPAJ
 typedef unsigned long  spinlock_t ;
 typedef unsigned long  raw_spinlock_t ;
-// LAPAJ
 typedef struct {
     raw_spinlock_t raw;
     spinlock_t     cooked;

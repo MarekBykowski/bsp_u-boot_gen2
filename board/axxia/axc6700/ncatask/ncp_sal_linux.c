@@ -351,9 +351,7 @@ ncp_nvm_init(ncp_bool_t coldStart)
         "coldStart=%d\n", coldStart);
     vaddrEnv = getenv("NCP_NVM_VADDR");
     if (vaddrEnv != NULL) {
-        if (sscanf(vaddrEnv, "0x%lx", &ncp_nvm_vaddr) == 0) {
-            NCP_NVM_INIT_ERR(printf("NCP_NVM_VADDR defined with invalid address %s\n", vaddrEnv));
-        }
+    	NCP_NVM_INIT_ERR(printf("NCP_NVM_VADDR defined with invalid address %p\n", (void*) vaddrEnv));
     }
     
     if (coldStart == TRUE) 
@@ -976,6 +974,8 @@ NCP_RETURN_LABEL
     return ncpStatus;
 }
 
+extern int pthread_mutex_destroy(void *mutex);
+
 ncp_st_t
 ncp_mutex_destroy(ncp_mutex_t *pMutex)
 {
@@ -991,12 +991,15 @@ NCP_RETURN_LABEL
 extern ncp_bool_t ncp_owner_dead;
 extern ncp_mutex_t* ncp_mutex_ptr;
 #endif
+#ifndef PROC_EP5020
+extern int pthread_mutex_lock(void *mutex);
+#endif
 /* NOTE: Use NCP_MUTEX_LOCK macro to invoke.   Do not call directly! */
 ncp_st_t
 ncp_mutex_lock(ncp_mutex_t *pMutex)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
-	return ncpStatus; /* LAPAJ */
+	return ncpStatus; 
     int err = 0;
     
 #ifndef PROC_EP5020
@@ -1060,12 +1063,12 @@ NCP_RETURN_LABEL
     return ncpStatus;
 }
 
+extern int pthread_mutex_unlock(void *mutex);
 ncp_st_t
 ncp_mutex_unlock(ncp_mutex_t *pMutex)
 {
     ncp_st_t ncpStatus = NCP_ST_SUCCESS;
 	return ncpStatus;
-/*LAPAJ*/
     NCP_ASSERT((pthread_mutex_unlock(&pMutex->mutex)) == 0, NCP_ST_MUTEX_POST_ERROR);
 
 NCP_RETURN_LABEL
@@ -1281,6 +1284,11 @@ ncp_sem_destroy(ncp_sem_t *sem)
  * Linux Process-related Interfaces
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
+
+/*mb: create a stub*/
+#define fork(args...) (0)
+#define execlp(args...) (0)
+
 int
 ncp_create_exec_process(
     const char *name, 
