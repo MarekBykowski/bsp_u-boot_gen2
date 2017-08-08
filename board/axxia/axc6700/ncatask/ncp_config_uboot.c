@@ -478,7 +478,7 @@ ncav3_config_hw(ncp_t *ncp)
     tmp = (ncp_uintptr_t)(((ncp_uintptr_t)pTqs->rxQ.pConsumerIdx) & NCP_TASK_A53_CACHE_LINE_MASK);
     pTqs->pCpuPgit = (void *)tmp;
 
- ncp_return:
+NCP_RETURN_LABEL
     return ncpStatus;
 
 }
@@ -582,7 +582,7 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
 
 	return NCP_ST_SUCCESS;
 
- ncp_return:
+NCP_RETURN_LABEL
     return ncpStatus;
 }
 

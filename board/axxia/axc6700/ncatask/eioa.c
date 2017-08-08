@@ -2175,7 +2175,6 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 	/* NCAv3 code begin */
     ncp_task_free_meta_t     meta_task;
 
-
 	/* VP id - hardcoded*/
 	ncp_task_header_t        *task;
 
@@ -2186,7 +2185,6 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 		return -1;
 	}
 	ncp_uint32_t             numRx;
-
 
 	ncpStatus = ncp_task_recv(tqsHdl, 1, &numRx, &task, FALSE);
 	if(NCP_ST_TASK_RECV_QUEUE_EMPTY == ncpStatus)
@@ -2263,7 +2261,7 @@ lsi_eioa_receive_test(struct eth_device *dev)
   lsi_eioa_loopback_test
 */
 
-void __weak
+void __maybe_unused
 lsi_eioa_loopback_test(struct eth_device *dev)
 {
 	return;
