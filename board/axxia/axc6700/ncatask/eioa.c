@@ -2102,7 +2102,7 @@ lsi_eioa_eth_init(struct eth_device *dev, bd_t *bd)
 int 
 lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 {
-	static fc = 0;
+	static int fc = 0;
 	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
 	/* enable ipcq */
 #define NCP_NCA_ITP_IPCQ_ONLINE00 0x0017FF40
@@ -2161,7 +2161,7 @@ int
 lsi_eioa_eth_rx(struct eth_device *dev)
 {
 	void *data = 0;
-	static fc = 0;
+	static int fc = 0;
     int bytes_received = 0;
 	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
 	/* enable ipcq */
@@ -2174,6 +2174,7 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 
 	/* NCAv3 code begin */
     ncp_task_free_meta_t     meta_task;
+
 
 	/* VP id - hardcoded*/
 	ncp_task_header_t        *task;
