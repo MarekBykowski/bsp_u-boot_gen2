@@ -50,7 +50,6 @@ extern ncp_bool_t *pNvmActive;
 
 extern unsigned long ncp_nvm_vaddr;
 extern unsigned long ncp_nvm_size;
-static ncp_uint8_t *qpmMMIOBaseAddr = NULL;
 
 void *taskIOMem;
 ncp_t *ncp;
@@ -505,16 +504,7 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
     ncp_st_t ncpStatus = NCP_ST_ERROR;
     /* ncp_t               *ncp = NULL; */
     ncp_ncav3_hdl_t *nca     = NULL;
-    ncp_nvm_addr_t *pNvmAddr = NULL;
-    char *pnvm_base          = NULL;
-    int         fd           = -1;
-    int      devfd           = -1;
-    off_t   offset;
     ncp_dev_hdl_t   devHdl;
-    ncp_uint32_t    reg;
-    void *pDomainBundle;
-    void *mmapResult;
-    ncp_task_pool_t *pPool   = NULL;
 
 	printf("Begin U-Boot configuration\n");
 

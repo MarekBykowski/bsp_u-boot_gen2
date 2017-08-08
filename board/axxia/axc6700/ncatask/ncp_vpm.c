@@ -54,7 +54,8 @@ ncp_st_t ncp_vpm_kernel_destroy(ncp_dev_hdl_t devHdl);
  * This needs to be in same sequence as ncp_launch_engine_type_t
  */
 #if !defined(NCP_KERNEL)
-static char launchEngineStr[ncp_launch_engine_max][10] =
+static char __maybe_unused
+launchEngineStr[ncp_launch_engine_max][10] =
 {
     NCP_LE_EIOA,
     NCP_LE_MPP,

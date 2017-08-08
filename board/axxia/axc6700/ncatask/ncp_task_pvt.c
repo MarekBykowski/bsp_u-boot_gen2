@@ -2567,8 +2567,6 @@ ncp_st_t ncp_task_map_pools(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
     ncp_task_tqs_swState_t *pTqs;
     ncp_task_pool_t *pPool;
     int poolId;
-    void *mmapResult;
-
 
     pTqs = &pNcpTaskSwState->tqsSwState[tqsId];
     pAppProfile = pTqs->pAppProfile;

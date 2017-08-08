@@ -1740,8 +1740,6 @@ initialize_task_io(struct eth_device *dev)
 static __maybe_unused
 void printTask(ncp_task_header_t *task)
 {
-    int i;
-
     printf("----- task start -------\n");
 
     printf("task 0x%p\n", task);
@@ -1930,7 +1928,6 @@ tx_rx_task(void){
 	int i = 0;
 
 	/* VP id - hardcoded*/
-	ncp_uint8_t              vpId = 0;
 	ncp_uint8_t              vpTxId = 1;
 
 	ncp_task_resource_name_t processName;
@@ -2118,11 +2115,9 @@ lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 	/* NCAv3 code begin */
 	ncp_task_send_meta_t    meta_data;
 	ncp_uint32_t numSent;
-	int i = 0;
 
 	debug("begin lsi_eioa_eth_send  %d\n",fc);
 	/* VP id - hardcoded*/
-	ncp_uint8_t              vpId = 0;
 	ncp_uint8_t              vpTxId = 1;
 	ncp_task_header_t        *newTask;
 	if (CreateTask(tqsHdl, vpTxId, &newTask, packet, length) == NCP_ST_SUCCESS)
@@ -2179,14 +2174,9 @@ lsi_eioa_eth_rx(struct eth_device *dev)
 
 	/* NCAv3 code begin */
     ncp_task_free_meta_t     meta_task;
-	ncp_uint32_t numSent;
-	int i = 0;
 
 	/* VP id - hardcoded*/
-	ncp_uint8_t              vpId = 0;
-	ncp_uint8_t              vpTxId = 1;
 	ncp_task_header_t        *task;
-
 
 	debug("begin lsi_eioa_eth_rx fc: %d\n",fc);
 	if ((tqsHdl == 0) || (ncpHdl == 0))
