@@ -306,8 +306,8 @@ ncav3_config_hw(ncp_t *ncp)
     p_mPCQ->u.mpcq_info.pPrefetchEntry = p_mPCQ->u.mpcq_info.pMPCQentry + 1;
     p_mPCQ->u.mpcq_info.pLastEntry = p_mPCQ->u.mpcq_info.pMPCQentry + p_mPCQ->nEntries - 1;
     p_mPCQ->u.mpcq_info.numAvail = p_mPCQ->nEntriesMinusTwo;
-    p_mPCQ->hwProducerVal = 128;
-    p_mPCQ->hwConsumerVal = 2;
+    p_mPCQ->hwProducerVal = 0;
+    p_mPCQ->hwConsumerVal = 0;
     p_mPCQ->toggleBit = 0;
 
     p_mPCQ = &pAllocator->mPCQ[1];
