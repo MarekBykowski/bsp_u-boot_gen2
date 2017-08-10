@@ -90,7 +90,6 @@ ncp_task_tbr_buffer_state_prefetch(ncp_task_pvt_tqsHdl_data_t *pvtTqsHdl,
                               ncp_xlf_task_tbr_buffer_state_prefetch_blocksVAStartEnd,
                               NCP_MSG_ERROR, "blocksVA[%d] start=%p, end=%p\r\n",
                               3, (void *)pPool->blocksVA[3], (void *)pPool->blocksVAend[3]);
-		printf("ML2");
         NCP_CALL(NCP_ST_TASK_TBR_INVALID_BUFFER);
     }
 
@@ -243,7 +242,6 @@ ncp_task_tbr_cpu_pool_buffer_state_prefetch(ncp_task_pvt_tqsHdl_data_t *pvtTqsHd
                               ncp_xlf_task_tbr_cpu_pool_buffer_state_prefetch_blocksVAStartEnd,
                               NCP_MSG_ERROR, "blocksVA[%d] start=%p, end=%p\r\n",
                               3, (void *)pPool->blocksVA[3], (void *)pPool->blocksVAend[3]);
-		printf("ML3");
         NCP_CALL(NCP_ST_TASK_TBR_INVALID_BUFFER);
     }
 
@@ -1059,7 +1057,6 @@ ncp_task_bulk_MMEpool_alloc(
                     }
                     else
                     {
-						printf("lapajc");
                         NCP_CALL(NCP_ST_TASK_TBR_FATAL_POOL_CORRUPTION);
                     }
                     *_pState = pTbr->newState;
@@ -1863,7 +1860,6 @@ NCP_RETURN_LABEL
      * so this code is structured as such in order to shave a few cycles in this 
      * performance critical API support function!
      */
-    printf("error path ncp status %d\n",ncpStatus);
     *pCompletionsIssued = *pNumTasksSent = 0;                
     return(ncpStatus);
          

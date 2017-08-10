@@ -506,7 +506,7 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
     ncp_ncav3_hdl_t *nca     = NULL;
     ncp_dev_hdl_t   devHdl;
 
-	printf("Begin U-Boot configuration\n");
+	printf("U-Boot NCA attach\n");
 
     ncp = (ncp_t*)malloc(sizeof(ncp_t));
     memset(ncp, 0, sizeof(ncp_t));
@@ -603,10 +603,9 @@ ncp_config_uboot_detach(ncp_hdl_t *ncpHdl)
 	free(pNcpTaskSwState->tqsSwState[0].pAppProfile);
 	free(pNcpTaskSwState->pidArray);
 	free(pNcpTaskSwState);
+	pNcpTaskSwState = 0;
 	free(ncp->ncaHdl); // this will free nca;
 	free(ncp);
 	ncp = 0;
-
-	free(ncp);
 	return NCP_ST_SUCCESS;
 }
