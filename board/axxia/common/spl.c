@@ -1504,7 +1504,7 @@ board_init_f(ulong dummy)
 		acp_failure(__FILE__, __func__, __LINE__);
 
 #ifdef CONFIG_SPL_ENV_SUPPORT
-	mem_malloc_init((void *)CONFIG_SYS_MALLOC_BASE, CONFIG_SYS_MALLOC_SIZE);
+	/*mem_malloc_init((void *)CONFIG_SYS_MALLOC_BASE, CONFIG_SYS_MALLOC_SIZE);*/
 	env_init();
 	env_relocate();
 #endif	/* CONFIG_SPL_ENV_SUPPORT */
