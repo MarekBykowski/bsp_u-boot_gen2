@@ -591,6 +591,14 @@ NCP_RETURN_LABEL
 ncp_st_t
 ncp_config_uboot_detach(ncp_hdl_t *ncpHdl)
 {
+	// clear domain bundle
+	void *ptr = 0;
+	ptr = (void *) DOMAINBOUNDLE_PA;
+	memset(ptr,0,DOMAINBOUNDLE_SIZE);
+	// clear memory pool
+	ptr = (void*) POOL_2_PA;
+	memset(ptr,0,POOL_2_SIZE);
+
     mme_destroy(ncp);
     ncav3_free_hw();
 

@@ -1648,72 +1648,69 @@ void initPacketEcho(void)
 int
 initialize_task_io(struct eth_device *dev)
 {
-	static int flag = 0;
-    ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
+	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
 	ncp_uint32_t          devNum = 0;
 
-	// workaround for init
-	if (flag == 0)
-	{
-		flag = 1;
-		debug("Resetting device...");
-		if (0 != ncp_dev_reset()) {
-			printf("Device reset Failed\n");
-			return -1;
-		}
-		debug("done\n");
 
-		debug("Clearing NCA domain bundle...");
-		ncp_task_uboot_domain_bundle_clear();
-		debug("done\n");
+	printf("Resetting device...");
+	if (0 != ncp_dev_reset()) {
+		printf("Device reset Failed\n");
+		return -1;
+	}
+	debug("done\n");
+
+	debug("Clearing NCA domain bundle...");
+	ncp_task_uboot_domain_bundle_clear();
+	debug("done\n");
 
 
 #ifdef ALL_TRACES
-		debug("Configuring all.c ...");
-		if (0 != ncp_dev_configure(all)) {
-			printf("all.c Configuration Failed\n");
-			return -1;
-		}
-		debug("done\n");
-#else
-		debug("Configuring MME...");
-		if (0 != ncp_dev_configure(mme)) {
-			printf("MME Configuration Failed\n");
-			return -1;
-		}
-		debug("done\n");
-
-		debug("Configuring PBM...");
-		if (0 != ncp_dev_configure(pbm)) {
-			printf("PBM Configuration Failed\n");
-			return -1;
-		}
-		debug("done\n");
-
-		debug("Configuring VP...");
-		if (0 != ncp_dev_configure(vp)) {
-			printf("Virtual Pipeline Configuration Failed\n");
-			return -1;
-		}
-		debug("done\n");
-
-		debug("Configuring NCA...");
-		if (0 != ncp_dev_configure(nca)) {
-			printf("NCA Configuration Failed\n");
-			return -1;
-		}
-		debug("done\n");
-
-		debug("Configuring EIOA...");
-		if (0 != ncp_dev_configure(eioa)) {
-			printf("EIOA Configuration Failed\n");
-			return -1;
-		}
-		debug("done\n");
-#endif
-		NCP_CALL(ncp_config_uboot_attach(devNum, &ncpHdl));
-		printf("Attach done ncpHdl=%p\n",ncpHdl);
+	debug("Configuring all.c ...");
+	if (0 != ncp_dev_configure(all)) {
+		printf("all.c Configuration Failed\n");
+		return -1;
 	}
+	debug("done\n");
+#else
+	debug("Configuring MME...");
+	if (0 != ncp_dev_configure(mme)) {
+		printf("MME Configuration Failed\n");
+		return -1;
+	}
+	debug("done\n");
+
+	debug("Configuring PBM...");
+	if (0 != ncp_dev_configure(pbm)) {
+		printf("PBM Configuration Failed\n");
+		return -1;
+	}
+	debug("done\n");
+
+	debug("Configuring VP...");
+	if (0 != ncp_dev_configure(vp)) {
+		printf("Virtual Pipeline Configuration Failed\n");
+		return -1;
+	}
+	debug("done\n");
+
+	debug("Configuring NCA...");
+	if (0 != ncp_dev_configure(nca)) {
+		printf("NCA Configuration Failed\n");
+		return -1;
+	}
+	debug("done\n");
+
+	debug("Configuring EIOA...");
+	if (0 != ncp_dev_configure(eioa)) {
+		printf("EIOA Configuration Failed\n");
+		return -1;
+	}
+	debug("done\n");
+#endif
+
+	NCP_CALL(ncp_config_uboot_attach(devNum, &ncpHdl));
+	printf("Attach done ncpHdl=%p\n",ncpHdl);
+
 
 {
 #define RECV_PGIT             0
@@ -1993,19 +1990,20 @@ finalize_task_io(void)
 	ncr_write32(NCP_REGION_NCAV3_CORE,
 				NCP_NCA_ITP_IPCQ_VALID00, 0x0);
 
+	printf("Detaching.\n");
 	if ( 0 != ncp_task_tqs_unbind(tqsHdl)) {
 		printf("Failed to unbind\n");
 		return;
 	}
 	tqsHdl = 0;
 	printf("Unbind done.\n");
-/*  workaround for init
+
 	if ( 0 != ncp_config_uboot_detach(ncpHdl)) {
         printf("Failed to detach\n");
 		return;
-	}
+	}	
 	ncpHdl = 0;
-*/
+
 	initialized = 0;
 	return; 
 }
@@ -2075,7 +2073,6 @@ int
 lsi_eioa_eth_send(struct eth_device *dev, void *packet, int length)
 {
 	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
-	debug("begin tx\n");
 
 	if ((tqsHdl == 0) || (ncpHdl == 0))
 	{
@@ -2132,7 +2129,6 @@ ncp_return:
 int
 lsi_eioa_eth_rx(struct eth_device *dev)
 {
-	debug("begin rx\n");
     int bytes_received = 0;
 	ncp_st_t         ncpStatus = NCP_ST_SUCCESS;
 
