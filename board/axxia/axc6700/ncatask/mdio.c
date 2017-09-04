@@ -24,7 +24,7 @@
  * MA 02111-1307 USA
  */
 
-/*#define DEBUG*/
+#define DEBUG
 
 #include <common.h>
 #include <miiphy.h>
@@ -143,10 +143,6 @@ mdio_initialize(void)
 
 	writel(offset, CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_CLK_OFFSET);       
 	writel(period, CONFIG_AXXIA_MDIO0_BASE + MDIO_REG_CLK_PERIOD);       
-
-	/* Enable the MDIO Clock. */
-	debug("MDIO: New clock enable control val 0x10 at 0x%lx", (unsigned long) (PERIPH_GPREG + 0x18));
-	writel(0x10, PERIPH_GPREG + 0x18);
 
 	initialize = 1;
 

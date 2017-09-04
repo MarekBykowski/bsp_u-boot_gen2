@@ -55,7 +55,7 @@ static ncp_hdl_t ncpHdl = NULL;
 
 #define ALL_TRACES
 #define SNAPSHOT /*define if you want a snapshot*/
-/*#define PHY*/ /*We don't have ext. PHYs on a Waco */
+#define PHY /*We don't have ext. PHYs on a Waco */
 
 #define NCP_EIOA_GEN_CFG_REG_OFFSET(portIndex)                                  \
     0x100000 +                                                                  \
@@ -1416,11 +1416,9 @@ line_setup(int index) {
 
 #ifdef PHY
 {
-	unsigned control, ad_value, ge_ad_value;	
-
-	control = mdio_read(phy_by_index[index], 0);    
-	ad_value = mdio_read(phy_by_index[index], 4);   
-	ge_ad_value = mdio_read(phy_by_index[index], 9);
+	unsigned short control = mdio_read(phy_by_index[index], 0);    
+	unsigned short ad_value = mdio_read(phy_by_index[index], 4);   
+	unsigned short ge_ad_value = mdio_read(phy_by_index[index], 9);
 
 	control &= 0xdebf; /* clear bit 6, 8 and 13 */
 	ad_value &= 0xfe1f; /* clear bits 5, 6, 7, 8 */

@@ -1538,7 +1538,13 @@ void mem_malloc_init(void *start, ulong size)
 #ifdef CONFIG_SYS_MALLOC_CLEAR_ON_INIT
 	memset((void *)mem_malloc_start, 0x0, size);
 #endif
+{
+	mbinptr *ptr = &av_[2];
+	mbinptr p = *ptr;
+	printf("mb: p->prev_size 0x%lx, p->size 0x%lx, p->fd %p, p->bk %p\n",
+		p->prev_size, p->size, (void*) p->fd, (void*) p->bk);
 	malloc_bin_reloc();
+}
 }
 
 /* field-extraction macros */
@@ -1628,9 +1634,7 @@ static struct mallinfo current_mallinfo = {  0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 /* Tracking mmaps */
 
-#ifdef DEBUG
 static unsigned int n_mmaps = 0;
-#endif	/* DEBUG */
 static unsigned long mmapped_mem = 0;
 #if HAVE_MMAP
 static unsigned int max_n_mmaps = 0;
@@ -3142,8 +3146,7 @@ size_t malloc_usable_size(mem) Void_t* mem;
 
 /* Utility to update current_mallinfo for malloc_stats and mallinfo() */
 
-#ifdef DEBUG
-static void malloc_update_mallinfo()
+static void malloc_update_mallinfo(void)
 {
   int i;
   mbinptr b;
@@ -3180,7 +3183,6 @@ static void malloc_update_mallinfo()
   current_mallinfo.keepcost = chunksize(top);
 
 }
-#endif	/* DEBUG */
 
 
 
@@ -3199,7 +3201,6 @@ static void malloc_update_mallinfo()
 
 */
 
-#ifdef DEBUG
 void malloc_stats()
 {
   malloc_update_mallinfo();
@@ -3214,7 +3215,6 @@ void malloc_stats()
 	  (unsigned int)max_n_mmaps);
 #endif
 }
-#endif	/* DEBUG */
 
 /*
   mallinfo returns a copy of updated current mallinfo.

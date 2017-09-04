@@ -115,6 +115,77 @@ do_net(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return -1;
 }
 
+extern int __weak take_snapshot(int gmac);
+extern int initialize_task_io(void);
+extern int line_setup(int index);
+extern ncp_st_t tx_rx_task(void);
+
+
+#define DEBUG
+#include <config.h>
+
+int
+do_trace(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+		printf("mb: %s()\n", __func__);
+		return initialize_task_io();
+}
+
+int
+do_mmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+		printf("mb: %s()\n", __func__);
+		unsigned int val = *(volatile unsigned int*)0x800400024c;
+		printf("mb: val 0x%x\n", val);
+		return 0;
+}
+
+int
+do_net_snapshot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	char* c = argv[1];
+	unsigned long no = -1;
+	if( 0 == strncmp( argv[1], "gmac", 4 ) ) {
+		c += 4;
+		no = simple_strtoul(c, NULL, 10);
+		printf("mb: %s() for gmac %lu\n", __func__, no);
+		line_setup(no);
+		take_snapshot(no);
+		return 0;
+	}
+
+	printf( "%s", cmdtp->usage );
+
+	return -1;
+}
+
+int
+do_uboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	unsigned magic = 0x27051956;  /* Image Magic Number*/
+	unsigned word0 = 0x1400000a;
+	unsigned *ih = (unsigned*) (volatile unsigned long)0;
+	unsigned ih_magic = be32_to_cpu(*ih);
+	unsigned ih_size = be32_to_cpu(*(ih+3)); /* Image Data Size */
+	
+	printf("word#0 (magic, Uboot, nok) 0x%x size 0x%xi\n", ih_magic, ih_size);
+
+	if (magic == ih_magic) {
+		printf("Found Uboot mkimage 0x%x\n", ih_magic);
+		memmove((void*)0, (void*)0x40, ih_size);
+	} else if (*ih == word0) {
+		printf("Found Uboot binary (word#0) 0x%x\n", word0);
+	} else {
+		printf("Not Uboot. Giving up\n");
+		return -1;
+	}
+
+	void (*entry)(void*, void*) = (void(*)(void*,void*)) 0;
+	cleanup_before_linux();	
+	entry(NULL, NULL);
+	return -1;
+}
+
 /*
   ======================================================================
   Command Definitions
@@ -132,4 +203,19 @@ U_BOOT_CMD(net, 3, 0, do_net,
 	   "dr toggle the \"dumprx\" flag\n"
 	   "dt toggle the \"dumptx\" flag\n");
 
+U_BOOT_CMD(trace, 1, 0, do_trace,
+	   "run trace for eioa\n",
+	   "");
+
+U_BOOT_CMD(uboot, 1, 0, do_uboot,
+	   "boot uboot from uboot from address 0\n",
+	   "");
+
+U_BOOT_CMD(snap, 2, 0, do_net_snapshot,
+	   "macstat gmac[no]\n",
+	   " run snapshot for a gmac[no]\n");
+
+U_BOOT_CMD(mmd, 2, 0, do_mmd,
+	   "\n",
+	   "\n");
 #endif /* CONFIG_SPL_BUILD */
