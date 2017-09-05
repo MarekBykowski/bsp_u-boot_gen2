@@ -533,7 +533,6 @@ ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
 
 	pNcpTaskSwState = malloc(sizeof(ncp_task_swState_t));
 
-malloc_stats();
 printf("mb: sizeof(ncp_task_swState_t) 0x%lx\n", sizeof(ncp_task_swState_t));
 printf("mb: pNcpTaskSwState@ %p is 0x%x\n", (void*) pNcpTaskSwState, *(volatile unsigned int*)pNcpTaskSwState);
 
