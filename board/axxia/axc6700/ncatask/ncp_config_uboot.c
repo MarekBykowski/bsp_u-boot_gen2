@@ -499,6 +499,33 @@ ncav3_free_hw(void)
 	return NCP_ST_SUCCESS;
 }
 
+void malloc_stats (void);
+
+int 
+malloc_test(int set)
+{
+	ncp_task_swState_t *pNcpTaskSwState = NULL;
+	if (set) {
+		printf("mb: stats before malloc\n");
+		malloc_stats();
+		pNcpTaskSwState = malloc(sizeof(ncp_task_swState_t));
+		if (pNcpTaskSwState == NULL)
+			return 1;
+		memset(pNcpTaskSwState,0,sizeof(ncp_task_swState_t));
+		printf("mb: stats after malloc\n");
+		malloc_stats();
+	} else {
+		printf("mb: stats before free\n");
+		malloc_stats();
+		free(pNcpTaskSwState);
+		pNcpTaskSwState = NULL;
+		printf("mb: stats after free\n");
+		malloc_stats();
+	}
+
+	return 0;
+}
+
 ncp_st_t
 ncp_config_uboot_attach(ncp_uint32_t id, ncp_hdl_t *ncpHdl)
 {

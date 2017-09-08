@@ -273,7 +273,7 @@ static int initr_malloc(void)
 	malloc_start = gd->relocaddr - TOTAL_MALLOC_LEN;
 	mem_malloc_init(map_sysmem(malloc_start, TOTAL_MALLOC_LEN),
 			TOTAL_MALLOC_LEN);
-	printf("mb: malloc_start %lu TOTAL_MALLOC_LEN 0x%x\n",  
+	printf("mb: malloc_start %lx TOTAL_MALLOC_LEN 0x%x\n",  
          malloc_start, TOTAL_MALLOC_LEN);       
 
 

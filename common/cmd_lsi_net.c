@@ -131,12 +131,16 @@ do_trace(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return initialize_task_io();
 }
 
+extern int malloc_test(int);
 int
-do_mmd(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+do_mal(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 		printf("mb: %s()\n", __func__);
-		unsigned int val = *(volatile unsigned int*)0x800400024c;
-		printf("mb: val 0x%x\n", val);
+		unsigned long allocate = simple_strtoul(argv[1], NULL, 10);
+		if (allocate)
+			malloc_test(1);
+		else
+			malloc_test(0);
 		return 0;
 }
 
@@ -215,7 +219,7 @@ U_BOOT_CMD(snap, 2, 0, do_net_snapshot,
 	   "macstat gmac[no]\n",
 	   " run snapshot for a gmac[no]\n");
 
-U_BOOT_CMD(mmd, 2, 0, do_mmd,
+U_BOOT_CMD(mal, 2, 0, do_mal,
 	   "\n",
 	   "\n");
 #endif /* CONFIG_SPL_BUILD */
