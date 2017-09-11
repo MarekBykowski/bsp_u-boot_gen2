@@ -591,6 +591,9 @@ void *sbrk(ptrdiff_t increment)
 	if (increment < 0)
 		memset((void *)new, 0, -increment);
 
+debug_cond(DEBUG_MALLOC, "mb: mem_malloc_brk %p + increment %lu(0x%lx) ? mem_malloc_end %p\n",
+			(void*)mem_malloc_brk, (unsigned long)increment, (unsigned long)increment, (void*)mem_malloc_end);
+
 	if ((new < mem_malloc_start) || (new > mem_malloc_end))
 		return (void *)MORECORE_FAILURE;
 
@@ -700,9 +703,7 @@ static struct mallinfo current_mallinfo = {  0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 /* Tracking mmaps */
 
-#ifdef DEBUG
 static unsigned int n_mmaps = 0;
-#endif	/* DEBUG */
 static unsigned long mmapped_mem = 0;
 #if HAVE_MMAP
 static unsigned int max_n_mmaps = 0;
@@ -1081,6 +1082,8 @@ static void malloc_extend_top(nb) INTERNAL_SIZE_T nb;
   INTERNAL_SIZE_T    sbrk_size     = nb + top_pad + MINSIZE;
   unsigned long pagesz    = malloc_getpagesize;
 
+debug_cond(DEBUG_MALLOC,"mb: extend the top-most chunk\n");
+
   /* If not the first time through, round to preserve page boundary */
   /* Otherwise, we need to correct to a page size below anyway. */
   /* (We also correct below if an intervening foreign sbrk call.) */
@@ -1088,6 +1091,7 @@ static void malloc_extend_top(nb) INTERNAL_SIZE_T nb;
   if (sbrk_base != (char*)(-1))
     sbrk_size = (sbrk_size + (pagesz - 1)) & ~(pagesz - 1);
 
+	debug_cond(DEBUG_MALLOC, "mb: sbrk_size %lu\n", sbrk_size);
   brk = (char*)(MORECORE (sbrk_size));
 
 #if 0
@@ -1100,8 +1104,10 @@ static void malloc_extend_top(nb) INTERNAL_SIZE_T nb;
 	 The above makes it impossible to move the heap downward
 	 TODO: Understand what is going on.
 	*/
-	if (brk == (char*)(MORECORE_FAILURE))
+	if (brk == (char*)(MORECORE_FAILURE)) {
+		debug_cond(DEBUG_MALLOC, "mb: MORECORE_FAILURE %d\n", MORECORE_FAILURE);
 		return;
+	}
 #endif
 
   sbrked_mem += sbrk_size;
@@ -1243,6 +1249,8 @@ static void malloc_extend_top(nb) INTERNAL_SIZE_T nb;
 
 */
 
+
+
 #if __STD_C
 Void_t* mALLOc(size_t bytes)
 #else
@@ -1269,6 +1277,12 @@ Void_t* mALLOc(bytes) size_t bytes;
 		return malloc_simple(bytes);
 #endif
 
+  if(getenv("debug_malloc") == NULL)
+	DEBUG_MALLOC = 0;
+  else 
+	DEBUG_MALLOC = 1;
+
+  debug_cond(DEBUG_MALLOC,"\n");
   /* check if mem_malloc_init() was run */
   if ((mem_malloc_start == 0) && (mem_malloc_end == 0)) {
     /* not initialized yet */
@@ -1278,11 +1292,15 @@ Void_t* mALLOc(bytes) size_t bytes;
   if ((long)bytes < 0) return NULL;
 
   nb = request2size(bytes);  /* padded request size; */
+	debug_cond(DEBUG_MALLOC,"mb: malloc() requesting size with padding %lu\n", 
+				nb);
 
   /* Check for exact match in a bin */
 
   if (is_small_request(nb))  /* Faster version for small requests */
   {
+	debug_cond(DEBUG_MALLOC, "mb: handling as small reqest < %d\n",
+		(int)(MAX_SMALLBIN_SIZE - SMALLBIN_WIDTH));
     idx = smallbin_index(nb);
 
     /* No traversal or size check necessary for small bins.  */
@@ -1310,22 +1328,30 @@ Void_t* mALLOc(bytes) size_t bytes;
   }
   else
   {
+	debug_cond(DEBUG_MALLOC, "mb: handling as bigger reqest >= %d\n",
+		(int)(MAX_SMALLBIN_SIZE - SMALLBIN_WIDTH));
     idx = bin_index(nb);
     bin = bin_at(idx);
+	debug_cond(DEBUG_MALLOC,"mb: bin@%p idx %d\n", (void*)bin, (int)idx);
 
     for (victim = last(bin); victim != bin; victim = victim->bk)
     {
       victim_size = chunksize(victim);
       remainder_size = victim_size - nb;
+	  debug_cond(DEBUG_MALLOC,"mb: last bin@%p: victim_size 0x%lx nb 0x%lx remainder_size 0x%lx\n",
+				(void*)victim, victim_size, nb, remainder_size);
 
       if (remainder_size >= (long)MINSIZE) /* too big */
       {
+			debug_cond(DEBUG_MALLOC,"remainder_size 0x%lx is too big. --idx\n",
+						(unsigned long) remainder_size);
 	--idx; /* adjust to rescan below after checking last remainder */
 	break;
       }
 
       else if (remainder_size >= 0) /* exact fit */
       {
+		debug_cond(DEBUG_MALLOC, "exact fit\n");
 	unlink(victim, bck, fwd);
 	set_inuse_bit_at_offset(victim, victim_size);
 	check_malloced_chunk(victim, nb);
@@ -1343,6 +1369,12 @@ Void_t* mALLOc(bytes) size_t bytes;
   {
     victim_size = chunksize(victim);
     remainder_size = victim_size - nb;
+	debug_cond(DEBUG_MALLOC,"mb: last split-off remainder@bin %p: victim_size %lu nb %lu remainder_size %lu\n",
+				(void*)victim, victim_size, nb, remainder_size);
+if (0)
+	asm volatile ("mb: b mb\n");
+	if (remainder_size < 0)
+		debug_cond(DEBUG_MALLOC," nb > victim_size\n");
 
     if (remainder_size >= (long)MINSIZE) /* re-split */
     {
@@ -1352,21 +1384,27 @@ Void_t* mALLOc(bytes) size_t bytes;
       set_head(remainder, remainder_size | PREV_INUSE);
       set_foot(remainder, remainder_size);
       check_malloced_chunk(victim, nb);
+		debug_cond(DEBUG_MALLOC,"mb: remainder_size %lu > MINSIZE %lu\n", remainder_size, MINSIZE);
+		debug_cond(DEBUG_MALLOC,"mb: chunk2mem(victim) %p\n", chunk2mem(victim));
       return chunk2mem(victim);
     }
 
     clear_last_remainder;
+		debug_cond(DEBUG_MALLOC,"mb: clear_last_remainder\n");
 
     if (remainder_size >= 0)  /* exhaust */
     {
       set_inuse_bit_at_offset(victim, victim_size);
       check_malloced_chunk(victim, nb);
+		debug_cond(DEBUG_MALLOC,"mb: remainder_size >= 0 -> chunk2mem(victim) %p\n", chunk2mem(victim));
       return chunk2mem(victim);
     }
 
     /* Else place in bin */
 
     frontlink(victim, victim_size, remainder_index, bck, fwd);
+	debug_cond(DEBUG_MALLOC,"mb: place nb@bin %p size %lu remainder_index %d bk %p fd %p\n",
+		 (void*)victim, victim_size, remainder_index, (void*)bck, (void*)fwd);
   }
 
   /*
@@ -1467,7 +1505,8 @@ Void_t* mALLOc(bytes) size_t bytes;
   /* Require that there be a remainder, ensuring top always exists  */
   if ( (remainder_size = chunksize(top) - nb) < (long)MINSIZE)
   {
-
+		debug_cond(DEBUG_MALLOC,"mb: try to use biggest/top chunk chunksize(top) %lu nb %lu\n",
+				chunksize(top), nb);
 #if HAVE_MMAP
     /* If big and would otherwise need to extend, try to use mmap instead */
     if ((unsigned long)nb >= (unsigned long)mmap_threshold &&
@@ -1475,6 +1514,8 @@ Void_t* mALLOc(bytes) size_t bytes;
       return chunk2mem(victim);
 #endif
 
+if (0)
+	asm volatile ("mb1: b mb1\n");
     /* Try to extend */
     malloc_extend_top(nb);
     if ( (remainder_size = chunksize(top) - nb) < (long)MINSIZE)
@@ -1543,6 +1584,8 @@ void fREe(mem) Void_t* mem;
 
   p = mem2chunk(mem);
   hd = p->size;
+	debug_cond(DEBUG_MALLOC,"mb: %s() chunk %p of size %lu\n",
+		__func__, (void*)p, p->size);
 
 #if HAVE_MMAP
   if (hd & IS_MMAPPED)                       /* release mmapped memory. */
@@ -2214,7 +2257,6 @@ size_t malloc_usable_size(mem) Void_t* mem;
 
 /* Utility to update current_mallinfo for malloc_stats and mallinfo() */
 
-#ifdef DEBUG
 static void malloc_update_mallinfo()
 {
   int i;
@@ -2252,7 +2294,6 @@ static void malloc_update_mallinfo()
   current_mallinfo.keepcost = chunksize(top);
 
 }
-#endif	/* DEBUG */
 
 
 
@@ -2271,22 +2312,39 @@ static void malloc_update_mallinfo()
 
 */
 
-#ifdef DEBUG
 void malloc_stats()
 {
   malloc_update_mallinfo();
-  printf("max system bytes = %10u\n",
+  debug_cond(DEBUG_MALLOC,"max system bytes = %10u\n",
 	  (unsigned int)(max_total_mem));
-  printf("system bytes     = %10u\n",
+  debug_cond(DEBUG_MALLOC,"system bytes     = %10u\n",
 	  (unsigned int)(sbrked_mem + mmapped_mem));
-  printf("in use bytes     = %10u\n",
+  debug_cond(DEBUG_MALLOC,"in use bytes     = %10u\n",
 	  (unsigned int)(current_mallinfo.uordblks + mmapped_mem));
+
+
+  debug_cond(DEBUG_MALLOC, 
+  "int arena;    /* total space allocated from system */  %10u\n"
+  "int ordblks;  /* number of non-inuse chunks */ %10u\n"
+  "int smblks;   /* unused -- always zero */ %10u\n"
+  "int hblks;    /* number of mmapped regions */ %10u\n"
+  "int hblkhd;   /* total space in mmapped regions */ %10u\n"
+  "int usmblks;  /* unused -- always zero */ %10u\n"
+  "int fsmblks;  /* unused -- always zero */ %10u\n"
+  "int uordblks; /* total allocated space */ %10u\n"
+  "int fordblks; /* total non-inuse space */ %10u\n"
+  "int keepcost; /* top-most, releasable (via malloc_trim) space */ %10u\n", 
+  current_mallinfo.arena, current_mallinfo.ordblks, current_mallinfo.smblks, 
+	current_mallinfo.hblks, current_mallinfo.hblkhd, current_mallinfo.usmblks, 
+  current_mallinfo.fsmblks, current_mallinfo.uordblks, current_mallinfo.fordblks, 
+	current_mallinfo.keepcost);
+
+
 #if HAVE_MMAP
-  printf("max mmap regions = %10u\n",
+  debug_cond(DEBUG_MALLOC,"max mmap regions = %10u\n",
 	  (unsigned int)max_n_mmaps);
 #endif
 }
-#endif	/* DEBUG */
 
 /*
   mallinfo returns a copy of updated current mallinfo.
