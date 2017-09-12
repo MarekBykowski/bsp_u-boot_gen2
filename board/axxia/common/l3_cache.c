@@ -23,25 +23,33 @@
 
 /*static int hnfnum[8] = {2 , 5 , 6 , 9 , 20, 23 , 24 , 27} ;  */
 
+
+/*
+ * Calculate hnf_num and hnf_tgt based on addr
+ */
 void 
-calc_hnf_num_tgt(unsigned long addr, int hnf_num, int hnf_tgt)
+calc_hnf_num_tgt(unsigned long addr, int *hnf_num, int *hnf_tgt)
 {
 	/* From documentation: identifier: 
 	 * WhichHN[2:0] = {1'b0,addr[43:42]} ^ ... ^ addr[11:9] ^ addr[8:6]; 
 	 */
 	int i;
-	hnf_num = 0;
+	*hnf_num = 0;
 	for (i=6; i<=42; i+=3)
-		hnf_num = hnf_num ^ ( (addr>>i) & 7 );
+		*hnf_num = *hnf_num ^ ( (addr>>i) & 7 );
 	
-	hnf_tgt = hnf_num + 0x20;
+	*hnf_tgt = *hnf_num + 0x20;
 	
 	return;
 }
 
-int 
-calc_set(unsigned long addr)
+/* 
+ * Calculate set upon addr
+ */
+void 
+calc_set(unsigned long addr, int *set)
 {
-	return (addr >> 6 ) & 0xfff;
+	*set = 0;
+	*set = (addr >> 6 ) & 0xfff;
 }
 
