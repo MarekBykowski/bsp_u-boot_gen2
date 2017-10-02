@@ -155,10 +155,16 @@ ncp_elm_init(
 	}
         else if (parms->version == NCP_CHIP_ACPXLF) 
 	{
+#if 0
+			printf("mb: %s(): mungeValue 0x%x\n",__func__,  mungeValue);
+			printf("mb: %s(): overriding to 0x380ffff\n", __func__);
+			mungeValue = 0x380ffff;
+#endif
             ncr_write32 (NCP_REGION_ID(0x167, 0), 0x1c, mungeValue);
             ncr_write32 (NCP_REGION_ID(0x167, 1), 0x1c, mungeValue);
             ncr_write32 (NCP_REGION_ID(0x167, 2), 0x1c, mungeValue);
             ncr_write32 (NCP_REGION_ID(0x167, 3), 0x1c, mungeValue);
+			printf("mb: %s(): mungeValue calc to 0x%x\n", __func__, mungeValue);
 	}
 	else
 	{	

@@ -412,6 +412,9 @@ parameters_read:
 	printf("Parameter Table Version: %u\n", header->version);
 	description = (unsigned char *)&global->description[0];
 
+	printf("mb: sysmem@%p sysmem size 0x%08x\n", 
+			(void*)(parameters + header->systemMemoryOffset), header->systemMemorySize);
+
 	if (0 != *description && isprint(*description)) {
 		i = 0;
 		puts("            Description: ");

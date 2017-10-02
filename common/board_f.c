@@ -772,15 +772,27 @@ int do_heap(void)
 	return 0;
 }
 
+static unsigned int ddrRecovery;
+extern ncp_st_t ncp_elm_init(
+    ncp_dev_hdl_t dev,
+    ncp_sm_parms_t *parms);
+extern void dickens_init(void); 
+ 
 int init_mem_axxia(void)
 {
 	int rc = 0;
 
+	/* force setting retention */
+	global->flags |= 0x20;
 	/* get parameters.bin off flash. Malloc must be before */
 	(void)sysmem_size();
 	
-	if (0 != sysmem_init())
-		acp_failure(__FILE__, __FUNCTION__, __LINE__);
+	ddrRecovery = *(unsigned*)(unsigned long)(SYSCACHE_SIZE-sizeof(unsigned));
+	if (0 == ddrRecovery) {
+		if (0 != sysmem_init())
+			acp_failure(__FILE__, __FUNCTION__, __LINE__);
+		/*asm volatile("mb: b mb\n");*/
+	}
 
 	gd->bd->bi_dram[0].start = 0;
 	gd->bd->bi_dram[0].size = ((phys_size_t)1 << 30); 

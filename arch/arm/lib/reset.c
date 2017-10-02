@@ -21,7 +21,9 @@
  * SPDX-License-Identifier:	GPL-2.0+
  */
 
+
 #include <common.h>
+#include <asm/io.h>
 
 __weak void reset_misc(void)
 {
@@ -29,13 +31,23 @@ __weak void reset_misc(void)
 
 int do_reset(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	puts ("resetting ...\n");
+	if (getenv("retention_reset")) {
+		puts("retention resetting\n");
+		writel(readl(SYSCON+0xdc) | 1, SYSCON+0xdc);
+		printf("mb: Read back Persisten Scratch Reg %x\n", readl(SYSCON+0xdc));
+	} else {
+		puts ("resetting ...\n");
+	}
 
 	udelay (50000);				/* wait 50 ms */
 
 	disable_interrupts();
 
-	reset_misc();
+	if (getenv("retention_reset")) {
+		reset_misc();
+		for(;;) /* You never should get here */
+			;
+	}
 	reset_cpu(0);
 
 	/*NOTREACHED*/

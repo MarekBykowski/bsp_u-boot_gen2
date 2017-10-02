@@ -62,7 +62,7 @@ jtag:
 reset:
 #ifdef CONFIG_SPL_BUILD
 	/* JTAG */
-	/*bl jtag*/
+	/*b jtag*/
 #endif
 /*
 	ldr x0, =0

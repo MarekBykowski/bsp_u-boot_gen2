@@ -52,6 +52,8 @@ void dickens_init(void);
 axxia_initialize
 */
 
+extern unsigned PScratch; 
+
 int
 axxia_initialize(void)
 {
@@ -78,6 +80,11 @@ axxia_initialize(void)
 		return 0;
 #endif
 
+	/* force setting retention */
+	{
+#define CONFIG_MEMORY_RETENTION
+	global->flags |= 0x20;
+	} /* end force setting retetion */
 #ifdef CONFIG_AXXIA_ARM
 #ifdef CONFIG_MEMORY_RETENTION
 	if (0 != (global->flags & PARAMETERS_GLOBAL_ENABLE_RETENTION)) {
@@ -139,12 +146,16 @@ axxia_initialize(void)
 #if !defined(CONFIG_AXXIA_EMU)
     cmem->totalSize = 0;
 	if ((0 != (global->flags & PARAMETERS_GLOBAL_SET_CMEM))) {
+#if !defined(TRACE_PEI_ACCESSES)
 		ncr_tracer_enable();
+#endif
 
 		if (0 != cmem_init())
 			acp_failure(__FILE__, __FUNCTION__, __LINE__);
 
+#if !defined(TRACE_PEI_ACCESSES)
 		ncr_tracer_disable();
+#endif
 	}
 #endif
 
@@ -161,12 +172,16 @@ axxia_initialize(void)
 #if !defined(SYSCACHE_ONLY_MODE) && !defined(CONFIG_TARGET_EMULATION)
 	if (0 != (global->flags & PARAMETERS_GLOBAL_SET_SMEM)) {
 		if (0 == ddrRecovery) {
+#if !defined(TRACE_PEI_ACCESSES)
 			ncr_tracer_enable();
+#endif
 
 			if (0 != sysmem_init())
 				acp_failure(__FILE__, __FUNCTION__, __LINE__);
 
+#if !defined(TRACE_PEI_ACCESSES)
 			ncr_tracer_disable();
+#endif
 		} else {
 			ncp_uint32_t version_save;
 
@@ -195,19 +210,40 @@ axxia_initialize(void)
 			}
 		}
 	}
+#elif defined(CONFIG_TARGET_EMULATION)
+
+DONT KNOW
+
 #endif
 
+#ifdef SYSCACHE_ONLY_MODE
+	if (ddrRecovery) {
+			ncp_uint32_t version_save;
 
-	/*
-	  =========
-	  PCIe/SRIO
-	  =========
-	*/
+			printf("initializing ELMs for ddrRecovery\n");
 
-#if defined(CONFIG_AXXIA_PCI) && !defined(PEI_SETUP_IN_LINUX)
-	if (0 != (global->flags & PARAMETERS_GLOBAL_SET_PEI))
-		if (0 != pciesrio_init(pciesrio->control))
-			acp_failure(__FILE__, __FUNCTION__, __LINE__);
+			/* Initialize Dickens and the ELMs */
+			version_save = sysmem->version;
+#if defined(CONFIG_AXXIA_56XX) || defined(CONFIG_AXXIA_56XX_SIM)
+			sysmem->version = NCP_CHIP_ACP56xx;
+#elif defined(CONFIG_AXXIA_XLF) || defined(CONFIG_AXXIA_XLF_SIM)
+			sysmem->version = NCP_CHIP_ACPXLF;
+#else
+#error "Invalid Chip Type!"
+#endif
+
+            dickens_init();
+
+			rc = ncp_elm_init(NULL, sysmem);
+
+			sysmem->version = version_save;
+
+			if (NCP_ST_SUCCESS != rc) {
+				printf("Initializing ELMs Failed!\n");
+
+				return -1;
+			}
+	}
 #endif
 
 	return 0;

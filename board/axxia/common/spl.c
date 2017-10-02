@@ -29,6 +29,7 @@
 #include <watchdog.h>
 #include <asm/io.h>
 #include "xlat_tables.h"
+#include "ncp_sysmem_ext.h"
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -920,13 +921,15 @@ load_image(void)
 	return;
 }
 
-void init_l3(void)
+void init_l3(unsigned long addr)
 {
 	unsigned int buffer[64] __attribute__ ((aligned(16)));
-	unsigned long output = 0;
+	unsigned long output = addr;
 	int ret = 0;
 	memset(buffer, 0, sizeof(buffer));
-	for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {
+	printf("%s(): 0x%lx - 0x%lx\n", __func__, addr, addr+SYSCACHE_SIZE);
+
+	for (output=0; output<(SYSCACHE_SIZE); output+=sizeof(buffer)) {
 		   ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), 1);
 		   if (ret != 0)
 				   printf("gpdma_xfer failed %d\n", ret);
@@ -1207,6 +1210,13 @@ load_image(void)
 
   Replaces the weakly defined board_init_f in arch/arm/lib/spl.c.
 */
+
+extern void dickens_init(void);
+extern ncp_st_t
+ncp_elm_init(
+    ncp_dev_hdl_t dev,
+    ncp_sm_parms_t *parms);
+extern unsigned ddrRecovery;
 
 void
 board_init_f(ulong dummy)
@@ -1544,42 +1554,44 @@ board_init_f(ulong dummy)
 	{
 		void (*entry)(void *, void *);
 		extern unsigned long *_pgt_start;
-		unsigned int junk;
 		unsigned long *pgt = (unsigned long*) &_pgt_start, address = LSM;
 
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
 
+#if 0
 		if (0 != set_cluster_coherency(3/*or 1 by John*/, 1)) 
 	        acp_failure(__FILE__, __func__, __LINE__); 
-
-		if (0 != set_cluster_coherency(1/*or 1 by John*/, 1)) 
-	        acp_failure(__FILE__, __func__, __LINE__); 
+#endif
 
 		/* Upon L3 init invalidate data cache l1 through l2 */
-		init_l3();
+		if (ddrRecovery)
+			/*init_l3(SZ_4M);*/
+			;
+		else
+			init_l3(0);
+
 		printf("pgt are at %p\n", (void*) pgt);
+
 
 		mmu_configure((u64*)pgt, DISABLE_DCACHE);
 		display_mapping(0);
 
 		address = 0x8020000000ULL; /*AXI_MMAP part 2 incl. LSM */ 
-		junk = readl(address);                                    
-		junk = junk;                                              
+    	__asm__ __volatile__ ("at s1e3r, %0" : : "r" (address));
 		address = 0x8001000000ULL; /*AXI_MMAP part 1*/
-		junk = readl(address);
-		junk = junk;
+    	__asm__ __volatile__ ("at s1e3r, %0" : : "r" (address));
 		address = 0x8080000000ULL; /*AXI_PERIPH*/
-		junk = readl(address);
-		junk = junk;
+    	__asm__ __volatile__ ("at s1e3r, %0" : : "r" (address));
+		address = 0x0ULL; /*SYSTEM MEMORY*/
+    	__asm__ __volatile__ ("at s1e3r, %0" : : "r" (address));
 
 		set_sctlr(get_sctlr() | CR_C); 
 		invalidate_dcache_all();
 		display_mapping(0);
 
-		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
-		entry = (void (*)(void *, void *))0x0;
 
+#if 0 /*for if there is no write back to main memory */
 		load_image_mem(CONFIG_UBOOT_OFFSET); 
 		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
 
@@ -1597,15 +1609,33 @@ board_init_f(ulong dummy)
 
 		load_image_mem(SZ_4M); /*Michaels*/
 		printf("loaded Uboot from 0x%x\n", SZ_4M);
+#endif
 
-		load_image_mem(CONFIG_UBOOT_OFFSET); 
-		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
+		if(0 == ddrRecovery) {
+			load_image_mem(CONFIG_UBOOT_OFFSET); 
+			printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
+		}
 
-		memmove((void*)0x600000,(void*)LSM,256*1024);
-
+		*(unsigned*)(unsigned long)(SYSCACHE_SIZE-sizeof(unsigned)) = ddrRecovery;
 		__asm_flush_dcache_level(0/*L1*/,0/*clean&inval*/);
 		__asm_invalidate_icache_all();
 
+		if(ddrRecovery) {
+			printf("U-Boot Retained in System Memory, Jumping to U-Boot\n"
+					"Reading retained memory...");
+			printf("0x0 : %08x %08x\n" 
+				   "0x40: %08x %08x\n"	
+				   "0x80: %08x %08x\n",
+				*(volatile unsigned*) (unsigned long) 0,    *(volatile unsigned*) (unsigned long) 0x4,
+				*(volatile unsigned*) (unsigned long) 0x40,    *(volatile unsigned*) (unsigned long) 0x44,
+				*(volatile unsigned*) (unsigned long) 0x80,    *(volatile unsigned*) (unsigned long) 0x84
+			);
+			/*asm volatile("mb: b mb\n");*/
+		} else {
+			printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
+		}
+
+		entry = (void (*)(void *, void *))0x0;
 		(*entry)(NULL, NULL);
 		acp_failure(__FILE__, __func__, __LINE__);
 	}

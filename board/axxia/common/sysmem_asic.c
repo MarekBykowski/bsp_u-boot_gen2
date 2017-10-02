@@ -353,6 +353,7 @@ void dickens_init(void)
 
 		writel(0, (MMAP_SCB + 0x42800));
 	} else if (0x4 == sysmem->num_interfaces) {
+		unsigned tmp = readl(MMAP_SCB + 0x42800);
 		writel(2, (MMAP_SCB + 0x42800));
 
                 /* use only elm2 */
@@ -364,18 +365,19 @@ void dickens_init(void)
 		writel(0x15, ((DICKENS | (0x25 << 16)) + 0x8));
 		writel(0x1a, ((DICKENS | (0x26 << 16)) + 0x8));
 		writel(0x1a, ((DICKENS | (0x27 << 16)) + 0x8));
+		printf("mb: %s(): writing to 8x NHF\n",__func__);
 
-		writel(0, (MMAP_SCB + 0x42800));
+		writel(tmp, (MMAP_SCB + 0x42800));
 	}
 
 	/*set bit 9 of ELMs to force to use single ELM*/
 	for (i = 0; i < 4; ++i)	{
 		unsigned int tmp;
-
-                ncr_read32(NCP_REGION_ID(0x167, i), 0x0004, &tmp);
-                tmp &= 0xfffff9ff;
+		ncr_read32(NCP_REGION_ID(0x167, i), 0x0004, &tmp);
+		tmp &= 0xfffff9ff;
 		tmp |= ((sysmem->num_interfaces - 1) << 9);
 		ncr_write32(NCP_REGION_ID(0x167, i), 0x0004, tmp);
+		printf("mb: %s(): 0x%x at NCP_REGION_ID(0x167, i), 0x0004 -> 0x80_03C0_0004\n", __func__, tmp);
 	}
 #endif
 }
