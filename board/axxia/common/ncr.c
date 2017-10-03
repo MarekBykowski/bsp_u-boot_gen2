@@ -913,6 +913,8 @@ ncr_read(ncp_uint32_t region,
 	case 0x1d0:
 	case 0x149:
 	case 0x14f:
+	case 0x170:
+	case 0x1e0:
 		/*
 		  If reading from within NCA/MME_POKE/SCB,
 		  just do the plain and simple read
@@ -935,7 +937,13 @@ ncr_read(ncp_uint32_t region,
 				offset = ((unsigned long)SCB + address);
 			} else if (NCP_NODE_ID(region) == 0x149) {
 				offset = ((unsigned long)GPREG + address);
-			} 
+			} else if (NCP_NODE_ID(region) == 0x170) {
+				if (NCP_TARGET_ID(region) == 0x1) /* 0x80_3200_0000 */
+					offset = ((unsigned long)MMAP_SCB + 0x42800);
+			} else if (NCP_NODE_ID(region) == 0x1e0) {
+				offset = (unsigned long)DICKENS + (NCP_TARGET_ID(region)<<16) + address;
+				printf("mb: reading @ 0x%llx\n", offset);
+			}
 
 			while (4 <= number) {
 				*((ncp_uint32_t *)buffer) =
@@ -1239,6 +1247,8 @@ ncr_write(ncp_uint32_t region,
 	case 0x1d0:
 	case 0x149:
 	case 0x14f:
+	case 0x170:
+	case 0x1e0:
 		if (NULL != buffer) {
 			ncp_uint64_t offset = 0;
 
@@ -1257,6 +1267,13 @@ ncr_write(ncp_uint32_t region,
 				offset = (unsigned long)(SCB + address);
 			} else if (NCP_NODE_ID(region) == 0x149) {
 				offset = (unsigned long)(GPREG + address);
+			} else if (NCP_NODE_ID(region) == 0x170) {
+				if (NCP_TARGET_ID(region) == 0x1) /* 0x80_3200_0000 */
+					offset = (unsigned long)MMAP_SCB + 0x42800;
+			} else if (NCP_NODE_ID(region) == 0x1e0) {
+				offset = (unsigned long)DICKENS + (NCP_TARGET_ID(region)<<16) + address;
+				printf("mb: writing 0x%x to DICKENS @ 0x%llx\n ",*(unsigned *)buffer,
+							offset);
 			}
 
 			while (4 <= number) {
@@ -1639,18 +1656,21 @@ ncr_modify32( ncp_uint32_t region, ncp_uint32_t offset,
 	return 0;
 }
 
-#ifdef SYSCACHE_ONLY_MODE
-
 /*
   -------------------------------------------------------------------------------
   ncr_l3tags
 */
 
 void
-ncr_l3tags(void)
+ncr_l3tags(ncp_uint32_t address)
 {
 	int i;
-	ncp_uint32_t address;
+	unsigned int el;                                       
+	asm volatile("mrs %0, CurrentEL" : "=r" (el) : : "cc");
+	el >>= 2;                                        
+
+	printf("l3_init() through %s() at EL%d: addr %p to %lx\n",
+		__func__, el, (void*)(unsigned long)address, (unsigned long)(address+SYSCACHE_SIZE));
 
 	/*
 	  Set up cdar_memory
@@ -1663,12 +1683,30 @@ ncr_l3tags(void)
 	  Write it
 	*/
 
-	address = 0;
-
-	for (i = 0; i < (8 * 1024 * 1024) / 256; ++i, address += 256)
+	for (i = 0; i < (SYSCACHE_SIZE) / 256; ++i, address += 256)
 		ncr_write(NCP_REGION_ID(0x200, 1), 0, address, 256, NULL);
 
 	return;
 }
 
-#endif
+void 
+l3_init_dma(ncp_uint32_t addr)
+{
+	unsigned int buffer[64] __attribute__ ((aligned(16)));
+	unsigned long output = (unsigned long) addr;
+	int ret = 0;
+
+	unsigned int el;                                       
+	asm volatile("mrs %0, CurrentEL" : "=r" (el) : : "cc");
+	el >>= 2;                                        
+
+	printf("l3_init() through %s() at EL%u (secure %u): addr %p to %lx\n",
+		__func__, el, (unsigned) el==3?1:0, (void*)(unsigned long)addr, (unsigned long)(addr+SYSCACHE_SIZE));
+	memset(buffer, 0x0, sizeof(buffer));
+	for (output=0; output<SYSCACHE_SIZE; output+=sizeof(buffer)) {
+		   ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), el==3?1:0);
+		   if (ret != 0)
+			   printf("gpdma_xfer failed %d\n", ret);
+	}
+	return;
+}

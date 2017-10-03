@@ -1102,6 +1102,10 @@ load_image(void)
 
   Replaces the weakly defined board_init_f in arch/arm/lib/spl.c.
 */
+extern void ncr_l3tags(ncp_uint32_t address);
+extern void l3_init_dma(ncp_uint32_t address);
+
+void (*l3_init)(ncp_uint32_t address);
 
 void
 board_init_f(ulong dummy)
@@ -1531,10 +1535,40 @@ board_init_f(ulong dummy)
 		}
 	}
 
+	l3_init = ncr_l3tags;
+	l3_init(0x60000000);
+
 	/*
 	  Load U-Boot in memory and jump to the monitor.
 	*/
 
+{
+	unsigned long addr = 0;
+	unsigned char *addruc;
+	unsigned short* addrus;
+	unsigned *addru;
+	unsigned long *addrul;
+
+	printf("size of unsigned long %zu unsigned %zu\n", 
+			sizeof(unsigned long), sizeof(unsigned));
+
+	*(unsigned char*)(volatile unsigned long)(addr) = (unsigned char)0x41;
+	*(unsigned short*)(volatile unsigned long)(addr+=8) = (unsigned short)0x411;
+	*(unsigned long*)(volatile unsigned long)(addr+=8) = 0x411UL;
+	*(unsigned long long*)(volatile unsigned long)(addr+=8) = 0x411ULL;
+
+	addruc = (unsigned char *)(volatile unsigned long) (addr+=8);
+	*(volatile unsigned char*)(addruc) = (unsigned char)0x41;
+	addrus = (unsigned short *)(volatile unsigned long) (addr+=8);
+	*(volatile unsigned short*)(addrus) = (unsigned short)0x411;
+	addru = (unsigned *)(volatile unsigned long) (addr+=8);
+	*(volatile unsigned *)(addru) = 0x411UL;
+	addrul = (unsigned long *)(volatile unsigned long) (addr+=8);
+	*(volatile unsigned long *)(addrul) = 0x411ULL; 
+
+	addr+=8;
+	out_be32(addr, 0x411U);
+}
 	load_image();
 
 	jtag_jump_to_monitor();

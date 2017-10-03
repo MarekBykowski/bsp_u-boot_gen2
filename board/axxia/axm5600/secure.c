@@ -88,6 +88,7 @@ setup_security(void)
 	  Handle sRIO and GPDMA
 	*/
 
+#if 0
 #if defined(CONFIG_AXXIA_PCI) && defined(CONFIG_AXXIA_ANY_56XX)
 
 	unsigned int value;
@@ -114,6 +115,7 @@ setup_security(void)
 	}
 
 #endif	/* CONFIG_AXXIA_PCI && CONFIG_AXXIA_ANY_56XX */
+#endif
 
 	return 0;
 }

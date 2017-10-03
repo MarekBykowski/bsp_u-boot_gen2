@@ -27,7 +27,7 @@
 #include "ncp_sysmem_ext.h"
 #include "ncp_sysmem_lsiphy.h"
 
-#if defined(CONFIG_AXXIA_XLF_EMU) || defined(CONFIG_AXXIA_XLF)
+#if defined(CONFIG_AXXIA_XLF_EMU) || defined(CONFIG_AXXIA_XLF) || defined(CONFIG_AXXIA_56XX)
 #include "../axc6700/ncp_l3lock_region.h"
 #endif
 
@@ -508,6 +508,8 @@ sysmem_init(void)
 	rc = ncp_l3lock_region_init(NULL, ncp_l3lock_region_info, 1);
 #elif defined(CONFIG_AXXIA_XLF)
 	rc = ncp_l3lock_region_init(NULL, ncp_l3lock_region_info, 0);
+#elif defined(CONFIG_AXXIA_56XX)
+	rc = ncp_l3lock_region_init(NULL, NULL, 0);
 #endif
 
 #if defined(CONFIG_AXXIA_XLF_EMU) || defined(CONFIG_AXXIA_XLF)

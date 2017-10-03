@@ -115,11 +115,35 @@ do_net(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return -1;
 }
 
+int
+do_l3locking(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	unsigned tmp, i;
+	/*RNI accepts secure and non-secure*/
+	ncr_write32(NCP_REGION_ID(0x170, 0x1), 0x8, 0x1);
+	/*override HN to signal secure*/
+	ncr_write32(NCP_REGION_ID(0x170, 0x1), 0x43800, 0x2);
+	/*override RNI to signal secure*/
+	ncr_write32(NCP_REGION_ID(0x170, 0x1), 0x42800, 0x2);
+
+	/*L3 locked ways*/
+	for (i=0x20; i <= 0x27; i++) {
+		ncr_write32(NCP_REGION_ID(0x1e0, i), 0x40, 0x4);
+		ncr_read32(NCP_REGION_ID(0x1e0, i), 0x40, &tmp);
+		printf("mb: 0x1e0.0x20.0x40 read back 0x%x\n", tmp);
+	}
+	return 0;
+}
+
 /*
   ======================================================================
   Command Definitions
   ======================================================================
 */
+
+U_BOOT_CMD(lock, 1, 0, do_l3locking,  
+          "access L3 locking\n",  
+          "");                     
 
 U_BOOT_CMD(net, 3, 0, do_net,
 	   "net loopback|receive|send|dr|dt [type]\n",
