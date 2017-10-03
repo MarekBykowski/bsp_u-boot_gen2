@@ -1639,18 +1639,21 @@ ncr_modify32( ncp_uint32_t region, ncp_uint32_t offset,
 	return 0;
 }
 
-#ifdef SYSCACHE_ONLY_MODE
-
 /*
   -------------------------------------------------------------------------------
   ncr_l3tags
 */
 
 void
-ncr_l3tags(void)
+ncr_l3tags(ncp_uint32_t address)
 {
 	int i;
-	ncp_uint32_t address;
+	unsigned int el;                                       
+	asm volatile("mrs %0, CurrentEL" : "=r" (el) : : "cc");
+	el >>= 2;                                        
+
+	printf("l3_init() through %s() at EL%d: addr %p to %lx\n",
+		__func__, el, (void*)(unsigned long)address, (unsigned long)(address+SYSCACHE_SIZE));
 
 	/*
 	  Set up cdar_memory
@@ -1663,12 +1666,30 @@ ncr_l3tags(void)
 	  Write it
 	*/
 
-	address = 0;
-
-	for (i = 0; i < (8 * 1024 * 1024) / 256; ++i, address += 256)
+	for (i = 0; i < (SYSCACHE_SIZE) / 256; ++i, address += 256)
 		ncr_write(NCP_REGION_ID(0x200, 1), 0, address, 256, NULL);
 
 	return;
 }
 
-#endif
+void 
+l3_init_dma(ncp_uint32_t addr)
+{
+	unsigned int buffer[64] __attribute__ ((aligned(16)));
+	unsigned long output = (unsigned long) addr;
+	int ret = 0;
+
+	unsigned int el;                                       
+	asm volatile("mrs %0, CurrentEL" : "=r" (el) : : "cc");
+	el >>= 2;                                        
+
+	printf("l3_init() through %s() at EL%u: addr %p to %lx\n",
+		__func__, el, (void*)(unsigned long)addr, (unsigned long)(addr+SYSCACHE_SIZE));
+	memset(buffer, 0x12, sizeof(buffer));
+	for (output=0; output<(SZ_16M + SZ_8M); output+=sizeof(buffer)) {
+		   ret = gpdma_xfer((void *)output, (void *)buffer, sizeof(buffer), el==3?1:0 );
+		   if (ret != 0)
+			   printf("gpdma_xfer failed %d\n", ret);
+	}
+	return;
+}

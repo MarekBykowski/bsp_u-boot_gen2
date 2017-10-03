@@ -1102,6 +1102,10 @@ load_image(void)
 
   Replaces the weakly defined board_init_f in arch/arm/lib/spl.c.
 */
+extern void ncr_l3tags(ncp_uint32_t address);
+extern void l3_init_dma(ncp_uint32_t address);
+
+void (*l3_init)(ncp_uint32_t address);
 
 void
 board_init_f(ulong dummy)
@@ -1530,6 +1534,9 @@ board_init_f(ulong dummy)
 				     : : "r" (cntfrq_ovr) : "memory");
 		}
 	}
+
+	l3_init = ncr_l3tags;
+	l3_init(0x60000000);
 
 	/*
 	  Load U-Boot in memory and jump to the monitor.

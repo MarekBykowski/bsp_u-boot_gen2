@@ -355,8 +355,11 @@
   ==============================================================================
 */
 
+#define BOOT_FROM_CACHE
 /*#define SYSCACHE_ONLY_MODE*/
+#define CONFIG_MEMORY_RETENTION
 #define CONFIG_ANY_XLF
+#define CONFIG_CMD_CACHE
 
 /*
   Switch to normal mode on v1.0 silicon.  Note that v1.0 silicon does
@@ -401,11 +404,6 @@
 
 #define CONFIG_AXXIA_PCI
 /*#define CONFIG_SPL_PCI_SUPPORT*/
-
-#define CONFIG_AXXIA_EIOA
-#ifdef CONFIG_AXXIA_EIOA
-#define EIOA_SYSTEM_MEMORY ((phys_size_t) 1 << 32)
-#endif
 
 /********** NEMAC PHY ADDRESS *************/
 #define CONFIG_AXXIA_PHY_ADDRESS 0x7
@@ -561,6 +559,8 @@
 #define CONFIG_AXXIA_USB0
 #define CONFIG_AXXIA_USB1
 #define CONFIG_USB_MAX_CONTROLLER_COUNT 2
+#define USB_WA_PHY_STAR_9000944754
+#define USB_WA_PHY_STAR_9000952264
 
 #endif	/* CONFIG_TARGET_HARDWARE */
 
@@ -573,6 +573,8 @@
 */
 
 #define CONFIG_AXXIA_ARM
+
+/*#define NCR_TRACER*/
 
 #ifndef __ASSEMBLY__
 #include <linux/types.h>
@@ -882,6 +884,23 @@ int axxia_gpio_set(axxia_gpio_t gpio, int pin, int value);
 #ifndef __ASSEMBLY__
 int sysmem_init(void);
 int cmem_init(void);
+#endif
+
+
+#ifdef NCR_TRACER
+#define NCR_TRACE( format, args... ) do { \
+if( 0 != ncr_tracer_is_enabled( ) ) { \
+printf( format, ##args ); \
+} \
+} while( 0 );
+#define NCP_COMMENT( format, args... ) do { \
+if( 0 != ncr_tracer_is_enabled( ) ) { \
+printf( "# " format "\n", ##args ); \
+} \
+} while( 0 );
+#else
+#define NCR_TRACE( format, args... )
+#define NCP_COMMENT( format, args... )
 #endif
 
 #define LSM     0x8031000000
@@ -1534,6 +1553,7 @@ extern volatile unsigned long long *scratch;
 void axxia_display_clocks(void);
 int clocks_init(int);
 int voltage_init(void);
+int pciesrio_init(unsigned int);
 int is_sbb_enabled(int);
 int sbb_verify_image(void *, void *, int, int, int);
 extern unsigned int pfuse;
