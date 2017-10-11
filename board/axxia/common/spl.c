@@ -1550,28 +1550,20 @@ board_init_f(ulong dummy)
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
 
-		if (0 != set_cluster_coherency(3/*or 1 by John*/, 1)) 
-	        acp_failure(__FILE__, __func__, __LINE__); 
-
-		if (0 != set_cluster_coherency(1/*or 1 by John*/, 1)) 
+		if (0 != set_cluster_coherency(1/*or 1 by John*/, 0)) 
 	        acp_failure(__FILE__, __func__, __LINE__); 
 
 		/* Upon L3 init invalidate data cache l1 through l2 */
 		init_l3();
-		printf("pgt are at %p\n", (void*) pgt);
+		printf("ttbr0 %p\n", (void*) pgt);
 
 		mmu_configure((u64*)pgt, DISABLE_DCACHE);
 		display_mapping(0);
-
-		address = 0x8020000000ULL; /*AXI_MMAP part 2 incl. LSM */ 
-		junk = readl(address);                                    
-		junk = junk;                                              
-		address = 0x8001000000ULL; /*AXI_MMAP part 1*/
-		junk = readl(address);
-		junk = junk;
-		address = 0x8080000000ULL; /*AXI_PERIPH*/
-		junk = readl(address);
-		junk = junk;
+		/* Now cache page entries to tlb:
+ 		   - a53 is up to 512 entries
+		   - a57 is 1024
+		   Cache wit 4K step granule */
+		__asm__ __volatile__ ("at s1e3r, %0" : : "r" (address));
 
 		set_sctlr(get_sctlr() | CR_C); 
 		invalidate_dcache_all();
@@ -1582,26 +1574,6 @@ board_init_f(ulong dummy)
 
 		load_image_mem(CONFIG_UBOOT_OFFSET); 
 		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
-
-		load_image_mem(SZ_4M); /*Michaels*/
-		printf("loaded Uboot from 0x%x\n", SZ_4M);
-
-		load_image_mem(CONFIG_UBOOT_OFFSET); 
-		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
-
-		load_image_mem(SZ_4M); /*Michaels*/
-		printf("loaded Uboot from 0x%x\n", SZ_4M);
-
-		load_image_mem(CONFIG_UBOOT_OFFSET); 
-		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
-
-		load_image_mem(SZ_4M); /*Michaels*/
-		printf("loaded Uboot from 0x%x\n", SZ_4M);
-
-		load_image_mem(CONFIG_UBOOT_OFFSET); 
-		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
-
-		memmove((void*)0x600000,(void*)LSM,256*1024);
 
 		__asm_flush_dcache_level(0/*L1*/,0/*clean&inval*/);
 		__asm_invalidate_icache_all();
