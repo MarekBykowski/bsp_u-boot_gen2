@@ -852,7 +852,7 @@ display_mapping(unsigned long address)
 }
 
 extern void mmu_configure(u64 *, unsigned int flags);
-extern int set_cluster_coherency(unsigned cluster, unsigned state); 
+extern int set_cluster_coherency(unsigned cluster, unsigned state);
 
 static void
 load_image(void)
@@ -1207,6 +1207,20 @@ load_image(void)
 
   Replaces the weakly defined board_init_f in arch/arm/lib/spl.c.
 */
+void
+pt_walk(uint64_t address, uint64_t size)
+{
+        unsigned long i;
+
+        address &= ~(SZ_4K - 1);
+        for (i=0; i<size; i+=SZ_4K) {
+                __asm__ __volatile__ ("at s1e3r, %0" : : "r" (address));
+                address += SZ_4K;
+        }
+        return;
+}
+
+
 
 void
 board_init_f(ulong dummy)
@@ -1252,7 +1266,7 @@ board_init_f(ulong dummy)
 
 	/*
 	 * if this is a power-up/pin reset then initialize
-	 * persistent registers 
+	 * persistent registers
 	 */
 
 	if ((value & 0x00000001))
@@ -1544,40 +1558,42 @@ board_init_f(ulong dummy)
 	{
 		void (*entry)(void *, void *);
 		extern unsigned long *_pgt_start;
-		unsigned int junk;
-		unsigned long *pgt = (unsigned long*) &_pgt_start, address = LSM;
+		unsigned long *pgt = (unsigned long*) &_pgt_start;
 
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
 
+		/* remove cluster0 from cohernecy domain */
 		if (0 != set_cluster_coherency(1/*or 1 by John*/, 0)) 
 	        acp_failure(__FILE__, __func__, __LINE__); 
 
-		/* Upon L3 init invalidate data cache l1 through l2 */
 		init_l3();
 		printf("ttbr0 %p\n", (void*) pgt);
 
 		mmu_configure((u64*)pgt, DISABLE_DCACHE);
 		display_mapping(0);
-		/* Now cache page entries to tlb:
+		/* Now cache selected page entries to tlb:
  		   - a53 is up to 512 entries
 		   - a57 is 1024
-		   Cache wit 4K step granule */
-		__asm__ __volatile__ ("at s1e3r, %0" : : "r" (address));
+		   Cache with 4K step granule */
+		pt_walk(0ULL, (uint64_t)16 * SZ_1G);
+		pt_walk(DICKENS, 8);
+		pt_walk(0x8001000000ULL, 8);
+		pt_walk(UART0_ADDRESS, 8);
+		pt_walk(AXXIA_USB0_BASE, 8);
+		pt_walk(LSM, SZ_256K);
 
-		set_sctlr(get_sctlr() | CR_C); 
-		invalidate_dcache_all();
+		set_sctlr(get_sctlr() | CR_C);
 		display_mapping(0);
+
+		load_image_mem(CONFIG_UBOOT_OFFSET);
 
 		printf("U-Boot Loaded in System Cache, Jumping to U-Boot\n");
 		entry = (void (*)(void *, void *))0x0;
 
-		load_image_mem(CONFIG_UBOOT_OFFSET); 
-		printf("loaded Uboot from 0x%x\n", CONFIG_UBOOT_OFFSET);
-
+		/* C&I to PoU and Invalidate I-Cache */
 		__asm_flush_dcache_level(0/*L1*/,0/*clean&inval*/);
 		__asm_invalidate_icache_all();
-
 		(*entry)(NULL, NULL);
 		acp_failure(__FILE__, __func__, __LINE__);
 	}
