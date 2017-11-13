@@ -1558,8 +1558,7 @@ board_init_f(ulong dummy)
 	{
 		void (*entry)(void *, void *);
 		extern unsigned long *_pgt_start;
-		unsigned int junk;
-		unsigned long *pgt = (unsigned long*) &_pgt_start, address = LSM;
+		unsigned long *pgt = (unsigned long*) &_pgt_start;
 
 		if (0 != setup_security())
 			acp_failure(__FILE__, __func__, __LINE__);
