@@ -42,22 +42,22 @@ _bss_start_ofs:
 _bss_end_ofs:
 	.quad	__bss_end - _start
 
-jtag:                               
-        ldr x0, =(SYSCON + 0x2000)  
-        mov w1, #0xab               
-        str w1, [x0]                
-        ldr x0, =(SYSCON + 0x2008)  
-        ldr w1, =0x4700000          
-        str w1, [x0]                
-        ldr x0, =(SYSCON + 0x2000)  
-        ldr w1, =0x0                
-        str w1, [x0]                
-                                    
-reset:                              
-#ifdef CONFIG_SPL_BUILD             
-        /* JTAG */                  
-        /*b jtag*/
-#endif                              
+jtag:
+        ldr x0, =(SYSCON + 0x2000)
+        mov w1, #0xab
+        str w1, [x0]
+        ldr x0, =(SYSCON + 0x2008)
+        ldr w1, =0x4700000
+        str w1, [x0]
+        ldr x0, =(SYSCON + 0x2000)
+        ldr w1, =0x0
+        str w1, [x0]
+
+reset:
+#ifdef CONFIG_SPL_BUILD
+        /* JTAG */
+        b jtag
+#endif
 	/*
 	 * Could be EL3/EL2/EL1, Initial State:
 	 * Little Endian, MMU Disabled, i/dCache Disabled
@@ -123,6 +123,7 @@ WEAK(apply_core_errata)
 
 	/* Check if we are running on a Cortex-A57 core */
 	branch_if_a57_core x0, apply_a57_core_errata
+	branch_if_a53_core x0, apply_a53_core_errata
 0:
 	mov	lr, x29			/* Restore LR */
 	ret
@@ -154,6 +155,17 @@ apply_a57_core_errata:
 	msr	S3_1_c15_c2_0, x0	/* cpuactlr_el1 */
 #endif
 	b 0b
+
+apply_a53_core_errata:
+#define CONFIG_ARM_L3_LOCKDOWN
+#ifdef CONFIG_ARM_L3_LOCKDOWN
+    mrs x0, S3_1_c15_c2_0   /* cpuactlr_el1 */
+    /* Disable L1 D-prefetch */
+    bic x0, x0, #0x7<<13
+    msr S3_1_c15_c2_0, x0   /* cpuactlr_el1 */
+#endif
+	b 0b
+
 ENDPROC(apply_core_errata)
 
 /*-----------------------------------------------------------------------*/
