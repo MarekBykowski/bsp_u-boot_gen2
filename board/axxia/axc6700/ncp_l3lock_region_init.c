@@ -50,7 +50,7 @@ ncp_l3lock_region_init ( ncp_dev_hdl_t   dev, ncp_l3lock_region_info_t *l3lock_p
 #if MANUALLY
 {
 	unsigned int base = 0x80000c80;
-	l3lock_params->totalL3LockedSize = 2; /*2, 4, 8, 16M*/
+	l3lock_params->totalL3LockedSize = 8; /*2, 4, 8, 16M*/
 
 	for (j=0; j<4; j++) 
 		l3lock_params->region[j] = 0;

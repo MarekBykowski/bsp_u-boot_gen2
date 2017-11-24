@@ -56,7 +56,7 @@ jtag:
 reset:
 #ifdef CONFIG_SPL_BUILD
         /* JTAG */
-        b jtag
+        /*b jtag*/
 #endif
 	/*
 	 * Could be EL3/EL2/EL1, Initial State:
@@ -158,7 +158,7 @@ apply_a57_core_errata:
 
 apply_a53_core_errata:
 #define CONFIG_ARM_L3_LOCKDOWN
-#ifdef CONFIG_ARM_L3_LOCKDOWN
+#if defined (CONFIG_ARM_L3_LOCKDOWN) && defined(CONFIG_SPL_BUILD)
     mrs x0, S3_1_c15_c2_0   /* cpuactlr_el1 */
     /* Disable L1 D-prefetch */
     bic x0, x0, #0x7<<13
