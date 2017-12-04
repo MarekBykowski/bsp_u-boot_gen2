@@ -1,5 +1,7 @@
 static ncr_command_t vp[] = {
 
+	/* Begin: VirtualPipelines */
+
 	/* Begin Virtual Pipeline configuration clear */
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(31, 1), 0x00018000, 0x00000000, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(31, 1), 0x00018004, 0x00000000, 0},
@@ -18014,5 +18016,7 @@ static ncr_command_t vp[] = {
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(45, 1), 0x000101fc, 0x01000000, 0},
 
 	/* End Virtual Pipeline configuration */
+
+	/* End:   VirtualPipelines */
 	{NCR_COMMAND_NULL, 0, 0, 0, 0}
 };

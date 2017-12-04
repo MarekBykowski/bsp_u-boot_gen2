@@ -1,4 +1,6 @@
 static ncr_command_t pbm[] = {
+
+	/* Begin: PBM */
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(51, 16), 0x00000030, 0xc040fff0, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(51, 16), 0x02000030, 0xffffc081, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(51, 16), 0x03000030, 0x1fffffff, 0},
@@ -111,5 +113,7 @@ static ncr_command_t pbm[] = {
 	{NCR_COMMAND_USLEEP, 0, 0, 1000, 0},
 	{NCR_COMMAND_READ, NCP_REGION_ID(51, 16), 0x00000030, 0, 0},
 	{NCR_COMMAND_WRITE, NCP_REGION_ID(51, 16), 0x00000030, 0xc040fff0, 0},
+
+	/* End:   PBM */
 	{NCR_COMMAND_NULL, 0, 0, 0, 0}
 };
