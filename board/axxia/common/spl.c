@@ -739,6 +739,16 @@ typedef enum {
 typedef enum {
 	AXXIA_NONE = 0,
 	AXXIA_SYSCACHE_ONLY = 1
+} syscache_only_mode_t;
+
+typedef enum {
+	CACHE_PROTECTION_DISABLED = 0,
+	CACHE_PROTECTION_ENABLED = 1
+} cache_protection_t;
+
+typedef struct {
+	syscache_only_mode_t syscache_only_mode;
+	cache_protection_t cache_protection;
 } axxia_option_t;
 
 typedef struct axxia_configuration {
@@ -778,7 +788,10 @@ jump_to_monitor(void *address)
 	axxia_configuration->platform = AXXIA_HW;
 #endif
 #ifdef SYSCACHE_ONLY_MODE
-	axxia_configuration->option = AXXIA_SYSCACHE_ONLY;
+	axxia_configuration->option.syscache_only_mode = AXXIA_SYSCACHE_ONLY;
+#endif
+#ifdef CONFIG_CACHE_PROTECTION
+	axxia_configuration->option.cache_protection = CACHE_PROTECTION_ENABLED;
 #endif
 
 	if (0 != acp_clock_get(clock_peripheral,

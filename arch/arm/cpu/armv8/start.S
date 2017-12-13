@@ -130,6 +130,15 @@ WEAK(apply_core_errata)
 
 apply_a57_core_errata:
 
+	/* Enable Cache Protection L1 through L2 only for Cortex-A57. */
+#if defined(CONFIG_SPL_BUILD) & defined(CONFIG_CACHE_PROTECTION)
+	mov x0, #0x1 << 21
+	mrs x1, S3_1_C11_C0_2
+	orr x1, x1, x0
+	msr S3_1_C11_C0_2, x1
+	isb
+#endif
+
 #ifdef CONFIG_ARM_ERRATA_828024
 	mrs	x0, S3_1_c15_c2_0	/* cpuactlr_el1 */
 	/* Disable non-allocate hint of w-b-n-a memory type */

@@ -234,6 +234,7 @@
 #define NCP_64
 
 #define CONFIG_AXXIA_AXM_I2C
+#define CONFIG_CACHE_PROTECTION
 
 /*
  * xHCI model needs powercycling of usb ports, according to standard
