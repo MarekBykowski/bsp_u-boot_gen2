@@ -49,7 +49,7 @@ __bss_end = .;
 __page_tables : 
 {
 	_pgt_start = .;
-	*(__page_tables)
+	. += 0x10000;
 	_pgt_end = .;
 }
 .dynsym _image_binary_end : { *(.dynsym) }

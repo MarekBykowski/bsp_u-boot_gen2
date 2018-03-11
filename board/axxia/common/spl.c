@@ -1723,8 +1723,8 @@ board_init_f(ulong dummy)
 			"ldr x25, [x24]\n");
 
 		/*
-		   Do not enformce HW coherency.
-		   Rely soley on SW CMO.
+		   Do not enforce HW coherency.
+		   Rely soley on SW Cache Maintenance Operations.
 		 */
 #if 0
 		if (0 != set_cluster_coherency(1, 1))
@@ -1741,7 +1741,8 @@ board_init_f(ulong dummy)
 		   Cache with 4K step granule */
 		pt_walk(0ULL, (uint64_t)16 * SZ_1G);
 		pt_walk(DICKENS, 8);
-		pt_walk(0x8001000000ULL, 8);
+		/* TODO: I probably should remove this:
+		pt_walk(0x8001000000ULL, 8);*/
 		pt_walk(UART0_ADDRESS, 8);
 		pt_walk(AXXIA_USB0_BASE, 8);
 		pt_walk(LSM, SZ_256K);

@@ -276,7 +276,7 @@
   ==============================================================================
 */
 
-/*#define SYSCACHE_ONLY_MODE*/
+#define SYSCACHE_ONLY_MODE
 
 #define AXXIA_OR_IN_FUSE_FORCE
 

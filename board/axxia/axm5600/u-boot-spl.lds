@@ -15,14 +15,6 @@ arch/arm/cpu/armv8/start.o (.text*)
 __monitor_parameters = .;
 . += 256;
 
-/*
-	Include the secure monitor.
-*/
-. = ALIGN(4096);
-_bl31_start = .;
-KEEP(bl31.o (.monitor*))
-_bl31_end = .;
-
 *(.text*)
 }
 . = ALIGN(4);
@@ -51,6 +43,14 @@ __bss_start = .;
 *(.bss*)
 . = ALIGN(4);
 __bss_end = .;
+}
+
+. = ALIGN(0x10000);
+__page_tables : 
+{
+	_pgt_start = .;
+	. += 0x10000;
+	_pgt_end = .;
 }
 .dynsym _image_binary_end : { *(.dynsym) }
 .dynbss : { *(.dynbss) }

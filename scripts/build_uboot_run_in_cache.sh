@@ -1,14 +1,16 @@
 #!/bin/bash
 
+set -x
+
 #Mareks ATF and Uboot
 ATF_DIR=/workspace/sw/mbykowsx/lionfish/axxia_atf_private
 UBOOT_DIR=/workspace/sw/mbykowsx/lionfish/axxia_u-boot_private
-ATF_DIR=
-UBOOT_DIR=
+#ATF_DIR=
+#UBOOT_DIR=
 MKIMAGE=${UBOOT_DIR}/tools/mkimage
 
-test -n "$ATF_DIR" || { echo "Give ATF directory"; exit 0; }
-test -n "$UBOOT_DIR" || { echo "Give Uboot directory"; exit 0; }
+test -n "$ATF_DIR" || { echo "Tell me ATF directory"; exit -1; }
+test -n "$UBOOT_DIR" || { echo "Tell me Uboot directory"; exit -1; }
 
 atf_nokia() {
 		echo "Building atf"
@@ -48,12 +50,12 @@ uboot_nokia() {
                 $MKIMAGE -A arm64 -T firmware -C none -a 0 -e 0x00197001 -n XLOADER -d spl/u-boot-spl.bin spl/u-boot-spl.img
                 $MKIMAGE -A arm64 -T firmware -C none -a 0 -e 0 -n XLOADER -d u-boot.bin u-boot.img
 
-: << EOM
+#: << EOM
 tftp aus-labsrv2 << TFTP
 put u-boot.img mbu-boot.img
 put spl/u-boot-spl.img mbu-boot-spl.img
 TFTP
-EOM
+#EOM
 
         else
                return 127
@@ -64,4 +66,10 @@ EOM
 
 }
 
-atf_nokia AXC6700 && uboot_nokia axc6700
+if [[ $1 == AXC6700 || $1 == axc6700 ]]; then
+	atf_nokia AXC6700 && uboot_nokia axc6700
+elif [[  $1 == AXM5600 || $1 == axm5600 ]]; then
+	atf_nokia AXM5600 && uboot_nokia axm5600
+else 
+	echo "Unsupported architecture. Give AXC6700 or AXM5600"
+fi

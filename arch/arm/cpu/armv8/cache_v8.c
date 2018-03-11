@@ -86,6 +86,14 @@ void mmu_configure(u64 *addr, int flags)
 	u64 *page_table = addr, i, j;
 	int el, tcr_flags;
 	uint32_t sctlr = get_sctlr();;
+    	
+
+	/* TODO: In the Proof-Of-Concept for Nokia the memory is attributed 
+       to non-shareble but booting from cache should work
+	   equally well with memory attributed to inner-shareable (Default in this Uboot) 
+	   with Fully Coherent Master Devices (Cluseters) NOT being part of
+	   Snoop Domain. 
+	 */
 
 	/* Setup an identity-mapping for all spaces */
 	for (i = 0; i < (PGTABLE_SIZE >> 3); i++) {
@@ -109,9 +117,9 @@ void mmu_configure(u64 *addr, int flags)
        isn't worth the time as this is for Nokia that runs
        Uboot 2017 with page granule 4K.
 
-	   LSM sits in between the start end of below.
+	   LSM sits in between the start-end of below.
      */
-#if 0
+#if ATTRIBUTE_LSM_TO_MEMORY_NC
 	start = 0x8020000000;
 	end = 0x8040000000;
 	for (j = start >> SECTION_SHIFT;

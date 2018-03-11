@@ -845,23 +845,23 @@ int switch_to_EL2_non_secure(void)
 	axxia_configuration->baud_rate = gd->baudrate;
 
 	/*
-	   Move monitor to LSM+0x1000, '0x1000' is a so called page boundery
+	   Move monitor to LSM+0x1000, '0x1000' (4K) is a so called page boundery
        though this is not true for Axxia's Uboot (2015) where pages are 512M.
-	   It is true for Nokia's Uboot (2017) though.
+	   It is true for Nokia's Uboot (2017) though, where pages are 4K.
 	 */
 	memmove((void*) LSM+0x1000, (void*)&_bl31_start,
 			(size_t)(&_bl31_end) - (size_t)(&_bl31_start));
 	entry = (void (*)(void *, void *))(LSM+0x1000);
 	cleanup_before_linux();
 	asm volatile (
-		"str x18, [sp, #-8]!\n" /* Store global data to the stack */
+		"str x18, [sp, #-8]!\n" /* Push global data to the stack */
 		"mov x22, sp\n"  /* Migrate SP */
 		"msr sp_el2, x22\n"
 		"mrs x22, vbar_el3\n" /* Migrate VBAR */
 		"msr vbar_el2, x22\n"
 	);
 	entry(NULL, axxia_configuration);
-	asm volatile("ldr x18, [sp], #8\n"); /*Restore global data from the stack */
+	asm volatile("ldr x18, [sp], #8\n"); /* Pop global data from the stack */
 
 	/*
 	   We are now at EL2, non-secure state.
