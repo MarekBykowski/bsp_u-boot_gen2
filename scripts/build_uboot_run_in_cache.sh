@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -x
-
 #Mareks ATF and Uboot
 ATF_DIR=/workspace/sw/mbykowsx/lionfish/axxia_atf_private
 UBOOT_DIR=/workspace/sw/mbykowsx/lionfish/axxia_u-boot_private

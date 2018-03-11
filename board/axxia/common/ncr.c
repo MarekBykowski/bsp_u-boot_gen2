@@ -1695,7 +1695,7 @@ l3_init_dma(ncp_uint32_t addr)
 	asm volatile("mrs %0, CurrentEL" : "=r" (el) : : "cc");
 	el >>= 2;
 
-	printf("Validate l3 through %s() at EL%u (secure %u): 0x%lx-0x%lx\n",
+	printf("Validate l3 through %s() at EL%u (secure %u): 0x%lx-0x%lx",
 			__func__, el, (unsigned)el==3?1:0, (unsigned long)addr,
 			(unsigned long)(addr+SYSCACHE_SIZE));
 
