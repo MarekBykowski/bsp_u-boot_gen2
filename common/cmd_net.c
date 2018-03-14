@@ -171,6 +171,7 @@ static void netboot_update_env(void)
 #endif
 }
 
+extern struct eth_device *eth_current;
 static int netboot_common(enum proto_t proto, cmd_tbl_t *cmdtp, int argc,
 		char * const argv[])
 {
@@ -179,6 +180,7 @@ static int netboot_common(enum proto_t proto, cmd_tbl_t *cmdtp, int argc,
 	int   rcode = 0;
 	int   size;
 	ulong addr;
+	printf("mb: eth_current->enetaddr %pM\n", eth_current->enetaddr);
 
 	/* pre-set load_addr */
 	s = getenv("loadaddr");

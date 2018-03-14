@@ -192,8 +192,12 @@ struct eth_device *eth_get_dev_by_index(int index); /* get dev @ index */
 /* get the current device MAC */
 static inline unsigned char *eth_get_ethaddr(void)
 {
-	if (eth_current)
+	if (eth_current) {
+		/*eth_getenv_enetaddr_by_index(base_name, eth_number, env_enetaddr);*/
+		printf("mb: eth_current->enetaddr %pM\n", 
+			eth_current->enetaddr);
 		return eth_current->enetaddr;
+	}
 	return NULL;
 }
 

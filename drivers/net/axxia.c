@@ -113,6 +113,24 @@ axxia_dump_packet_tx(const char *header, void *packet, int length)
 	return;
 }
 
+char *net_status[] = {
+	"BOOTSTAGE_ID_NET_CHECKSUM", /*60*/ 
+	"BOOTSTAGE_ID_NET_ETH_START", 
+	"BOOTSTAGE_ID_NET_ETH_INIT",       
+
+	"BOOTSTAGE_ID_NET_START",     
+	"BOOTSTAGE_ID_NET_NETLOOP_OK",     
+	"BOOTSTAGE_ID_NET_LOADED",         
+	"BOOTSTAGE_ID_NET_DONE_ERR",       
+	"BOOTSTAGE_ID_NET_DONE" };
+
+void show_boot_progress(int val) 
+{
+	if (val >= 60 && val <= 90) {
+		printf("mb: %s\n", net_status[val-60]);
+	}
+}
+
 /*
   ------------------------------------------------------------------------------
   board_eth_init
@@ -137,7 +155,7 @@ board_eth_init(bd_t *bd)
 	  Get the Ethernet address from the environment.
 	*/
 
-	if (eth_getenv_enetaddr("ethaddr", ethernet_address)) {
+	if (eth_getenv_enetaddr("eth1addr", ethernet_address)) {
 		struct eth_device *device;
 
 		/*
@@ -174,12 +192,14 @@ board_eth_init(bd_t *bd)
 
 #if defined(CONFIG_AXXIA_EIOA)
 
-	debug("Adding LSI_EIOA device\n");
+	printf("Adding LSI_EIOA device\n");
+	printf("mb: CONFIG_ENV_OFFSET %x CONFIG_ENV_OFFSET_REDUND %x\n",
+			(unsigned)CONFIG_ENV_OFFSET, (unsigned) CONFIG_ENV_OFFSET_REDUND);
 
 	/*
 	  Get the Ethernet address from the environment.
 	*/
-	if (eth_getenv_enetaddr("ethaddr", ethernet_address)) {
+	if (eth_getenv_enetaddr("eth1addr", ethernet_address)) {
 		struct eth_device *device;
 
 		/*

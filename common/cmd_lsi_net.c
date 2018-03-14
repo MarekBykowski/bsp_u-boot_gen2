@@ -132,6 +132,16 @@ do_net_macstats(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 #endif	/* CONFIG_AXXIA_XLF */
 
+extern struct eth_device *eth_current;
+int
+do_print_mac(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	printf("mb: eth_current->name %s\n", eth_current->name);
+	printf("mb: eth_current->enetaddr %pM\n", eth_current->enetaddr);
+	return 0;
+}
+
+
 int
 do_bu(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -179,6 +189,10 @@ U_BOOT_CMD(net, 3, 0, do_net,
 
 U_BOOT_CMD(bu, 1, 1, do_bu,
 	   "boot U-Boot from address 0",
+	   "");
+
+U_BOOT_CMD(pm, 1, 1, do_print_mac,
+	   "print MAC changed",
 	   "");
 
 #ifdef CONFIG_AXXIA_XLF

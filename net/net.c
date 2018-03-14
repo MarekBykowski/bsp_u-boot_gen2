@@ -339,10 +339,13 @@ void net_auto_load(void)
 	tftp_start(TFTPGET);
 }
 
+extern struct eth_device *eth_current;
 static void net_init_loop(void)
 {
-	if (eth_get_dev())
+	if (eth_get_dev()) {
+		printf("mb: eth_current is %p\n", (void*)eth_current);
 		memcpy(net_ethaddr, eth_get_ethaddr(), 6);
+	}
 
 	return;
 }
@@ -359,9 +362,12 @@ static void net_cleanup_loop(void)
 	net_clear_handlers();
 }
 
+extern struct eth_device *eth_current;
 void net_init(void)
 {
 	static int first_call = 1;
+
+	printf("mb: eth_current->enetaddr %pM\n", eth_current->enetaddr);
 
 	if (first_call) {
 		/*

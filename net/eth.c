@@ -50,6 +50,7 @@ int eth_getenv_enetaddr_by_index(const char *base_name, int index,
 				 uchar *enetaddr)
 {
 	char enetvar[32];
+	printf("mb: %s(): base_bame %s index %d\n", __func__, base_name, index);
 	sprintf(enetvar, index ? "%s%daddr" : "%saddr", base_name, index);
 	return eth_getenv_enetaddr(enetvar, enetaddr);
 }
@@ -488,6 +489,7 @@ int eth_initialize(void)
 
 		bootstage_mark(BOOTSTAGE_ID_NET_ETH_INIT);
 		do {
+			printf("mb: is it ever called %s\n", __func__);
 			if (num_devices)
 				printf(", ");
 
@@ -533,6 +535,8 @@ static int eth_post_probe(struct udevice *dev)
 	struct eth_device_priv *priv = dev->uclass_priv;
 	struct eth_pdata *pdata = dev->platdata;
 	unsigned char env_enetaddr[6];
+
+	printf("mb: am I ever in here %s\n", __func__);
 
 	priv->state = ETH_STATE_INIT;
 
@@ -702,8 +706,10 @@ int eth_write_hwaddr(struct eth_device *dev, const char *base_name,
 {
 	unsigned char env_enetaddr[6];
 	int ret = 0;
+	printf("\nmb: is it ever called %s\n", __func__);
 
 	eth_getenv_enetaddr_by_index(base_name, eth_number, env_enetaddr);
+	printf("mb: %s() env_enetaddr %pM\n",__func__, env_enetaddr);
 
 	if (!is_zero_ethaddr(env_enetaddr)) {
 		if (!is_zero_ethaddr(dev->enetaddr) &&
@@ -810,6 +816,7 @@ int eth_initialize(void)
 	eth_devices = NULL;
 	eth_current = NULL;
 	eth_common_init();
+	printf("mb: is it ever called %s\n", __func__);
 
 	if (!eth_devices) {
 		puts("No ethernet found.\n");
