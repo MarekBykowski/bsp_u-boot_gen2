@@ -329,6 +329,7 @@
 
 #define CONFIG_AXXIA_XLF
 #define ARM64
+#define CONFIG_CMD_CACHE
 
 /*
   ==============================================================================

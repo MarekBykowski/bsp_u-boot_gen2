@@ -268,6 +268,7 @@ cmem_init(void)
  */
 void dickens_init(void)
 {
+	asm volatile("mb3: b mb3\n");
 #ifdef CONFIG_AXXIA_ANY_XLF
 	int i;
 #endif

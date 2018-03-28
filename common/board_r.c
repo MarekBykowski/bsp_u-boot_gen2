@@ -118,7 +118,11 @@ static int initr_reloc(void)
 static int initr_caches(void)
 {
 	/* Enable caches */
+	__asm_flush_dcache_range(0,0);
 	enable_caches();
+asm volatile("mb1: b mb1\n");
+	*(volatile unsigned*) (unsigned long) 0 = 0xdeadbeef;
+	__asm_flush_dcache_range(0,0);
 	return 0;
 }
 #endif
