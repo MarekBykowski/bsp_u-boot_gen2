@@ -19,8 +19,8 @@
 #ifdef __UBOOT__
 #include <common.h>
 #include "ncp_sysmem_ext.h"
-#include "ncp_sysmem_lsiphy.h" 
-#include "ncp_l3lock_region.h" 
+#include "ncp_sysmem_lsiphy.h"
+#include "ncp_l3lock_region.h"
 #else  /* __UBOOT__ */
 #include <stdio.h>
 #include "ncp.h"
@@ -38,14 +38,20 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 	ncp_st_t	ncpStatus = NCP_ST_SUCCESS;
 	ncp_uint32_t	numLockedWays = 0;
 	int             i;
-	int		j;
+	int		j, tmp;
 #ifndef __UBOOT__
 	ncp_uint32_t    tmp;
 #endif	/* __UBOOT__ */
 
-#ifndef __UBOOT__	
+#ifndef __UBOOT__
 	NCP_ASSERT(l3lock_params != NULL, NCP_ST_INVALID_PARAMETER);
 #endif	/* __UBOOT__ */
+
+	printf("mb: Enables Non-secure access to Secure registers\n");
+	writel(1, NCP_REGION_ID(0x1e0, 0x0) + 0x0);
+	tmp = readl(NCP_REGION_ID(0x1e0, 0x0) + 0x0);
+	printf("mb: NCP_REGION_ID(0x1e0, 0x0), 0x0 is 0x%x\n", tmp);
+
 
 	if (l3lock_params->totalL3LockedSize == 0)
 		return NCP_ST_SUCCESS;
@@ -97,7 +103,7 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 			writel(l, (DICKENS + (i * 0x10000) + 0x48 + (j * 8)));
 			writel(u, (DICKENS + (i * 0x10000) + 0x4c + (j * 8)));
 #else  /* __UBOOT__ */
-			ncr_write32(NCP_REGION_ID(0x1e0, i), 0x48 + (j * 8), 
+			ncr_write32(NCP_REGION_ID(0x1e0, i), 0x48 + (j * 8),
 				    (ncp_uint32_t)(regValue & 0xFFFFFFFF));
 			ncr_write32(NCP_REGION_ID(0x1e0, i), 0x4c + (j * 8),
 				    (ncp_uint32_t)((regValue >> 32) &

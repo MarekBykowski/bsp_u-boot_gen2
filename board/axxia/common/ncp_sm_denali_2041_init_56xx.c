@@ -1748,6 +1748,7 @@ ncp_sm_denali_2041_init_56xx(
     ncr_read32(ctlReg, NCP_DENALI_CTL_101_5600, (ncp_uint32_t *)&reg101);
     reg101.fwc = 0;
     reg101.ecc_en = parms->enableECC;
+	/*mb: enableECC*/
     ncr_write32(ctlReg, NCP_DENALI_CTL_101_5600, *((ncp_uint32_t *)&reg101));
 
     /* This is needed in the case where MC init's the DRAM's and for done to be achieved */
