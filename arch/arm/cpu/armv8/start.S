@@ -129,13 +129,23 @@ master_cpu:
 WEAK(apply_core_errata)
 
 	mov	x29, lr			/* Save LR */
-	/* For now, we support Cortex-A57 specific errata only */
+	branch_if_a53_core x0, apply_a53_prefetch_disable
+0:
 
 	/* Check if we are running on a Cortex-A57 core */
 	branch_if_a57_core x0, apply_a57_core_errata
-0:
+1:
 	mov	lr, x29			/* Restore LR */
 	ret
+
+apply_a53_prefetch_disable:
+#if defined(CONFIG_SPL_BUILD)
+	mrs x0, S3_1_c15_c2_0   /* cpuactlr_el1 */
+	bic x0, x0, #0x7<<13
+	msr S3_1_c15_c2_0, x0   /* cpuactlr_el1 */
+	isb
+#endif
+	b 0b
 
 apply_a57_core_errata:
 
@@ -171,7 +181,7 @@ apply_a57_core_errata:
    msr S3_1_C11_C0_2, x1
    isb
 #endif
-	b 0b
+	b 1b
 ENDPROC(apply_core_errata)
 
 /*-----------------------------------------------------------------------*/
