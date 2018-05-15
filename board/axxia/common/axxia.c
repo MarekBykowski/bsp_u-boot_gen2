@@ -23,6 +23,7 @@
 #include <watchdog.h>
 #include <serial.h>
 #include <asm/io.h>
+#include <libfdt.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -146,7 +147,7 @@ misc_init_r(void)
 	writel(0xffffffff, SYSCON + 0x40);
 	writel(0xffffffff, SYSCON + 0x44);
 #else
- 	writel(0xffff, SYSCON + 0x14); 
+	writel(0xffff, SYSCON + 0x14);
 #endif
 
 #endif	/* CONFIG_AXXIA_SIM */
@@ -660,6 +661,7 @@ ft_update_pei(void *blob)
   ------------------------------------------------------------------------------
   ft_board_setup
 */
+#include "../axc6700/ncp_l3lock_region.h"  /*L3 struct*/
 
 int
 ft_board_setup(void *blob, bd_t *bd)
@@ -713,6 +715,59 @@ ft_board_setup(void *blob, bd_t *bd)
 	if (0 != rc)
 		printf("%s:%d - Couldn't update memory banks!\n",
 		       __FILE__, __LINE__);
+
+	/*
+	  Create L3 LockDown node containing the L3 LockDown settings
+	  for the Linux to be able to look it up.
+	*/
+#if defined(CONFIG_AXXIA_XLF_EMU) || defined(CONFIG_AXXIA_XLF)
+{
+	int err, i;
+	ncp_l3lock_region_info_t *ncp_l3lock_region_info;
+	char name[20], prop[40];
+	node = fdt_path_offset (blob, "/soc");
+	if (node < 0) {
+		/*
+		 * Not found or something else bad happened.
+		 */
+		printf ("libfdt fdt_path_offset() returned %s\n",
+			fdt_strerror(node));
+	}
+	err = fdt_add_subnode(blob, node, "l3-lockdown");
+	if (err < 0) {
+		printf ("libfdt fdt_add_subnode(): %s\n",
+			fdt_strerror(err));
+	}
+	node = fdt_path_offset (blob, "/soc/l3-lockdown");
+	if (node < 0) {
+		/*
+		 * Not found or something else bad happened.
+		 */
+		printf ("libfdt fdt_path_offset() returned %s\n",
+			fdt_strerror(node));
+	}
+
+	ncp_l3lock_region_info = (ncp_l3lock_region_info_t *)
+		&sysmem->total_l3_locked_size;
+
+	sprintf(name, "%dMB", ncp_l3lock_region_info->totalL3LockedSize);
+	err = fdt_setprop_string(blob, node, "total-size", name);
+	if (err < 0) {
+		printf ("libfdt fdt_setprop(): %s\n", fdt_strerror(err));
+	}
+
+	for (i = 0; i < 4; ++i) {
+		sprintf(prop, "base@%d", i);
+		sprintf(name, "0x%08x (%s)",
+			(ncp_l3lock_region_info->region[i] & 0x00ffffff) << 20,
+			(ncp_l3lock_region_info->region[i] & 0x80000000) ? "valid" : "invalid");
+		err = fdt_setprop_string(blob, node, prop, name);
+		if (err < 0) {
+			printf ("libfdt fdt_setprop(): %s\n", fdt_strerror(err));
+		}
+	}
+}
+#endif
 
 #ifdef CONFIG_HW_WATCHDOG
 #ifndef LEAVE_WATCHDOG_ON
