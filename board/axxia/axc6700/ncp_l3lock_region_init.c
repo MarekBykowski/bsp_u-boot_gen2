@@ -30,6 +30,14 @@
 #include "ncp_l3lock_region.h"
 #endif	/* __UBOOT__ */
 
+#define DBG
+#ifdef DBG
+#undef debug
+#define debug(...) printf(__VA_ARGS__)
+#else
+#define debug
+#endif
+
 ncp_st_t
 ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 			ncp_l3lock_region_info_t *l3lock_params,
@@ -39,6 +47,13 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 	ncp_uint32_t	numLockedWays = 0;
 	int             i;
 	int		j;
+	ncp_l3lock_region_info_t l3_emu = {
+		/* Total size of L3 Cache to be locked (in MB). */
+		.totalL3LockedSize = 0x00000004,
+		/* Bits 23:0 - Physical offset (in MB) of the Region-0 of L3 Cache
+		   Bit  31   - Enable Region 0 through 3 of L3 Cache. */
+		.region = { 0x80000899, 0x8000089a, 0x8000089b, 0x8000089c }
+	};
 #ifndef __UBOOT__
 	ncp_uint32_t    tmp;
 #endif	/* __UBOOT__ */
@@ -47,10 +62,27 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 	NCP_ASSERT(l3lock_params != NULL, NCP_ST_INVALID_PARAMETER);
 #endif	/* __UBOOT__ */
 
-	if (l3lock_params->totalL3LockedSize == 0)
-		return NCP_ST_SUCCESS;
 
 	if (isFPGA) {
+		l3lock_params = &l3_emu;
+		/* Permit non-secure access to the Shelley */
+		writel(1,DICKENS);
+		printf("mb: non-secure access to Shelley? %s\n", 
+				readl(DICKENS) == 1 ? "yes" : "no" );
+	} else {
+		if (l3lock_params->totalL3LockedSize == 0)
+			return NCP_ST_SUCCESS;
+	}
+
+	if (isFPGA) {
+#define SPECIAL_CASE_FPGA_B0_12_WAYS
+#if defined (SPECIAL_CASE_FPGA_B0_12_WAYS)
+		if (l3lock_params->totalL3LockedSize == 4) {
+			numLockedWays = 4;
+		} else {
+			NCP_CALL(NCP_ST_INVALID_PARAMETER);
+		}
+#else
 		if (l3lock_params->totalL3LockedSize == 8) {
 			numLockedWays = 8;
 		} else if (l3lock_params->totalL3LockedSize == 12) {
@@ -59,6 +91,7 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 			printf("Total Locked size supported on FPGA is either 8 or 12 MB\n");
 			NCP_CALL(NCP_ST_INVALID_PARAMETER);
 		}
+#endif
 	} else {
 		if (l3lock_params->totalL3LockedSize == 4) {
 			numLockedWays = 2;
@@ -94,7 +127,11 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 
 		for (i = 0x20; i <= 0x27; i++) {
 #ifdef __UBOOT__
+			debug("mb: base@%d @ 0x%lx\n",
+					j,(unsigned long)(DICKENS + (i * 0x10000) + 0x48 + (j * 8)));
 			writel(l, (DICKENS + (i * 0x10000) + 0x48 + (j * 8)));
+			debug("mb: read back base@%d @ 0x%x\n",
+					i,readl(DICKENS + (i * 0x10000) + 0x48 + (j * 8)));
 			writel(u, (DICKENS + (i * 0x10000) + 0x4c + (j * 8)));
 #else  /* __UBOOT__ */
 			ncr_write32(NCP_REGION_ID(0x1e0, i), 0x48 + (j * 8), 
@@ -109,7 +146,11 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 	/* setup number of locked ways */
 	for (i = 0x20; i <= 0x27; i++) {
 #ifdef __UBOOT__
+		debug("mb: LockedWays %d @ 0x%lx\n",
+			numLockedWays,(unsigned long)(DICKENS + (i * 0x10000) + 0x40));
 		writel(numLockedWays, (DICKENS + (i * 0x10000) + 0x40));
+		debug("mb: read back LockedWays 0x%x\n",
+			readl(DICKENS + (i * 0x10000) + 0x40));
 #else  /* __UBOOT__ */
 		ncr_write32( NCP_REGION_ID(0x1e0, i), 0x40, numLockedWays);
 #endif	/* __UBOOT__ */

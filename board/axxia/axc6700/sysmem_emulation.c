@@ -23,6 +23,7 @@
 #include <common.h>
 #include <watchdog.h>
 #include <asm/io.h>
+#include "../axc6700/ncp_l3lock_region.h"
 
 /*
   ==============================================================================
@@ -526,7 +527,7 @@ initialize_elm(void)
 	writel(0x01c0ffff, (ELM3 + 0x1c));
 
 	if (sysmem->enableECC) {
-		/* 
+		/*
 		 * initialize all of sysmem through the ELMs
 		 * start each ELM before checking completion so they
 		 * all run in parallel
@@ -603,6 +604,7 @@ int
 sysmem_init(void)
 {
 	int rc;
+	ncp_l3lock_region_info_t *ncp_l3lock_region_info;
 
 #ifdef SINGLE_SMEM_MODE
 
@@ -633,6 +635,9 @@ sysmem_init(void)
 	writel(0x4, (offset + 0x8));
 
 #endif
+
+	/* Disable System Cache */
+	__asm_disable_l3_cache();
 
 /* #define DISPLAY_PARAMETERS */
 #ifdef DISPLAY_PARAMETERS
@@ -670,7 +675,6 @@ sysmem_init(void)
         printf("read_ODT_ctl=0x%08x\n", sysmem->read_ODT_ctl);
         printf("single_bit_mpr=0x%08x\n", sysmem->single_bit_mpr);
         printf("high_temp_dram=0x%08x\n", sysmem->high_temp_dram);
-            
         for (i = 0; i < 2; i++) {
 
           p = (unsigned *) sysmem->per_mem[i].sdram_rtt_nom;
@@ -713,6 +717,18 @@ sysmem_init(void)
 
 	if (0 != rc)
 		return -1;
+
+	ncp_l3lock_region_info = (ncp_l3lock_region_info_t *)
+		&sysmem->total_l3_locked_size;
+
+	rc = ncp_l3lock_region_init(NULL, ncp_l3lock_region_info, 1);
+
+
+	if (NCP_ST_SUCCESS != rc)
+		printf("Locking L3 Cache Failed!\n");
+
+	/* Re-enable the L3 cache. */
+	__asm_enable_l3_cache();
 
 	return 0;
 }
