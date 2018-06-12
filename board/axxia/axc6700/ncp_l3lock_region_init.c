@@ -49,10 +49,10 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 	int		j;
 	ncp_l3lock_region_info_t l3_emu = {
 		/* Total size of L3 Cache to be locked (in MB). */
-		.totalL3LockedSize = 0x00000004,
+		.totalL3LockedSize = 0x00000002,
 		/* Bits 23:0 - Physical offset (in MB) of the Region-0 of L3 Cache
 		   Bit  31   - Enable Region 0 through 3 of L3 Cache. */
-		.region = { 0x80000899, 0x8000089a, 0x8000089b, 0x8000089c }
+		.region = { 0x00000899, 0x0000089b, 0x0000089d, 0x0000089f }
 	};
 #ifndef __UBOOT__
 	ncp_uint32_t    tmp;
@@ -77,8 +77,12 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 	if (isFPGA) {
 #define SPECIAL_CASE_FPGA_B0_12_WAYS
 #if defined (SPECIAL_CASE_FPGA_B0_12_WAYS)
-		if (l3lock_params->totalL3LockedSize == 4) {
+		if (l3lock_params->totalL3LockedSize == 2) {
+			numLockedWays = 2;
+		} else if (l3lock_params->totalL3LockedSize == 4) {
 			numLockedWays = 4;
+		} else if (l3lock_params->totalL3LockedSize == 8) {
+			numLockedWays = 8;
 		} else {
 			NCP_CALL(NCP_ST_INVALID_PARAMETER);
 		}
@@ -127,12 +131,19 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 
 		for (i = 0x20; i <= 0x27; i++) {
 #ifdef __UBOOT__
-			debug("mb: base@%d @ 0x%lx\n",
-					j,(unsigned long)(DICKENS + (i * 0x10000) + 0x48 + (j * 8)));
+			debug("mb: write 0x%x @ 0x%lx\n",
+					l,(unsigned long)(DICKENS + (i * 0x10000) + 0x48 + (j * 8)));
 			writel(l, (DICKENS + (i * 0x10000) + 0x48 + (j * 8)));
-			debug("mb: read back base@%d @ 0x%x\n",
-					i,readl(DICKENS + (i * 0x10000) + 0x48 + (j * 8)));
+			debug("mb: read back 0x%x @ 0x%lx\n",
+					readl(DICKENS + (i * 0x10000) + 0x48 + (j * 8)),
+					(DICKENS + (i * 0x10000) + 0x48 + (j * 8)));
+
+			debug("mb: write 0x%x @ 0x%lx\n",
+					u,(unsigned long)(DICKENS + (i * 0x10000) + 0x4c + (j * 8)));
 			writel(u, (DICKENS + (i * 0x10000) + 0x4c + (j * 8)));
+			debug("mb: read back 0x%x @ 0x%lx\n",
+					readl(DICKENS + (i * 0x10000) + 0x4c + (j * 8)),
+					(DICKENS + (i * 0x10000) + 0x4c + (j * 8)));
 #else  /* __UBOOT__ */
 			ncr_write32(NCP_REGION_ID(0x1e0, i), 0x48 + (j * 8), 
 				    (ncp_uint32_t)(regValue & 0xFFFFFFFF));
