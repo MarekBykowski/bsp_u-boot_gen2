@@ -1,4 +1,5 @@
 /*
+ *
  *  Copyright (C) 2016 Intel (john.jacques@intel.com)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,8 +20,8 @@
 #ifdef __UBOOT__
 #include <common.h>
 #include "ncp_sysmem_ext.h"
-#include "ncp_sysmem_lsiphy.h" 
-#include "ncp_l3lock_region.h" 
+#include "ncp_sysmem_lsiphy.h"
+#include "ncp_l3lock_region.h"
 #else  /* __UBOOT__ */
 #include <stdio.h>
 #include "ncp.h"
@@ -43,9 +44,14 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 	ncp_uint32_t    tmp;
 #endif	/* __UBOOT__ */
 
-#ifndef __UBOOT__	
+#ifndef __UBOOT__
 	NCP_ASSERT(l3lock_params != NULL, NCP_ST_INVALID_PARAMETER);
 #endif	/* __UBOOT__ */
+
+	/* Permit non-secure access to the Shelley */
+	writel(1,DICKENS);
+	printf("mb: non-secure access to Shelley? %s\n",
+					readl(DICKENS) == 1 ? "yes" : "no" );
 
 	if (l3lock_params->totalL3LockedSize == 0)
 		return NCP_ST_SUCCESS;
@@ -97,7 +103,7 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 			writel(l, (DICKENS + (i * 0x10000) + 0x48 + (j * 8)));
 			writel(u, (DICKENS + (i * 0x10000) + 0x4c + (j * 8)));
 #else  /* __UBOOT__ */
-			ncr_write32(NCP_REGION_ID(0x1e0, i), 0x48 + (j * 8), 
+			ncr_write32(NCP_REGION_ID(0x1e0, i), 0x48 + (j * 8),
 				    (ncp_uint32_t)(regValue & 0xFFFFFFFF));
 			ncr_write32(NCP_REGION_ID(0x1e0, i), 0x4c + (j * 8),
 				    (ncp_uint32_t)((regValue >> 32) &

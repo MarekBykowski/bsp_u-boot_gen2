@@ -62,9 +62,11 @@ ENTRY(__asm_flush_l3_cache)
 	mov	x9, x30
 	mov	x0, 0
 	bl	set_outer_cache_state
-#ifndef LEAVE_L3_IN_SFONLY
+#if !defined(LEAVE_L3_IN_SFONLY)
+#if !defined(LEAVE_L3_OFF)
 	mov	x0, 3
 	bl	set_outer_cache_state
+#endif
 #endif
 	mov	x30, x9
 	ret
@@ -79,11 +81,13 @@ ENTRY(__asm_disable_l3_cache)
 ENDPROC(__asm_disable_l3_cache)
 
 ENTRY(__asm_enable_l3_cache)
-#ifndef LEAVE_L3_IN_SFONLY
+#if !defined(LEAVE_L3_IN_SFONLY)
+#if !defined(LEAVE_L3_OFF)
 	mov	x9, x30
 	mov	x0, 3
 	bl	set_outer_cache_state
 	mov	x30, x9
+#endif
 #endif
 	ret
 ENDPROC(__asm_enable_l3_cache)
