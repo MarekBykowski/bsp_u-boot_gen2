@@ -34,11 +34,11 @@ DECLARE_GLOBAL_DATA_PTR;
 unsigned long long
 sysmem_size(void)
 {
-	unsigned long long sdram_capacity_bytes;
+	/*unsigned long long sdram_capacity_bytes;
 	unsigned long sdram_device_width_bits;
-	unsigned long primary_bus_width_bits;
+	unsigned long primary_bus_width_bits;*/
 #ifndef CONFIG_SPL_BUILD
-	int rc;
+	/*int rc;*/
 #endif
 
 #ifdef CONFIG_AXXIA_EMU
@@ -47,6 +47,7 @@ sysmem_size(void)
 	return sysmem->totalSize;
 #endif
 
+#if 0
 #ifndef CONFIG_SPL_BUILD
 	rc = read_parameters();
 
@@ -74,6 +75,8 @@ sysmem_size(void)
 	sysmem->totalSize = sdram_capacity_bytes;
 
 	return sysmem->totalSize;
+#endif
+	return (unsigned long long)((unsigned long)(16384*1024)*1024);
 }
 
 /*
