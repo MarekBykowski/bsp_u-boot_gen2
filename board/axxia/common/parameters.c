@@ -105,6 +105,7 @@ verify_parameters(void *parameters, int quiet)
 
 		return -1;
 	}
+	printf("mb: %s() after check for magci\n", __func__);
 
 	/* Verify the checksum. */
 
@@ -118,6 +119,7 @@ verify_parameters(void *parameters, int quiet)
 
 		return -1;
 	}
+	printf("mb: %s() after verify crc\n", __func__);
 
 	/* Check the version. */
 
@@ -152,6 +154,9 @@ read_parameters(void)
 	int i;
 	unsigned *buffer;
 	unsigned char *description;
+#ifndef CONFIG_SPL_BUILD
+	static int cm = 0;
+#endif
 #endif
 	int rc;
 	struct spi_flash *flash;
@@ -166,12 +171,15 @@ read_parameters(void)
 	if (0 == do_read)
 		return 0;
 
+
 #ifdef CONFIG_SPL_BUILD
 	if (1 == do_read)
 		parameters = (void *)PARAMETERS_ADDRESS;
 #else
 	if (1 == do_read) {
+		printf("mb: %d %s()\n", ++cm, __func__);
 		parameters = malloc(PARAMETERS_SIZE);
+		printf("mb: %d %s(): parameters %p\n", ++cm, __func__, (void*)parameters);
 		memset(parameters, 0, PARAMETERS_SIZE);
 	}
 #endif
@@ -250,13 +258,20 @@ read_parameters(void)
 	flash = spi_flash_probe(0, 0, CONFIG_SF_DEFAULT_SPEED,
 				CONFIG_SF_DEFAULT_MODE);
 
-	if (!flash)
+	if (!flash) {
+		printf("mb: %s() spi flash %p\n", __func__, (void*)flash);
 		goto parameter_read_failed;
+	}
+
+	printf("mb: %s() spi_flash_probe() success\n", __func__);
 
 	rc = spi_flash_read(flash, CONFIG_PARAMETER_OFFSET,
 			    PARAMETERS_SIZE, parameters);
 
+	printf("mb: %s() spi_flash_read() returned %d\n", __func__, rc);
+	printf("mb: %s() before verify_parameters() for primary\n", __func__);
 	if (0 == rc && 0 == verify_parameters(parameters, 0)) {
+		printf("mb: %s() after verify_parameters() for primary\n", __func__);
 		a_valid = 1;
 		buffer = parameters;
 
@@ -276,7 +291,9 @@ read_parameters(void)
 	rc = spi_flash_read(flash, CONFIG_PARAMETER_OFFSET_REDUND,
 			    PARAMETERS_SIZE, parameters);
 
+	printf("mb: %s() before verify_parameters() for redund\n", __func__);
 	if (0 == rc && 0 == verify_parameters(parameters, 0)) {
+		printf("mb: %s() after verify_parameters() for redund\n", __func__);
 		b_valid = 1;
 		buffer = parameters;
 
