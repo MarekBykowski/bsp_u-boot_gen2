@@ -794,9 +794,41 @@ int flush_all(void)
 	return 0;
 }
 
+/* Copied/pasted from SPL */
+
+/*
+  ------------------------------------------------------------------------------
+  is_xlf_a0
+
+  Detect A0 parts, which need to be configured slightly differently.
+  Display a warning if the part is unfused, and assume !A0 in that
+  case.
+*/
+
+#ifdef CONFIG_AXXIA_ANY_XLF
+int
+is_xlf_a0(void)
+{
+	if (0 == pfuse) {
+		unsigned int value;
+
+		/* Handle Un-Fused Parts */
+		ncr_read32(NCP_REGION_ID(0x16, 0xff), 0, &value);
+
+		if (1 == ((value >> 8) & 0x7))
+			return 0; /* B0 */
+	} else if (0 != ((pfuse & 0x700) >> 8)) {
+		return 0;	/* B0 */
+	}
+
+	return 1;		/* A0 */
+}
+#endif	/* CONFIG_AXXIA_ANY_XLF */
+
 typedef enum {
 	AXXIA_5600 = 0,
-	AXXIA_6700 = 1
+	AXXIA_6700 = 1,
+	AXXIA_6700_B0 = 2
 } axxia_target_t;
 
 typedef enum {
@@ -832,7 +864,13 @@ int switch_to_EL2_non_secure(void)
 	axxia_configuration->target = AXXIA_5600;
 	axxia_configuration->platform = AXXIA_HW;
 #elif defined(CONFIG_AXXIA_XLF)
-	axxia_configuration->target = AXXIA_6700;
+	asm volatile("mb: b mb\n");
+	if (0 != is_xlf_a0()) {
+		axxia_configuration->target = AXXIA_6700;
+	} else {
+		axxia_configuration->target = AXXIA_6700_B0;
+		printf("mb: passing AXXIA_6700_B0\n");
+	}
 	axxia_configuration->platform = AXXIA_HW;
 #endif
 	axxia_configuration->option = AXXIA_NONE;
