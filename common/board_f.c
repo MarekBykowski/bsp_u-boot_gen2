@@ -864,7 +864,6 @@ int switch_to_EL2_non_secure(void)
 	axxia_configuration->target = AXXIA_5600;
 	axxia_configuration->platform = AXXIA_HW;
 #elif defined(CONFIG_AXXIA_XLF)
-	asm volatile("mb: b mb\n");
 	if (0 != is_xlf_a0()) {
 		axxia_configuration->target = AXXIA_6700;
 	} else {
