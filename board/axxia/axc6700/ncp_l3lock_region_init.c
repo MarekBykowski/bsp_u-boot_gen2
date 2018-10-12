@@ -47,6 +47,12 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 	NCP_ASSERT(l3lock_params != NULL, NCP_ST_INVALID_PARAMETER);
 #endif	/* __UBOOT__ */
 
+	writel(1,0x4000000000);
+
+	ncp_l3lock_region_info_t params = { 0x10, 
+		{ 0x80000800, 0x80000804, 0x80000808, 0x8000080c } };
+	l3lock_params = &params;
+
 	if (l3lock_params->totalL3LockedSize == 0)
 		return NCP_ST_SUCCESS;
 
@@ -87,7 +93,7 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 		/* Convert the parameter region to a base value. */
 		base = ((ncp_uint64_t)(l3lock_params->region[j] &
 				       0x80000000) << 32);
-		base |= ((l3lock_params->region[j] & 0x00ffffff) << 20);
+		base |= ((ncp_uint64_t)(l3lock_params->region[j] & 0x00ffffff) << 20);
 
 		u = ((base >> 32) & 0xffffffff);
 		l = (base & 0xffffffff);

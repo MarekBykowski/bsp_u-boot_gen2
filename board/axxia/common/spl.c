@@ -1730,15 +1730,16 @@ board_init_f(ulong dummy)
 			"ldr x25, [x24]\n");
 
 {
-#define NO_L3_LOCK
+#define L3_LOCK
 		/* Permits a Non-secure access request to access Secure registers */
 		writel(1, 0x4000000000);
 
 		ncp_l3lock_region_info_t ncp_l3lock_region_info = {0x00000010, 
 #ifdef NO_L3_LOCK
-			{0x00000899, 0x0000089d, 0x000008a1, 0x000008a5}};
-#elif defined(16M_L3_LOCK)
+			{0x00000800, 0x00000804, 0x00000808, 0x0000080c}};
+#elif defined(L3_LOCK)
 			{0x80000899, 0x8000089d, 0x800008a1, 0x800008a5}};
+			/*{0x80000800, 0x80000804, 0x80000808, 0x8000080d}};*/
 #endif
 
 		if (0 != ncp_l3lock_region_init(NULL, &ncp_l3lock_region_info, 0)) {

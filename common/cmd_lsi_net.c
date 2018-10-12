@@ -160,6 +160,55 @@ do_bu(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return CMD_RET_FAILURE;
 }
 
+#include <asm/system.h>
+#include <asm/armv8/mmu.h>
+#include <asm/io.h>
+
+
+int
+do_lat(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	unsigned long start, size, t1, t2;
+	unsigned loops = 3, i;
+	unsigned long address;
+	char  casm[2] = {0};
+	register unsigned int value;
+	if (argc == 4) {
+		strncpy(casm,argv[3],1);
+	} else {
+		strncpy(casm,"a",1);
+	}
+
+	start = simple_strtoul(argv[1], NULL, 10);
+	size = simple_strtoul(argv[2], NULL, 10);
+
+	printf("reading %lx - %lx\n", start, start+size);
+	printf("doing %s\n",(strncmp("a",casm,1)==0)?"assembly":"c");
+
+    __asm_flush_dcache_all();	
+	__asm_flush_l3_cache();
+
+	for (i=0; i<loops; i++) {
+		t1 = get_timer(0);
+		for(address=start; address<start+size; address+=32) {
+			if (strncmp(casm,"c",1) == 0) {
+				value = readl(address);
+				value = value;
+			} else {
+				asm volatile(
+					"dsb sy\n"
+					"ldr x9, [%[ad]]\n"
+					"dsb sy\n"
+					: : [ad] "r" (address));
+			}
+		}
+		t2 = get_timer(0);
+		printf("Run# %u -> Start: %lu, Stop: %lu, Diff: %lu\n", 
+			i, t2, t2, t2 - t1);
+	}
+
+	return CMD_RET_SUCCESS;
+}
 /*
   ======================================================================
   Command Definitions
@@ -177,13 +226,17 @@ U_BOOT_CMD(net, 3, 0, do_net,
 	   "dr toggle the \"dumprx\" flag\n"
 	   "dt toggle the \"dumptx\" flag\n");
 
+U_BOOT_CMD(lat, 4, 1, do_lat,
+	  	"lat start end c|a",
+	   "measure latency in memory read");
+
 U_BOOT_CMD(bu, 1, 1, do_bu,
 	   "boot U-Boot from address 0",
 	   "");
 
 #ifdef CONFIG_AXXIA_XLF
 U_BOOT_CMD(macstats, 1, 0, do_net_macstats,
-	   "run gmac counter stats", 
+	   "run gmac counter stats",
 	   "");
 #endif	/* CONFIG_AXXIA_XLF */
 
