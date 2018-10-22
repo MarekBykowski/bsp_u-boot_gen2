@@ -222,6 +222,9 @@ axxia_initialize(void)
                 if (0 != sysmem_init())
                         acp_failure(__FILE__, __FUNCTION__, __LINE__);
 
+	printf("making accessing secure regs of L3 from unsecure world\n");
+	writel(1,0x4000000000);
+	printf("reading the NM, secure reg back (must be 1) 0x%x\n", readl(0x4000000000));
                 ncr_tracer_disable();
         }
 #endif

@@ -43,6 +43,8 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 	ncp_uint32_t    tmp;
 #endif	/* __UBOOT__ */
 
+	writel(1,0x4000000000);
+
 #ifndef __UBOOT__	
 	NCP_ASSERT(l3lock_params != NULL, NCP_ST_INVALID_PARAMETER);
 #endif	/* __UBOOT__ */

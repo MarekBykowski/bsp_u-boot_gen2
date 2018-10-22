@@ -498,6 +498,10 @@ sysmem_init(void)
 			return -1;
 		}
 	}
+		
+	printf("making accessing secure regs of L3 from unsecure world\n");
+	writel(1,0x4000000000);
+	printf("reading the NM, secure reg back (must be 1) 0x%x\n", readl(0x4000000000));
 
 #if defined(CONFIG_AXXIA_XLF_EMU) || defined(CONFIG_AXXIA_XLF)
 	ncp_l3lock_region_info = (ncp_l3lock_region_info_t *)
