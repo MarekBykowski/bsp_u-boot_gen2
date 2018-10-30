@@ -1319,10 +1319,6 @@ board_init_f(ulong dummy)
 	int rc;
 	unsigned int value;
 	unsigned int pvalue;
-#if defined(CONFIG_AXXIA_ANY_56XX)
-	unsigned int lor;
-#endif
-	int i;
 
 	/*
 	  Work-Around for Hardware Debug
@@ -1357,58 +1353,7 @@ board_init_f(ulong dummy)
                         CONFIG_SYS_SPL_MALLOC_SIZE);
 #endif
 
-	/* read and clear reset status (write one to clear) */
 	value = readl(SYSCON + 0x100);
-	writel(value, (SYSCON + 0x100));
-
-	/*
-	 * if this is a power-up/pin reset then initialize
-	 * persistent registers
-	 */
-
-	if ((value & 0x00000001))
-		for (i = 0; i < 9; i++)
-			writel(0, (SYSCON + (0xdc + (4 * i))));
-
-        /*
-	 * For robustness, reboot chip in quiet post power-up
-         * electrical environment.
-         */
-
-#if defined(CONFIG_AXXIA_ANY_56XX)
-        lor = readl(SYSCON + 0x2004);
-
-        if ((value & 0x00000001) && (0 == (lor & 0x80))) {
-		unsigned int temp;
-
-		/*
-		  Clear out the SSP fifo so the bootrom doesn't read
-		  junk after the reset in simulation.  On the
-		  hardware, the SSP gets reset during a chip reset,
-		  but not in simulation.
-		*/
-
-		temp = readl(SSP + 0x4);
-		temp |= (1 << 1);
-		writel(temp, (SSP + 0x4));
-
-		while (readl(SSP + 0xc) != 0x3)
-			(void)readl(SSP + 0x8);
-
-		/* Write the key. */
-		writel(0xab, (SYSCON + 0x2000));
-		/* Clear the pin reset bit. */
-		writel(0x1, (SYSCON + 0x100));
-		/* Cause a chip reset.  Hardware delays this for 1024 cycles */
-		writel(0x2, (SYSCON + 0x2008));
-		/* Enable all cores. */
-		writel(0x0, (SYSCON + 0x2010));
-		/* Clear the key. */
-		writel(0, (SYSCON + 0x2000));
-		/* Let the reset happen. */
-		wfi();
-        }
-#endif
 
 	/*
 	 * Set bit 2 of 0xdc if the last reset was caused by a watchdog

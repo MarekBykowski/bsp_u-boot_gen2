@@ -12,6 +12,11 @@
 #include <asm/macro.h>
 #include <linux/linkage.h>
 
+ENTRY(__asm_double_reset)
+	__asm_double_reset
+	ret
+ENDPROC(__asm_double_reset)
+
 /*
  * void __asm_flush_dcache_level(level)
  *

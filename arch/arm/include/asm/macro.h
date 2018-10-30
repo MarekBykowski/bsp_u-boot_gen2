@@ -231,6 +231,68 @@ lr	.req	x30
 .endm
 #endif
 
+.macro __asm_double_reset
+	/* Load SYSCON 0x8002c00000*/
+	mov x9, #0
+	movk x9, #0x2c0, lsl #16
+	movk x9, #0x80, lsl #32
+
+	/* read and clear reset status (write one to clear) */
+	ldr w10, [x9, #0x100]
+	str w10, [x9, #0x100]
+
+	/*
+	 * if this is a power-up/pin reset then initialize
+	 * persistent registers
+	 */
+	tbz w10, #0, reset_status_zero
+	add x11, x9, #0xdc /* from */
+	add x12, x9, #0xfc  /* to. Can't do stp xzr, xzr, [xr], 16 for AXI4 LSM*/
+zero_scratch:
+	str wzr, [x11], #4
+	cmp x11, x12
+	b.ne zero_scratch
+reset_status_zero:
+
+	tbz w10, #0, skip_double_reset
+	/* load lor (SYSCON + 0x2004) */
+	ldr w11, [x9, #0x2004]
+	tbnz w11, #7, skip_double_reset
+
+	/* 0x8080100000 */
+	mov x11, #0
+	movk x11, #0x8010, lsl #16
+	movk x11, #0x80, lsl #32
+	ldr w10, [x11, #0x4]
+	orr w10, w10, #1 << 1
+	str w10, [x11, #0x4]
+
+clear_spp:
+	ldr w12, [x11, #0x8]
+	ldr w13, [x11, #0xc]
+	cmp w13, #0x3
+	b.ne clear_spp
+
+	/* Write the key. */
+	mov w10, #0xab
+	str w10, [x9, #0x2000]
+	/* Clear the pin reset bit. */
+	mov w10, #1
+	str w10, [x9, #0x100]
+	/* Cause a chip reset.  Hardware delays this for 1024 cycles */
+	mov w10, #2
+	str w10, [x9, #0x2008]
+	/* Enable all cores. */
+	mov w10, #0
+	str w10, [x9, #0x2010]
+	/* Clear the key. */
+	mov w10, #0
+	str w10, [x9, #0x2000]
+
+	wfi
+skip_double_reset:
+.endm
+
 #endif /* CONFIG_ARM64 */
 
 #endif /* __ASSEMBLY__ */

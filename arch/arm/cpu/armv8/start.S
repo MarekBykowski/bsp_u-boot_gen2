@@ -149,6 +149,10 @@ apply_a53_prefetch_disable:
 
 apply_a57_core_errata:
 
+#if defined(CONFIG_SPL_BUILD) && 1
+	__asm_double_reset
+#endif
+
 #ifdef CONFIG_ARM_ERRATA_828024
 	mrs	x0, S3_1_c15_c2_0	/* cpuactlr_el1 */
 	/* Disable non-allocate hint of w-b-n-a memory type */
