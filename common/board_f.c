@@ -771,12 +771,60 @@ int do_heap(void)
 	return 0;
 }
 
+int load_parameters_off_flash(void)
+{
+	/* get parameters.bin off flash. Malloc must be before */
+	(void)sysmem_size();
+	return 0;
+}
+
+#if defined(CLOCKS_INIT_IN_UBOOT)
+int clocks_initalization(void)
+{
+	int rc = 0;
+
+/* Check if ddrRetention is set. If it is set we have to
+ * skip the clocks init for device memories.
+ */
+#ifdef CONFIG_MEMORY_RETENTION
+	if (0 != (global->flags & PARAMETERS_GLOBAL_ENABLE_RETENTION)) {
+		unsigned value;
+		/*
+		 *  we use bit 0 of the persistent scratch register to
+		 *  inidicate ddrRetention recovery.
+		 */
+		ncr_read32(NCP_REGION_ID(0x156, 0x00), 0x00dc, &value);
+		ddrRecovery = (value & 0x1) ;
+		value &= 0xfffffffe;
+		ncr_write32(NCP_REGION_ID(0x156, 0x00), 0x00dc, value);
+
+		printf("DDR Retention Enabled, Recovery = %d\n",
+		       ddrRecovery);
+	} else {
+		/*printf("DDR Retention Not Enabled\n");*/
+		asm volatile("nop\n");
+	}
+#else
+	ddrRecovery = 0;
+#endif
+
+	/*
+	  ======
+	  Clocks
+	  ======
+	*/
+
+	if (0 != (global->flags & PARAMETERS_GLOBAL_SET_CLOCKS))
+		if (0 != clocks_init(ddrRecovery))
+			acp_failure(__FILE__, __FUNCTION__, __LINE__);
+	return rc;
+}
+#endif
+
 int init_mem_axxia(void)
 {
 	int rc = 0;
 
-	/* get parameters.bin off flash. Malloc must be before */
-	(void)sysmem_size();
 
 	if (0 != sysmem_init())
 		acp_failure(__FILE__, __FUNCTION__, __LINE__);
@@ -913,6 +961,10 @@ int switch_to_EL2_non_secure(void)
 static init_fnc_t init_sequence_f[] = {
 #ifdef SYSCACHE_ONLY_MODE
 	do_heap,
+	load_parameters_off_flash,
+#if defined(CLOCKS_INIT_IN_UBOOT)
+	clocks_initalization,
+#endif
 	init_mem_axxia,
 	flush_all,
 	switch_to_EL2_non_secure,

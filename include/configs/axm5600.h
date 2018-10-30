@@ -236,6 +236,8 @@
 #define CONFIG_CACHE_PROTECTION
 #define CONFIG_AXXIA_AXM_I2C
 
+#define CLOCKS_INIT_IN_UBOOT
+
 /*
  * xHCI model needs powercycling of usb ports, according to standard
  * define ...USB_POWERCYCLE if uboot should handle this, 

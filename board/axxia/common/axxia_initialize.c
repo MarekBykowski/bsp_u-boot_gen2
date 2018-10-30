@@ -113,6 +113,7 @@ axxia_initialize(void)
 			acp_failure(__FILE__, __FUNCTION__, __LINE__);
 #endif
 
+#if !defined(CLOCKS_INIT_IN_UBOOT)
 	/*
 	  ======
 	  Clocks
@@ -123,6 +124,7 @@ axxia_initialize(void)
 	if (0 != (global->flags & PARAMETERS_GLOBAL_SET_CLOCKS))
 		if (0 != clocks_init(ddrRecovery))
 			acp_failure(__FILE__, __FUNCTION__, __LINE__);
+#endif
 #endif
 
 	serial_initialize();

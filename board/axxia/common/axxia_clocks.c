@@ -38,7 +38,6 @@ static int clocks_uninitialized = 1;
 #endif
 
 #ifndef CONFIG_AXXIA_EMU
-#ifdef CONFIG_SPL_BUILD
 
 static ncp_uint32_t get_pll(ncp_uint32_t, ncp_uint32_t);
 
@@ -118,7 +117,6 @@ pll_init_frac(ncp_uint32_t region, ncp_uint32_t *parameters)
 	return 0;
 }
 
-#endif	/* CONFIG_SPL_BUILD */
 
 static ncp_uint32_t
 get_pll(ncp_uint32_t plldiv, ncp_uint32_t seldiv)
@@ -195,7 +193,6 @@ serdes_clock_en(void)
 
 
 
-#ifdef CONFIG_SPL_BUILD
 #ifdef CONFIG_AXXIA_ANY_56XX
 /*
   ------------------------------------------------------------------------------
@@ -476,7 +473,6 @@ clocks_init( int ddrRecovery )
 	return 0;
 }
 #endif /* CONFIG_AXXIA_ANY_XLF */
-#endif /* CONFIG_SPL_BUILD */
 #endif/* CONFIG_AXXIA_EMU */
 
 #ifdef CONFIG_AXXIA_ANY_56XX
