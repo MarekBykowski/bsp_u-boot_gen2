@@ -1679,16 +1679,37 @@ board_init_f(ulong dummy)
 
 #ifdef CONFIG_AXXIA_XLF
 {
-#define NO_L3_LOCK
+
+#define TWO_MLOCK 0 /* 2M, 1 way locked */
+#define FOUR_MLOCK 0 /* 4M, 2 way locking*/
+#define EIGHT_MLOCK 0 /* 8M, 4 way locked */
+#define SIXTEEN_MLOCK 1 /* 16M, 4 way locked */
+
 		/* Permits a Non-secure access request to access Secure registers */
 		writel(1, 0x4000000000);
 
-		ncp_l3lock_region_info_t ncp_l3lock_region_info = {0x00000010, 
-#ifdef NO_L3_LOCK
-			{0x00000899, 0x0000089d, 0x000008a1, 0x000008a5}};
-#elif defined(16M_L3_LOCK)
-			{0x80000899, 0x8000089d, 0x800008a1, 0x800008a5}};
+		ncp_l3lock_region_info_t ncp_l3lock_region_info = {
+#if TWO_MLOCK
+			 0x00000002,
+#elif FOUR_MLOCK
+			 0x00000004,
+#elif EIGHT_MLOCK
+			 0x00000008,
+#elif SIXTEEN_MLOCK
+			 0x00000010,
 #endif
+
+#if TWO_MLOCK
+			{0x80000800, 0x00000000, 0x00000000, 0x00000000}
+#elif FOUR_MLOCK
+			{0x80000800, 0x80000802, 0x00000000, 0x00000000}
+#elif EIGHT_MLOCK
+			{0x80000800, 0x80000802, 0x80000804, 0x80000806}
+#elif SIXTEEN_MLOCK
+			/*{0x80000800, 0x80000804, 0x80000808, 0x8000080c}*/
+			{0x00000800, 0x00000804, 0x00000808, 0x0000080c}
+#endif
+		};
 
 		if (0 != ncp_l3lock_region_init(NULL, &ncp_l3lock_region_info, 0)) {
 			printf("mb: failed to L3 Lock\n");

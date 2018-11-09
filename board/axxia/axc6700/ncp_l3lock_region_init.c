@@ -60,7 +60,9 @@ ncp_l3lock_region_init (ncp_dev_hdl_t dev,
 			NCP_CALL(NCP_ST_INVALID_PARAMETER);
 		}
 	} else {
-		if (l3lock_params->totalL3LockedSize == 4) {
+		if (l3lock_params->totalL3LockedSize == 2) {
+			numLockedWays = 1;
+		} else if (l3lock_params->totalL3LockedSize == 4) {
 			numLockedWays = 2;
 		} else if (l3lock_params->totalL3LockedSize == 8) {
 			numLockedWays = 4;

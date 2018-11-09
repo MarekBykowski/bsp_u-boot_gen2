@@ -329,7 +329,7 @@
 
 #define CONFIG_AXXIA_XLF
 #define ARM64
-#define CLOCKS_INIT_IN_UBOOT
+/*#define CLOCKS_INIT_IN_UBOOT*/
 
 /*
   ==============================================================================
