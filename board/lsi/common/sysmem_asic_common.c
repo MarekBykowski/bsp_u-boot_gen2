@@ -21,7 +21,7 @@
  */
 
 #include <common.h>
-#if defined ( CONFIG_AXXIA_25xx ) || defined ( CONFIG_AXXIA_55XX )  
+#if defined ( CONFIG_AXXIA_25xx ) || defined ( CONFIG_AXXIA_55XX )
 #include "ncp_sysmem_lsiphy.h"
 extern ncp_st_t ncp_sysmem_init_lsiphy(ncp_dev_hdl_t, ncp_uint32_t, ncp_sm_parms_t *);
 #else
@@ -75,7 +75,7 @@ static unsigned long sm_nodes [ ] = {
 /*
  * tRFC values based on device density
  *
- *       density     tRFC             @800MHz    @667MHz  @533MHz 
+ *       density     tRFC             @800MHz    @667MHz  @533MHz
  *         512Mb      90 ns/clk           72       60       48
  *           1GB     110 ns/clk           88       74       59
  *           2GB     160 ns/clk          128      107       86
@@ -89,7 +89,7 @@ ncp_uint8_t tRFC_vals_800[5] = { 0, 0x48, 0x58, 0x80, 0xf0 } ;
 
 #ifdef CONFIG_AXXIA_25xx
 #define MEMORY_BARRIER mb();
-#else 
+#else
 /* #define MEMORY_BARRIER __asm__ __volatile__ ("" : : : "memory"); */
 #define MEMORY_BARRIER dmb();
 #endif
@@ -259,7 +259,7 @@ sysmem_init(void)
 #ifndef CONFIG_AXXIA_55XX
 	unsigned num_sc_nodes;
 #endif
-	unsigned value;
+	unsigned value, value2;
 	int i;
 	int rc;
 #ifdef CONFIG_SPD
@@ -305,7 +305,7 @@ sysmem_init(void)
 			}
 		}
 	}
-	
+
 	if (count > i2c_chip_limit) {
 		printf("SPD not detected in i2c chip range 0x%x-0x%x\n", i2c_chip, i2c_chip_limit);
 	} else{
@@ -395,7 +395,7 @@ sysmem_init(void)
         printf("read_ODT_ctl=0x%08lx\n", sysmem->read_ODT_ctl);
         printf("single_bit_mpr=0x%08lx\n", sysmem->single_bit_mpr);
         printf("high_temp_dram=0x%08lx\n", sysmem->high_temp_dram);
-            
+
         for (i = 0; i < 2; i++) {
 
           p = (unsigned long *) sysmem->per_mem[i].sdram_rtt_nom;
@@ -421,8 +421,8 @@ sysmem_init(void)
 	 */
 #ifdef ACP_X1V1
 	sysmem->version = 2;
-#else 
-#if defined (ACP_X1V2) || defined (ACP_X2V1) 
+#else
+#if defined (ACP_X1V2) || defined (ACP_X2V1)
 	sysmem->version = 3;
 #else
 
@@ -433,8 +433,8 @@ sysmem_init(void)
 #endif
 
 	/*
-	 * determine number of syscaches and half_mem setting 
-	 * based on chipType and num_interfaces 
+	 * determine number of syscaches and half_mem setting
+	 * based on chipType and num_interfaces
 	 */
 #ifndef CONFIG_AXXIA_55XX
 	num_sc_nodes = sysmem->num_interfaces * 4;
@@ -453,7 +453,7 @@ sysmem_init(void)
         printf("DDR Retention enabled in U-Boot Parameter Flags\n");
         sysmem->ddrRetentionEnable = 1;
     }
-    else 
+    else
     {
         printf("DDR Retention disabled in U-Boot Parameter Flags\n");
         sysmem->ddrRetentionEnable = 0;
@@ -469,15 +469,15 @@ sysmem_init(void)
 
 #ifndef CONFIG_AXXIA_55XX
 	/*
-	  Put all system caches in "force_uncached" mode 
+	  Put all system caches in "force_uncached" mode
 	*/
 	for (i = 0; i < num_sc_nodes; ++i) {
 		ncr_write32(NCP_REGION_ID(sc_nodes[i], 0), 0x100, 1);
 	}
 #endif
 
-	/* 
-	 * sysmem init goes here!! 
+	/*
+	 * sysmem init goes here!!
 	 */
 #ifdef CONFIG_MEMORY_RETENTION
 
@@ -486,13 +486,18 @@ sysmem_init(void)
     *  inidicate ddrRetention recovery.
     */
     ncr_read32(NCP_REGION_ID(0x156, 0x00), 0x00dc, &value);
+	printf("pscratch reg %08x\n", value);
+
     sysmem->ddrRecovery = (value & 0x1) ;
     value &= 0xfffffffe;
-    ncr_write32(NCP_REGION_ID(0x156, 0x00), 0x00dc, value);
- 
+
+	ncr_read32(NCP_REGION_ID(0x156, 0x00), 0x100, &value2);
+	if ( ! (value2 &= 0x10))
+		ncr_write32(NCP_REGION_ID(0x156, 0x00), 0x00dc, value);
+
     printf("ddrRetentionEnable = %lu\n", sysmem->ddrRetentionEnable);
     printf("ddrRecovery = %lu\n", sysmem->ddrRecovery);
- 
+
     if (sysmem->ddrRetentionEnable && sysmem->ddrRecovery)
     {
         /*
@@ -569,9 +574,9 @@ sysmem_init(void)
 	/* Just match the RTE trace... */
 	NCR_TRACE("ncpRead    0.24.255.0x0000000004 1\n");
 
-#ifndef CONFIG_AXXIA_55XX 
+#ifndef CONFIG_AXXIA_55XX
 #include "../axxia-ppc/sysmem_asic_ppc.c"
-#else 
+#else
     /* TEMP : declarations */
 ncp_st_t ncp_elm_init( ncp_dev_hdl_t dev, ncp_sm_parms_t *parms);
 ncp_st_t ncp_elm_sysmem_fill( ncp_dev_hdl_t dev, ncp_sm_parms_t *parms);

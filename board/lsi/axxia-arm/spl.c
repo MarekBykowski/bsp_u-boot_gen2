@@ -925,7 +925,7 @@ spl_board_init(void)
 
 #ifndef CONFIG_AXXIA_EMU
 	unsigned long value;
-	unsigned long pvalue;
+	/*unsigned long pvalue;*/
 	int i;
 
 	/* read and clear reset status (write one to clear) */
@@ -947,6 +947,7 @@ spl_board_init(void)
 	 * timeout; otherwise, clear it.
 	 */
 
+#if 0
 	ncr_read32(NCP_REGION_ID(0x156, 0), 0xdc, (ncp_uint32_t *) &pvalue);
 
 	if (0 != (value & 0xa))
@@ -955,6 +956,7 @@ spl_board_init(void)
 		pvalue &= ~0x4;
 
 	ncr_write32(NCP_REGION_ID(0x156, 0), 0xdc, pvalue);
+#endif
 #endif
 
 	/*
