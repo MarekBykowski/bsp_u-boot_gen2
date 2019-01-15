@@ -48,18 +48,21 @@ uboot_nokia() {
                 $MKIMAGE -A arm64 -T firmware -C none -a 0 -e 0x00197001 -n XLOADER -d spl/u-boot-spl.bin spl/u-boot-spl.img
                 $MKIMAGE -A arm64 -T firmware -C none -a 0 -e 0 -n XLOADER -d u-boot.bin u-boot.img
 
-: << EOM
-tftp aus-labsrv2 << TFTP
-put u-boot.img mbu-boot.img
-put spl/u-boot-spl.img mbu-boot-spl.img
-TFTP
-EOM
+TFTP=1
+if [[ $TFTP -eq 1 ]]; then
+	tftp aus-labsrv2 << TFTP_
+	put u-boot.img mbu-boot.img
+	put spl/u-boot-spl.img mbu-boot-spl.img
+TFTP_
+fi
 
         else
                return 127
         fi
         set +x
         popd
+		[[ $TFTP -eq 1 ]] && echo -n "TFTP-ed to server. "
+		echo "Built for $1"
         return 0
 
 }
