@@ -683,6 +683,7 @@ primary_boot_normal:
 	bl	arch_timer_init
 	bl	non_secure_init
 	bl	monitor_init
+	bl	enter_ns
 
 primary_boot_secure:
 
