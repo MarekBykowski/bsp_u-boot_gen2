@@ -209,11 +209,11 @@ COBJS-$(CONFIG_CMD_GPT) += cmd_gpt.o
 COBJS-$(CONFIG_AXXIA_NET) += cmd_lsi_net.o
 COBJS-$(CONFIG_LSI_NCR) += cmd_lsi_ncr.o
 COBJS-$(CONFIG_LSI_MDIO) += cmd_lsi_mdio.o
-COBJS-$(CONFIG_LSI_TEST) += cmd_lsi_test.o
 COBJS-$(CONFIG_LSI_SBB) += cmd_lsi_sbb.o
 COBJS-$(CONFIG_LSI_CLOCKS) += cmd_lsi_clocks.o
 COBJS-$(CONFIG_LSI_SBB) += cmd_lsi_sbb.o
 endif
+COBJS-y += cmd_lsi_test.o
 
 ifdef CONFIG_SPL_BUILD
 COBJS-$(CONFIG_ENV_IS_IN_FLASH) += env_flash.o

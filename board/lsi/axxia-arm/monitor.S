@@ -102,11 +102,16 @@ ENTRY(monitor_init)
 	ldr	ip, =mon_vectors
 	mcr	p15, 0, ip, c12, c0, 1		@ Monitor vector base address
 	bx	lr
+
 ENDPROC(monitor_init)
 
 	/* Try to go into NS-SVC: void enter_ns(void); */
 ENTRY(enter_ns)
 	smc	#0
+	movw r4, #0xdead
+	movt r4, #0xbeef
+	ldr r5, =0x3000000
+	str r4, [r5]
 	bx	lr
 ENDPROC(enter_ns)
 
