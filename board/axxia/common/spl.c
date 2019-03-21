@@ -1683,8 +1683,8 @@ board_init_f(ulong dummy)
 #define TWO_MLOCK 0 /* 2M, 1 way locked */
 #define FOUR_MLOCK 0 /* 4M, 2 way locking*/
 #define EIGHT_MLOCK 0 /* 8M, 4 way locked */
-#define SIXTEEN_MLOCK 0 /* 16M, 4 way locked */
-#define SIXTEEN_MLOCK_BASE_7F000000 1 /* 16M, 4 way locked */
+#define SIXTEEN_MLOCK 1 /* 16M, 4 way locked */
+#define SIXTEEN_MLOCK_BASE_7F000000 0 /* 16M, 4 way locked */
 
 		/* Permits a Non-secure access request to access Secure registers */
 		writel(1, 0x4000000000);
@@ -1707,8 +1707,7 @@ board_init_f(ulong dummy)
 #elif EIGHT_MLOCK
 			{0x80000800, 0x80000802, 0x80000804, 0x80000806}
 #elif SIXTEEN_MLOCK
-			/*{0x80000800, 0x80000804, 0x80000808, 0x8000080c}*/
-			{0x00000800, 0x00000804, 0x00000808, 0x0000080c}
+			{0x80000200, 0x80000204, 0x80000208, 0x8000020c}
 #elif SIXTEEN_MLOCK_BASE_7F000000
 			{0x000007F0, 0x000007F4, 0x000007F8, 0x000007FC}
 #endif
