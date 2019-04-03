@@ -44,7 +44,7 @@ extern int dumptx;
   ----------------------------------------------------------------------
   do_net
 */
-  
+
 int
 do_net(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -121,7 +121,7 @@ do_net(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
   ======================================================================
 */
 
-U_BOOT_CMD(net, 3, 0, do_net,
+U_BOOT_CMD(net, 0, 0, do_net,
 	   "net loopback|receive|send|dr|dt [type]\n",
 	   "l,oopback loop all received packets back, specify the type\n"
 	   "     net -- loop packets from the network back out\n"
@@ -131,5 +131,18 @@ U_BOOT_CMD(net, 3, 0, do_net,
 	   "s,end send one packet\n"
 	   "dr toggle the \"dumprx\" flag\n"
 	   "dt toggle the \"dumptx\" flag\n");
+
+extern unsigned long psci_version(void);
+int
+do_smc(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	printf("psci_version returned %lx\n",
+			psci_version());
+	return 0;
+}
+
+U_BOOT_CMD(smc, 3, 0, do_smc,
+	   "smc\n",
+	   "smc call\n");
 
 #endif /* CONFIG_SPL_BUILD */

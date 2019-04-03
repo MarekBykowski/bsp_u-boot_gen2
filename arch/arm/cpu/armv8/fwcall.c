@@ -99,6 +99,16 @@ void __noreturn psci_system_reset(void)
 		;
 }
 
+unsigned long psci_version(void)
+{
+	struct pt_regs regs;
+
+	regs.regs[0] = ARM_PSCI_0_2_FN_PSCI_VERSION;
+
+	smc_call(&regs);
+	return regs.regs[0];
+}
+
 void __noreturn psci_system_off(void)
 {
 	struct pt_regs regs;
