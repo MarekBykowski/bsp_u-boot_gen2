@@ -39,7 +39,7 @@ DECLARE_GLOBAL_DATA_PTR;
   ==============================================================================
 */
 
-/*#define COPY_MONITOR_TO_RAM*/
+#define COPY_MONITOR_TO_RAM
 
 /*
   ------------------------------------------------------------------------------
@@ -1130,8 +1130,9 @@ load_image(void)
 #endif
 
 #ifdef COPY_MONITOR_TO_RAM
-	memcpy((void *)0x7ffc1000, (void *)0x8031001000, 0x10000);
-	jump_to_monitor((void *)0x7ffc1000);
+	printf("mb: jumpoing to Secure Monitor @ 0x80000000\n");
+	memcpy((void *)0x80000000, (void *)0x8031001000, 0x10000);
+	jump_to_monitor((void *)0x80000000);
 	/*asm volatile ("ldr x10, =0x7ffc1000\nret x10");*/
 #else
 	jump_to_monitor((void *)0x8031001000);

@@ -195,7 +195,7 @@ read_parameters(void)
 #ifdef CONFIG_SPL_BUILD
 
 	/* Verify that the paramater table is valid. */
-	if (0 == verify_parameters(parameters, 1)) {
+	if (0 == verify_parameters(parameters, 0)) {
 		flash = spi_flash_probe(0, 0, CONFIG_SF_DEFAULT_SPEED,
 					CONFIG_SF_DEFAULT_MODE);
 
@@ -263,6 +263,17 @@ read_parameters(void)
 
 	rc = spi_flash_read(flash, CONFIG_PARAMETER_OFFSET,
 			    PARAMETERS_SIZE, parameters);
+#if 1
+	printf("mb: primary parameters flash @ %lx load to %lx\n", 
+				(unsigned long)CONFIG_PARAMETER_OFFSET,
+				(unsigned long)parameters);
+	for (i=0; i<10; i++) {
+		printf(" %x ", 
+			*(volatile unsigned*) ((unsigned long)parameters+(i*4)) );
+		if ((i%4) == 0)
+			puts("\n");
+	}
+#endif
 
 	if (0 == rc && 0 == verify_parameters(parameters, 0)) {
 		a_valid = 1;
@@ -283,6 +294,18 @@ read_parameters(void)
 
 	rc = spi_flash_read(flash, CONFIG_PARAMETER_OFFSET_REDUND,
 			    PARAMETERS_SIZE, parameters);
+
+#if 1
+	printf("mb: primary parameters flash @ %lx load to %lx\n", 
+				(unsigned long)CONFIG_PARAMETER_OFFSET_REDUND,
+				(unsigned long)parameters);
+	for (i=0; i<10; i++) {
+		printf(" %x ", 
+			*(volatile unsigned*) ((unsigned long)parameters+(i*4)) );
+		if ((i%4) == 0)
+			puts("\n");
+	}
+#endif
 
 	if (0 == rc && 0 == verify_parameters(parameters, 0)) {
 		b_valid = 1;
