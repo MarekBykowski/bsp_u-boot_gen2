@@ -395,7 +395,7 @@ sysmem_init(void)
 	unsigned sm_nodes[] = {0x22, 0xf, 0x23, 0x24};
 #endif
 #if defined(CONFIG_AXXIA_XLF_EMU) || defined(CONFIG_AXXIA_XLF)
-	ncp_l3lock_region_info_t *ncp_l3lock_region_info;
+	__maybe_unused ncp_l3lock_region_info_t *ncp_l3lock_region_info;
 #endif
 	int i;
 	ncp_uint32_t version_save;
@@ -506,11 +506,30 @@ sysmem_init(void)
 		&sysmem->total_l3_locked_size;
 #endif
 
-#if defined(CONFIG_AXXIA_XLF_EMU)
+#if defined(CONFIG_AXXIA_XLF_EMU) && 0
+dasda
 	rc = ncp_l3lock_region_init(NULL, ncp_l3lock_region_info, 1);
-#elif defined(CONFIG_AXXIA_XLF)
+#elif defined(CONFIG_AXXIA_XLF) && 0
+	sdasd
 	rc = ncp_l3lock_region_init(NULL, ncp_l3lock_region_info, 0);
 #endif
+
+#if 0
+{
+	unsigned tmp = 1;
+	printf("mb: permit non-secure access to acess Secure registers\n (%u to %lX)\n",
+		tmp, DICKENS);
+	writel(tmp, DICKENS);
+}
+#endif
+
+
+	printf("mb: NO LOCKING?\n");
+
+	for (i = 0x20; i <= 0x27; i++) {
+		printf("mb: %X\n",
+				readl((DICKENS + (i * 0x10000) + 0x40)));
+	}
 
 #if defined(CONFIG_AXXIA_XLF_EMU) || defined(CONFIG_AXXIA_XLF)
 	if (NCP_ST_SUCCESS != rc)

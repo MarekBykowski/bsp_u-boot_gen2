@@ -801,6 +801,9 @@ jump_to_monitor(void *address)
 
 	axxia_configuration->per_clock_hz *= 1000;
 	axxia_configuration->baud_rate = gd->baudrate;
+	printf("mb: clock %llu baud %llu\n",
+		(unsigned long long) axxia_configuration->per_clock_hz,
+		(unsigned long long) axxia_configuration->baud_rate);
 	entry = (void (*)(void *, void *))address;
 	cleanup_before_linux();
 	entry(NULL, axxia_configuration);
